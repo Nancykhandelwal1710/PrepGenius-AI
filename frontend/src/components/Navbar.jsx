@@ -19,6 +19,10 @@ function Navbar() {
         <Link to="/resume-analyzer" className="font-semibold text-gray-800 hover:text-blue-600">
           Resume Analyzer
         </Link>
+
+        <Link to="/mock-interview" className="font-semibold text-gray-800 hover:text-blue-600">
+          Mock Interview
+        </Link>
       </div>
     </nav>
   );
