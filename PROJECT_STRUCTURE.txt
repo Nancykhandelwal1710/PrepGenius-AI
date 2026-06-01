@@ -1,0 +1,29 @@
+Prepgenius
+│
+├── frontend
+│   ├── src
+│   │   ├── pages
+│   │   │   ├── Home.jsx
+│   │   │   ├── ResumeAnalyzer.jsx
+│   │   │   └── MockInterview.jsx
+│   │   │
+│   │   ├── components
+│   │   │   └── Navbar.jsx
+│   │   │
+│   │   └── App.jsx
+│   │
+│   └── package.json
+│
+├── backend
+│   ├── main.py
+│   └── venv
+│
+├── screenshots
+│   ├── home-page.png
+│   ├── resume-analyzer.png
+│   ├── ats-results.png
+│   └── mock-interview.png
+│
+├── README.md
+├── .gitignore
+└── PROJECT_STRUCTURE.txt
