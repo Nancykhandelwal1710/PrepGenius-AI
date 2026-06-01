@@ -32,6 +32,24 @@ An AI-powered career preparation platform built using React and FastAPI.
 * GitHub
 * VS Code
 
+## Screenshots
+
+### Home Page
+
+![Home Page](screenshots/home-page.png)
+
+### Resume Analyzer
+
+![Resume Analyzer](screenshots/resume-analyzer.png)
+
+### ATS Results
+
+![ATS Results](screenshots/ats-results.png)
+
+### Mock Interview
+
+![Mock Interview](screenshots/mock-interview.png)
+
 ## Future Scope
 
 * Gemini AI Integration
@@ -42,4 +60,5 @@ An AI-powered career preparation platform built using React and FastAPI.
 
 ## Author
 
-Nancy Khandelwal
+**Nancy Khandelwal**
+
