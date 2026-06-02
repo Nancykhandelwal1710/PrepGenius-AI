@@ -195,3 +195,50 @@ Rules:
             "error": str(e)
         }
     
+class AnswerEvaluationRequest(BaseModel):
+    question: str
+    answer: str
+
+
+@app.post("/evaluate-answer")
+def evaluate_answer(data: AnswerEvaluationRequest):
+
+    try:
+        prompt = f"""
+You are an expert interview evaluator.
+
+Evaluate the candidate's answer.
+
+Question:
+{data.question}
+
+Candidate Answer:
+{data.answer}
+
+Return the response in this exact format:
+
+Score: <number out of 10>
+
+Feedback:
+<short feedback>
+
+Improvements:
+- <improvement 1>
+- <improvement 2>
+- <improvement 3>
+"""
+
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt
+        )
+
+        return {
+            "evaluation": response.text
+        }
+
+    except Exception as e:
+        return {
+            "error": str(e)
+        }
+    
