@@ -1,6 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
 
+const API_URL = "https://prepgenius-backend-3841.onrender.com";
+
 function ResumeAnalyzer() {
   const [file, setFile] = useState(null);
   const [text, setText] = useState("");
@@ -29,7 +31,7 @@ function ResumeAnalyzer() {
       setLoading(true);
 
       const response = await axios.post(
-        "http://127.0.0.1:8000/extract-text",
+        `${API_URL}/extract-text`,
         formData
       );
 
@@ -46,7 +48,7 @@ function ResumeAnalyzer() {
   const analyzeResume = async () => {
     try {
       const atsResponse = await axios.post(
-        "http://127.0.0.1:8000/ats-score",
+        `${API_URL}/ats-score`,
         {
           resume_text: text,
           job_description: jobDescription,
@@ -58,7 +60,7 @@ function ResumeAnalyzer() {
       setMissingSkills(atsResponse.data.missing_skills);
 
       const suggestionResponse = await axios.post(
-        "http://127.0.0.1:8000/suggestions",
+        `${API_URL}/suggestions`,
         {
           resume_text: text,
           job_description: jobDescription,

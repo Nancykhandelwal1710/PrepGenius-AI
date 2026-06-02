@@ -1,6 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
 
+const API_URL = "https://prepgenius-backend-3841.onrender.com";
+
 function MockInterview() {
   const [role, setRole] = useState("");
   const [resumeText, setResumeText] = useState(
@@ -25,7 +27,7 @@ function MockInterview() {
       setScore(null);
 
       const response = await axios.post(
-        "http://127.0.0.1:8000/generate-interview-questions",
+        `${API_URL}/generate-interview-questions`,
         {
           role: role,
           resume_text: resumeText,
