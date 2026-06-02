@@ -58,7 +58,15 @@ function ResumeAnalyzer() {
       setAtsScore(atsResponse.data.ats_score);
       setMatchedSkills(atsResponse.data.matched_skills);
       setMissingSkills(atsResponse.data.missing_skills);
-
+      localStorage.setItem("atsScore", atsResponse.data.ats_score);
+      localStorage.setItem(
+        "matchedSkills",
+          JSON.stringify(atsResponse.data.matched_skills)
+      );
+      localStorage.setItem(
+        "missingSkills",
+        JSON.stringify(atsResponse.data.missing_skills)
+     );
       const suggestionResponse = await axios.post(
         `${API_URL}/suggestions`,
         {
