@@ -2,6 +2,16 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import pdfplumber
+import os
+from dotenv import load_dotenv
+from google import genai
+
+load_dotenv()
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+print("Gemini Key:", GEMINI_API_KEY)
+
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 app = FastAPI()
 
@@ -16,6 +26,7 @@ app.add_middleware(
 @app.get("/")
 def home():
     return {"message": "Backend Running"}
+
 
 @app.post("/extract-text")
 async def extract_text(file: UploadFile = File(...)):
@@ -34,6 +45,12 @@ async def extract_text(file: UploadFile = File(...)):
 class ATSRequest(BaseModel):
     resume_text: str
     job_description: str
+
+
+class InterviewRequest(BaseModel):
+    role: str
+    resume_text: str = ""
+    job_description: str = ""
 
 
 @app.post("/ats-score")
@@ -121,3 +138,60 @@ def suggestions(data: ATSRequest):
     return {
         "suggestions": suggestions
     }
+
+
+@app.post("/generate-interview-questions")
+def generate_interview_questions(data: InterviewRequest):
+
+    try:
+        prompt = f"""
+You are an interview coach.
+
+Generate exactly 5 interview questions for this candidate.
+
+Role:
+{data.role}
+
+Resume:
+{data.resume_text[:2000]}
+
+Job Description:
+{data.job_description[:2000]}
+
+Rules:
+- Return only the questions.
+- Number them from 1 to 5.
+- Make questions practical and interview-style.
+- Include technical, project-based, and HR questions.
+"""
+
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
+
+        questions_text = response.text
+
+        questions = []
+        for line in questions_text.split("\n"):
+            line = line.strip()
+            if line:
+                line = (
+                    line.replace("1.", "")
+                    .replace("2.", "")
+                    .replace("3.", "")
+                    .replace("4.", "")
+                    .replace("5.", "")
+                    .strip()
+                )
+                questions.append(line)
+
+        return {
+            "questions": questions[:5]
+        }
+
+    except Exception as e:
+        return {
+            "error": str(e)
+        }
+    
