@@ -3,7 +3,9 @@ import axios from "axios";
 
 function MockInterview() {
   const [role, setRole] = useState("");
-  const [resumeText, setResumeText] = useState("");
+  const [resumeText, setResumeText] = useState(
+    localStorage.getItem("resumeText") || ""
+  );
   const [jobDescription, setJobDescription] = useState("");
 
   const [questions, setQuestions] = useState([]);

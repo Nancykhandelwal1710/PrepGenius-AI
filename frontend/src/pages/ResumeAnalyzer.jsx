@@ -34,6 +34,7 @@ function ResumeAnalyzer() {
       );
 
       setText(response.data.text);
+      localStorage.setItem("resumeText", response.data.text);
     } catch (error) {
       console.error(error);
       setText("Error extracting resume text");
