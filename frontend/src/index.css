@@ -1,1 +1,32 @@
 @import "tailwindcss";
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, Arial, sans-serif;
+  background: #f5f8ff;
+  color: #111827;
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, #6c4dff, #0ea5e9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.soft-card {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 20px 45px rgba(108, 77, 255, 0.12);
+  backdrop-filter: blur(14px);
+}
+
+.gradient-btn {
+  background: linear-gradient(90deg, #6c4dff, #0ea5e9);
+}
+
+.gradient-bg {
+  background:
+    radial-gradient(circle at top left, rgba(108, 77, 255, 0.18), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.18), transparent 30%),
+    #f5f8ff;
+}

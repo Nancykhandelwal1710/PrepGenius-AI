@@ -1,41 +1,30 @@
 import { Link } from "react-router-dom";
+import { BrainCircuit } from "lucide-react";
 
 function Navbar() {
   return (
-    <nav className="bg-slate-950 text-white px-4 py-4 shadow-lg">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <Link
-            to="/"
-            className="text-2xl font-bold text-blue-400 text-center md:text-left"
-          >
-            PrepGenius AI
-          </Link>
-
-          <div className="grid grid-cols-2 gap-3 text-center text-sm md:flex md:items-center md:gap-6">
-            <Link to="/" className="hover:text-blue-400">
-              Home
-            </Link>
-
-            <Link to="/resume-analyzer" className="hover:text-blue-400">
-              Resume
-            </Link>
-
-            <Link to="/mock-interview" className="hover:text-blue-400">
-              Interview
-            </Link>
-
-            <Link to="/dashboard" className="hover:text-blue-400">
-              Dashboard
-            </Link>
-
-            <Link
-              to="/login"
-              className="col-span-2 bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 md:col-span-1"
-            >
-              Login
-            </Link>
+    <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200">
+      <div className="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2">
+          <div className="w-10 h-10 rounded-2xl gradient-btn flex items-center justify-center text-white">
+            <BrainCircuit size={22} />
           </div>
+          <span className="text-2xl font-black">
+            PrepGenius <span className="gradient-text">AI</span>
+          </span>
+        </Link>
+
+        <div className="hidden md:flex items-center gap-7 font-medium text-slate-600">
+          <Link to="/" className="hover:text-indigo-600">Home</Link>
+          <Link to="/resume-analyzer" className="hover:text-indigo-600">Resume</Link>
+          <Link to="/mock-interview" className="hover:text-indigo-600">Interview</Link>
+          <Link to="/dashboard" className="hover:text-indigo-600">Dashboard</Link>
+          <Link
+            to="/login"
+            className="gradient-btn text-white px-5 py-2 rounded-xl shadow-lg"
+          >
+            Login
+          </Link>
         </div>
       </div>
     </nav>
