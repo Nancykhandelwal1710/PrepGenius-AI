@@ -14,7 +14,7 @@ function Navbar() {
           </span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-7 font-medium text-slate-600">
+        <div className="flex flex-wrap justify-center items-center gap-3 text-sm font-medium text-slate-600">
           <Link to="/" className="hover:text-indigo-600">Home</Link>
           <Link to="/resume-analyzer" className="hover:text-indigo-600">Resume</Link>
           <Link to="/mock-interview" className="hover:text-indigo-600">Interview</Link>

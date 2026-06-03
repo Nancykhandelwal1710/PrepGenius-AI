@@ -39,7 +39,7 @@ function ResumeAnalyzer() {
       localStorage.setItem("resumeText", response.data.text);
     } catch (error) {
       console.error(error);
-      setText("Error extracting resume text");
+      setText("Error extracting resume text. Please check if the PDF is text-based and try again.");
     } finally {
       setLoading(false);
     }
