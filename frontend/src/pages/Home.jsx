@@ -65,6 +65,14 @@ function Home() {
             >
               Start Mock Interview
             </Link>
+             
+            <Link
+              to="/dashboard"
+              className="bg-white text-slate-800 px-8 py-4 rounded-2xl font-bold shadow border text-center"
+            >
+              Dashboard
+            </Link>
+
           </div>
         </div>
 

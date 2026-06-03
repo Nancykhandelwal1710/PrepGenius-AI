@@ -1,8 +1,20 @@
+import { useLocation, useNavigate } from "react-router-dom";
+
 function Login() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const redirectPath = location.state?.from || "/dashboard";
+
+  const handleLogin = () => {
+    localStorage.setItem("isLoggedIn", "true");
+    navigate(redirectPath);
+  };
+
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4">
-      <div className="bg-white w-full max-w-md rounded-3xl shadow-xl p-8">
-        <h1 className="text-3xl font-bold text-center mb-2">
+    <div className="min-h-screen gradient-bg flex items-center justify-center px-4">
+      <div className="soft-card w-full max-w-md rounded-3xl p-8">
+        <h1 className="text-4xl font-black text-center mb-2">
           Welcome Back
         </h1>
 
@@ -14,18 +26,19 @@ function Login() {
           <input
             type="email"
             placeholder="Email Address"
-            className="w-full border rounded-xl p-3"
+            className="w-full border border-slate-200 rounded-xl p-4 outline-none"
           />
 
           <input
             type="password"
             placeholder="Password"
-            className="w-full border rounded-xl p-3"
+            className="w-full border border-slate-200 rounded-xl p-4 outline-none"
           />
 
           <button
             type="button"
-            className="w-full bg-blue-600 text-white py-3 rounded-xl"
+            onClick={handleLogin}
+            className="w-full gradient-btn text-white py-4 rounded-xl font-bold"
           >
             Login
           </button>
