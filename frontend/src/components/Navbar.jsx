@@ -1,8 +1,17 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { BrainCircuit } from "lucide-react";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
 
 function Navbar() {
+  const navigate = useNavigate();
   const isLoggedIn = localStorage.getItem("isLoggedIn");
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    localStorage.removeItem("isLoggedIn");
+    navigate("/login");
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-slate-200">
@@ -20,20 +29,40 @@ function Navbar() {
           <Link to="/">Home</Link>
           <Link to="/dashboard">Dashboard</Link>
 
-          <Link
-            to="/login"
-            className="gradient-btn text-white px-5 py-2 rounded-xl shadow-lg"
-          >
-            {isLoggedIn ? "Account" : "Login"}
-          </Link>
+          {isLoggedIn ? (
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 text-white px-5 py-2 rounded-xl shadow-lg font-bold"
+            >
+              Logout
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              className="gradient-btn text-white px-5 py-2 rounded-xl shadow-lg"
+            >
+              Login
+            </Link>
+          )}
         </div>
 
-        <Link
-          to="/login"
-          className="md:hidden gradient-btn text-white px-5 py-2 rounded-xl font-bold shadow-lg"
-        >
-          {isLoggedIn ? "Account" : "Login"}
-        </Link>
+        <div className="md:hidden">
+          {isLoggedIn ? (
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 text-white px-5 py-2 rounded-xl font-bold shadow-lg"
+            >
+              Logout
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              className="gradient-btn text-white px-5 py-2 rounded-xl font-bold shadow-lg"
+            >
+              Login
+            </Link>
+          )}
+        </div>
       </div>
     </nav>
   );
