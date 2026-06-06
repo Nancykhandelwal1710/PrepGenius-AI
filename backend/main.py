@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import pdfplumber
 import os
+import json
+import re
 from dotenv import load_dotenv
 from google import genai
 
@@ -56,60 +58,155 @@ class InterviewRequest(BaseModel):
     resume_text: str = ""
     job_description: str = ""
 
+def fallback_ats_analysis(resume_text, job_description):
+    jd_words = re.findall(r"\b[a-zA-Z][a-zA-Z+#. ]{2,}\b", job_description.lower())
+    resume_lower = resume_text.lower()
+
+    stop_words = {
+        "we", "are", "hiring", "with", "and", "the", "for", "this", "that",
+        "candidate", "job", "role", "must", "have", "should", "will", "our",
+        "your", "you", "experience", "knowledge", "skills", "ability"
+    }
+
+    possible_skills = []
+
+    skill_phrases = [
+        "recruitment", "onboarding", "employee engagement", "communication",
+        "payroll coordination", "hr policy", "performance management",
+        "documentation", "conflict resolution", "ms excel", "excel",
+        "python", "java", "c++", "sql", "machine learning", "deep learning",
+        "aws", "cloud", "react", "javascript", "html", "css", "sales",
+        "marketing", "seo", "finance", "accounting", "teaching",
+        "classroom management", "lesson planning", "content writing",
+        "project management", "leadership", "customer service"
+    ]
+
+    for skill in skill_phrases:
+        if skill in job_description.lower():
+            possible_skills.append(skill.title())
+
+    possible_skills = list(dict.fromkeys(possible_skills))
+
+    matched = []
+    missing = []
+
+    for skill in possible_skills:
+        if skill.lower() in resume_lower:
+            matched.append(skill)
+        else:
+            missing.append(skill)
+
+    score = 0
+    if len(possible_skills) > 0:
+        score = round((len(matched) / len(possible_skills)) * 100, 2)
+
+    jd_lower = job_description.lower()
+
+    if "hr" in jd_lower or "recruitment" in jd_lower or "onboarding" in jd_lower:
+        domain = "Human Resources"
+    elif "marketing" in jd_lower or "seo" in jd_lower:
+        domain = "Marketing"
+    elif "finance" in jd_lower or "accounting" in jd_lower:
+        domain = "Finance"
+    elif "teacher" in jd_lower or "teaching" in jd_lower:
+        domain = "Teaching"
+    elif "python" in jd_lower or "machine learning" in jd_lower or "developer" in jd_lower:
+        domain = "Technology"
+    else:
+        domain = "General"
+
+    if "intern" in jd_lower or "fresher" in jd_lower or "entry" in jd_lower:
+        level = "Entry Level"
+    elif "senior" in jd_lower or "manager" in jd_lower:
+        level = "Senior Level"
+    else:
+        level = "Mid/General Level"
+
+    return {
+        "job_domain": domain,
+        "experience_level": level,
+        "ats_score": score,
+        "required_skills": possible_skills,
+        "matched_skills": matched,
+        "missing_skills": missing
+    }
 
 @app.post("/ats-score")
 def ats_score(data: ATSRequest):
+    print("ATS ROUTE HIT")
+    print("NEW UNIVERSAL ATS FUNCTION RUNNING")
 
-    skills = [
-        "python",
-        "java",
-        "c++",
-        "sql",
-        "aws",
-        "machine learning",
-        "deep learning",
-        "communication",
-        "problem solving",
-        "cloud",
-        "react",
-        "javascript",
-        "html",
-        "css",
-        "git",
-        "github",
-        "docker",
-        "kubernetes",
-        "tensorflow",
-        "pytorch"
-    ]
+    try:
+        prompt = f"""
+You are an ATS analyzer for all industries.
 
-    resume_text = data.resume_text.lower()
-    jd_text = data.job_description.lower()
+Analyze this job description and resume.
 
-    required_skills = []
-    matched_skills = []
-    missing_skills = []
+JOB DESCRIPTION:
+{data.job_description[:6000]}
 
-    for skill in skills:
-        if skill in jd_text:
-            required_skills.append(skill)
+RESUME:
+{data.resume_text[:6000]}
 
-            if skill in resume_text:
-                matched_skills.append(skill)
-            else:
-                missing_skills.append(skill)
+You must extract skills from the JOB DESCRIPTION first.
+Do not depend on any predefined skill list.
 
-    if len(required_skills) == 0:
-        score = 0
-    else:
-        score = round((len(matched_skills) / len(required_skills)) * 100, 2)
+For this job description, identify:
+1. job_domain
+2. experience_level
+3. required_skills from JD
+4. matched_skills found in resume
+5. missing_skills not found in resume
+6. ats_score out of 100
 
-    return {
-        "ats_score": score,
-        "matched_skills": matched_skills,
-        "missing_skills": missing_skills
-    }
+Return ONLY raw JSON.
+No markdown.
+No explanation.
 
+JSON format:
+{{
+  "job_domain": "",
+  "experience_level": "",
+  "ats_score": 0,
+  "required_skills": [],
+  "matched_skills": [],
+  "missing_skills": []
+}}
+"""
+
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt
+        )
+
+        raw_text = response.text.strip()
+        print("GEMINI RAW RESPONSE:", raw_text)
+
+        raw_text = raw_text.replace("```json", "").replace("```", "").strip()
+
+        json_match = re.search(r"\{.*\}", raw_text, re.DOTALL)
+
+        if json_match:
+            clean_json = json_match.group(0)
+            result = json.loads(clean_json)
+        else:
+            raise Exception("Gemini did not return valid JSON")
+
+        return {
+            "job_domain": result.get("job_domain", "Unknown"),
+            "experience_level": result.get("experience_level", "Unknown"),
+            "ats_score": result.get("ats_score", 0),
+            "required_skills": result.get("required_skills", []),
+            "matched_skills": result.get("matched_skills", []),
+            "missing_skills": result.get("missing_skills", [])
+        }
+
+    except Exception as e:
+        print("ATS ERROR:", str(e))
+        print("USING FALLBACK ATS ANALYSIS")
+
+        return fallback_ats_analysis(data.resume_text, data.job_description)
+    
 
 @app.post("/suggestions")
 def suggestions(data: ATSRequest):

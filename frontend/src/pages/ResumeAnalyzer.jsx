@@ -11,7 +11,11 @@ function ResumeAnalyzer() {
   const [atsScore, setAtsScore] = useState(null);
   const [matchedSkills, setMatchedSkills] = useState([]);
   const [missingSkills, setMissingSkills] = useState([]);
+  const [requiredSkills, setRequiredSkills] = useState([]);
+  const [jobDomain, setJobDomain] = useState("");
+  const [experienceLevel, setExperienceLevel] = useState("");
   const [suggestions, setSuggestions] = useState([]);
+  
 
   const handleUpload = async (e) => {
     const selectedFile = e.target.files[0];
@@ -23,6 +27,9 @@ function ResumeAnalyzer() {
     setMatchedSkills([]);
     setMissingSkills([]);
     setSuggestions([]);
+    setRequiredSkills([]);
+    setJobDomain("");
+    setExperienceLevel("");
 
     const formData = new FormData();
     formData.append("file", selectedFile);
@@ -56,8 +63,11 @@ function ResumeAnalyzer() {
       );
 
       setAtsScore(atsResponse.data.ats_score);
-      setMatchedSkills(atsResponse.data.matched_skills);
-      setMissingSkills(atsResponse.data.missing_skills);
+      setMatchedSkills(atsResponse.data.matched_skills || []);
+      setMissingSkills(atsResponse.data.missing_skills || []);
+      setRequiredSkills(atsResponse.data.required_skills || []);
+      setJobDomain(atsResponse.data.job_domain || "");
+      setExperienceLevel(atsResponse.data.experience_level || "");
       localStorage.setItem("atsScore", atsResponse.data.ats_score);
       localStorage.setItem(
         "matchedSkills",
@@ -162,6 +172,36 @@ function ResumeAnalyzer() {
                 className="h-6 bg-green-500 rounded-full"
                 style={{ width: `${atsScore}%` }}
               />
+            </div>
+            
+            {jobDomain && (
+              <div className="mb-8 bg-indigo-50 border border-indigo-200 rounded-xl p-5">
+                <p className="font-semibold text-indigo-800">
+                  Job Domain: {jobDomain}
+                </p>
+                <p className="font-semibold text-indigo-800">
+                  Experience Level: {experienceLevel}
+                </p>
+              </div>
+            )}
+
+            <h3 className="text-2xl font-semibold mb-4 text-indigo-700">
+              Required Skills
+            </h3>
+
+            <div className="flex flex-wrap gap-3 mb-8">
+              {requiredSkills.length > 0 ? (
+                requiredSkills.map((skill, index) => (
+                  <span
+                    key={index}
+                    className="bg-indigo-100 text-indigo-800 px-4 py-2 rounded-lg font-medium"
+                  >
+                    {skill}
+                  </span>
+                ))
+              ) : (
+                <p>No required skills found.</p>
+              )}
             </div>
 
             <h3 className="text-2xl font-semibold mb-4 text-green-700">
