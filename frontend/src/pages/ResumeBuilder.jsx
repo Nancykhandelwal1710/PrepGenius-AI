@@ -6,22 +6,25 @@ import {
   CheckCircle,
   AlertTriangle,
   FileText,
-  Copy,
 } from "lucide-react";
+
+import SummaryCard from "../components/resumeBuilder/SummaryCard";
 
 const API_URL = "https://prepgenius-backend-3841.onrender.com";
 
 function ResumeBuilder() {
   const [file, setFile] = useState(null);
+
   const [resumeText, setResumeText] = useState(
     localStorage.getItem("resumeText") || ""
   );
-  const [jobDescription, setJobDescription] = useState("");
 
+  const [jobDescription, setJobDescription] = useState("");
   const [extracting, setExtracting] = useState(false);
   const [tailoring, setTailoring] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
+  const [acceptedSummary, setAcceptedSummary] = useState("");
 
   const handleUpload = async (event) => {
     const selectedFile = event.target.files?.[0];
@@ -30,6 +33,7 @@ function ResumeBuilder() {
 
     setFile(selectedFile);
     setResult(null);
+    setAcceptedSummary("");
     setError("");
 
     const formData = new FormData();
@@ -49,6 +53,7 @@ function ResumeBuilder() {
       localStorage.setItem("resumeText", extractedText);
     } catch (uploadError) {
       console.error(uploadError);
+
       setError(
         "The resume could not be read. Upload a text-based PDF and try again."
       );
@@ -71,6 +76,7 @@ function ResumeBuilder() {
     try {
       setTailoring(true);
       setResult(null);
+      setAcceptedSummary("");
       setError("");
 
       const response = await axios.post(
@@ -89,19 +95,12 @@ function ResumeBuilder() {
       setResult(response.data);
     } catch (requestError) {
       console.error(requestError);
+
       setError(
         "The tailored resume could not be generated. Please try again."
       );
     } finally {
       setTailoring(false);
-    }
-  };
-
-  const copyText = async (content) => {
-    try {
-      await navigator.clipboard.writeText(content);
-    } catch (copyError) {
-      console.error(copyError);
     }
   };
 
@@ -118,8 +117,9 @@ function ResumeBuilder() {
           </h1>
 
           <p className="text-slate-300 mt-4 max-w-3xl leading-7">
-            Upload your resume and add a job description. PrepGenius will
-            rewrite relevant content without inventing experience or skills.
+            Upload your resume and add a job description. PrepGenius compares
+            the original content with a tailored version without inventing
+            experience, skills, or achievements.
           </p>
         </section>
 
@@ -140,11 +140,16 @@ function ResumeBuilder() {
                 <p className="text-sm text-blue-600 font-semibold">
                   Step 1
                 </p>
+
                 <h2 className="text-2xl font-bold">
                   Add your current resume
                 </h2>
               </div>
             </div>
+
+            <p className="text-sm text-slate-600 mb-5 leading-6">
+              Upload a text-based PDF resume or paste the content manually.
+            </p>
 
             <input
               type="file"
@@ -154,11 +159,14 @@ function ResumeBuilder() {
             />
 
             {file && (
-              <div className="mt-4 bg-slate-50 rounded-xl p-4">
+              <div className="mt-4 bg-slate-50 border border-slate-200 rounded-xl p-4">
                 <p className="text-xs text-slate-500">
                   Selected resume
                 </p>
-                <p className="font-medium">{file.name}</p>
+
+                <p className="font-medium mt-1">
+                  {file.name}
+                </p>
               </div>
             )}
 
@@ -177,7 +185,7 @@ function ResumeBuilder() {
               value={resumeText}
               onChange={(event) => setResumeText(event.target.value)}
               placeholder="Upload a PDF or paste your resume text here."
-              className="w-full border border-slate-300 rounded-xl p-4 text-sm"
+              className="w-full border border-slate-300 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -191,6 +199,7 @@ function ResumeBuilder() {
                 <p className="text-sm text-blue-600 font-semibold">
                   Step 2
                 </p>
+
                 <h2 className="text-2xl font-bold">
                   Add the target job
                 </h2>
@@ -198,8 +207,8 @@ function ResumeBuilder() {
             </div>
 
             <p className="text-sm text-slate-600 mb-5 leading-6">
-              Paste the complete job description so the system can understand
-              the role, required skills, and important keywords.
+              Paste the complete job description so PrepGenius can identify
+              the role, important skills, and relevant keywords.
             </p>
 
             <textarea
@@ -209,7 +218,7 @@ function ResumeBuilder() {
                 setJobDescription(event.target.value)
               }
               placeholder="Paste the job description here..."
-              className="w-full border border-slate-300 rounded-xl p-4 text-sm"
+              className="w-full border border-slate-300 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
             <button
@@ -219,6 +228,7 @@ function ResumeBuilder() {
               className="mt-5 w-full bg-blue-600 text-white py-4 rounded-xl font-semibold hover:bg-blue-700 disabled:bg-slate-400 inline-flex justify-center items-center gap-2"
             >
               <Sparkles size={20} />
+
               {tailoring
                 ? "Tailoring your resume..."
                 : "Tailor My Resume"}
@@ -234,133 +244,69 @@ function ResumeBuilder() {
               </p>
 
               <h2 className="text-3xl font-bold mt-1">
-                {result.target_role || "Role detected from job description"}
+                {result.target_role ||
+                  "Role detected from job description"}
               </h2>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-8">
-              <div className="bg-white rounded-3xl shadow p-8">
-                <div className="flex justify-between gap-4 mb-4">
-                  <div>
-                    <p className="text-sm text-blue-600 font-semibold">
-                      Tailored content
-                    </p>
-                    <h2 className="text-2xl font-bold">
-                      Professional summary
-                    </h2>
-                  </div>
+            <SummaryCard
+              summary={result.summary}
+              onAccept={setAcceptedSummary}
+            />
 
-                  <button
-                    type="button"
-                    onClick={() => copyText(result.summary || "")}
-                    className="text-slate-500 hover:text-blue-600"
-                    aria-label="Copy tailored summary"
-                  >
-                    <Copy size={20} />
-                  </button>
-                </div>
-
-                <textarea
-                  rows="8"
-                  value={result.summary || ""}
-                  onChange={(event) =>
-                    setResult({
-                      ...result,
-                      summary: event.target.value,
-                    })
-                  }
-                  className="w-full border border-slate-300 rounded-xl p-4 text-sm"
-                />
-              </div>
-
-              <div className="bg-white rounded-3xl shadow p-8">
-                <h2 className="text-2xl font-bold mb-2">
-                  Relevant skills
-                </h2>
-
-                <p className="text-sm text-slate-600 mb-5">
-                  Only skills supported by your original resume are included.
-                </p>
-
-                <div className="flex flex-wrap gap-3">
-                  {(result.skills || []).map((skill, index) => (
-                    <span
-                      key={`${skill}-${index}`}
-                      className="bg-green-100 text-green-800 px-4 py-2 rounded-lg text-sm font-medium"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="grid lg:grid-cols-2 gap-8">
-              <ListCard
-                title="Tailored project points"
-                items={result.projects}
-                positive
-              />
-
-              <ListCard
-                title="Tailored experience points"
-                items={result.experience}
-                positive
-              />
-            </div>
-
-            <div className="grid lg:grid-cols-2 gap-8">
-              <div className="bg-white rounded-3xl shadow p-8">
-                <div className="flex items-center gap-3 mb-5">
+            {acceptedSummary && (
+              <div className="bg-green-50 border border-green-200 rounded-2xl p-5">
+                <div className="flex items-center gap-3">
                   <CheckCircle className="text-green-600" />
-                  <h2 className="text-2xl font-bold">
-                    Matched keywords
-                  </h2>
-                </div>
 
-                <div className="flex flex-wrap gap-3">
-                  {(result.keywords || []).map((keyword, index) => (
-                    <span
-                      key={`${keyword}-${index}`}
-                      className="bg-green-100 text-green-800 px-4 py-2 rounded-lg text-sm"
-                    >
-                      {keyword}
-                    </span>
-                  ))}
+                  <div>
+                    <p className="font-semibold text-green-900">
+                      Professional summary accepted
+                    </p>
+
+                    <p className="text-sm text-green-700 mt-1">
+                      This version will be used in the final tailored resume.
+                    </p>
+                  </div>
                 </div>
               </div>
+            )}
 
-              <div className="bg-white rounded-3xl shadow p-8">
-                <div className="flex items-center gap-3 mb-5">
-                  <AlertTriangle className="text-amber-600" />
-                  <h2 className="text-2xl font-bold">
-                    Unsupported requirements
-                  </h2>
-                </div>
+            <SkillsComparison skills={result.skills} />
 
-                <p className="text-sm text-slate-600 mb-5">
-                  Do not add these unless you genuinely have the required
-                  knowledge or experience.
-                </p>
+            <div className="grid lg:grid-cols-2 gap-8">
+              <ComparisonListCard
+                title="Project improvements"
+                description="Compare original project content with the tailored version."
+                items={result.projects || []}
+              />
 
-                <div className="flex flex-wrap gap-3">
-                  {(result.missing_keywords || []).map(
-                    (keyword, index) => (
-                      <span
-                        key={`${keyword}-${index}`}
-                        className="bg-amber-100 text-amber-800 px-4 py-2 rounded-lg text-sm"
-                      >
-                        {keyword}
-                      </span>
-                    )
-                  )}
-                </div>
-              </div>
+              <ComparisonListCard
+                title="Experience improvements"
+                description="Review how your existing experience has been rewritten."
+                items={result.experience || []}
+              />
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-8">
+              <KeywordCard
+                title="Matched keywords"
+                description="These keywords are supported by your resume and the job description."
+                items={result.keywords || []}
+                type="matched"
+              />
+
+              <KeywordCard
+                title="Unsupported requirements"
+                description="Do not add these unless you genuinely have the skill or experience."
+                items={result.missing_keywords || []}
+                type="missing"
+              />
             </div>
 
             <ListCard
               title="What to improve before applying"
-              items={result.suggestions}
+              items={result.suggestions || []}
             />
           </section>
         )}
@@ -369,21 +315,222 @@ function ResumeBuilder() {
   );
 }
 
-function ListCard({ title, items = [], positive = false }) {
+function SkillsComparison({ skills }) {
+  const originalSkills = skills?.original || [];
+  const tailoredSkills = skills?.tailored || [];
+
   return (
     <div className="bg-white rounded-3xl shadow p-8">
-      <h2 className="text-2xl font-bold mb-5">{title}</h2>
+      <div className="mb-6">
+        <p className="text-sm text-blue-600 font-semibold mb-1">
+          Skills comparison
+        </p>
+
+        <h2 className="text-2xl font-bold">
+          Relevant skills
+        </h2>
+
+        <p className="text-sm text-slate-600 mt-2">
+          The tailored version reorders existing skills according to the
+          target job.
+        </p>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-6">
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+          <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-4">
+            Original skills
+          </p>
+
+          <div className="flex flex-wrap gap-3">
+            {originalSkills.length > 0 ? (
+              originalSkills.map((skill, index) => (
+                <span
+                  key={`original-${skill}-${index}`}
+                  className="bg-slate-200 text-slate-800 px-4 py-2 rounded-lg text-sm font-medium"
+                >
+                  {skill}
+                </span>
+              ))
+            ) : (
+              <p className="text-sm text-slate-500">
+                No original skills were detected.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-green-50 border border-green-200 rounded-2xl p-6">
+          <p className="text-xs uppercase tracking-wider text-green-700 font-semibold mb-4">
+            Tailored order
+          </p>
+
+          <div className="flex flex-wrap gap-3">
+            {tailoredSkills.length > 0 ? (
+              tailoredSkills.map((skill, index) => (
+                <span
+                  key={`tailored-${skill}-${index}`}
+                  className="bg-green-100 text-green-800 px-4 py-2 rounded-lg text-sm font-medium"
+                >
+                  {skill}
+                </span>
+              ))
+            ) : (
+              <p className="text-sm text-slate-500">
+                No tailored skills were generated.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {skills?.reason && (
+        <div className="mt-6 bg-amber-50 border border-amber-200 rounded-2xl p-5">
+          <p className="text-sm font-semibold text-amber-900 mb-1">
+            Why the order changed
+          </p>
+
+          <p className="text-sm text-amber-800 leading-6">
+            {skills.reason}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ComparisonListCard({
+  title,
+  description,
+  items = [],
+}) {
+  return (
+    <div className="bg-white rounded-3xl shadow p-8">
+      <h2 className="text-2xl font-bold mb-2">
+        {title}
+      </h2>
+
+      <p className="text-sm text-slate-600 mb-6">
+        {description}
+      </p>
+
+      {items.length > 0 ? (
+        <div className="space-y-6">
+          {items.map((item, index) => (
+            <div
+              key={index}
+              className="border border-slate-200 rounded-2xl p-5"
+            >
+              <div className="mb-5">
+                <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-2">
+                  Original
+                </p>
+
+                <p className="text-sm text-slate-700 leading-6 whitespace-pre-wrap">
+                  {item?.original ||
+                    "No original content was detected."}
+                </p>
+              </div>
+
+              <div className="bg-green-50 border border-green-100 rounded-xl p-4">
+                <p className="text-xs uppercase tracking-wider text-green-700 font-semibold mb-2">
+                  Tailored
+                </p>
+
+                <p className="text-sm text-green-900 leading-6 whitespace-pre-wrap">
+                  {item?.tailored ||
+                    "No tailored version was generated."}
+                </p>
+              </div>
+
+              {item?.reason && (
+                <div className="mt-4 bg-amber-50 rounded-xl p-4">
+                  <p className="text-sm text-amber-900">
+                    <span className="font-semibold">
+                      Why this changed:{" "}
+                    </span>
+
+                    {item.reason}
+                  </p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-slate-500">
+          No supported content was found for this section.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function KeywordCard({
+  title,
+  description,
+  items = [],
+  type,
+}) {
+  const isMatched = type === "matched";
+
+  return (
+    <div className="bg-white rounded-3xl shadow p-8">
+      <div className="flex items-center gap-3 mb-5">
+        {isMatched ? (
+          <CheckCircle className="text-green-600" />
+        ) : (
+          <AlertTriangle className="text-amber-600" />
+        )}
+
+        <h2 className="text-2xl font-bold">
+          {title}
+        </h2>
+      </div>
+
+      <p className="text-sm text-slate-600 mb-5">
+        {description}
+      </p>
+
+      <div className="flex flex-wrap gap-3">
+        {items.length > 0 ? (
+          items.map((item, index) => (
+            <span
+              key={`${item}-${index}`}
+              className={
+                isMatched
+                  ? "bg-green-100 text-green-800 px-4 py-2 rounded-lg text-sm"
+                  : "bg-amber-100 text-amber-800 px-4 py-2 rounded-lg text-sm"
+              }
+            >
+              {item}
+            </span>
+          ))
+        ) : (
+          <p className="text-sm text-slate-500">
+            {isMatched
+              ? "No matching keywords were found."
+              : "No unsupported requirements were detected."}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ListCard({ title, items = [] }) {
+  return (
+    <div className="bg-white rounded-3xl shadow p-8">
+      <h2 className="text-2xl font-bold mb-5">
+        {title}
+      </h2>
 
       {items.length > 0 ? (
         <div className="space-y-3">
           {items.map((item, index) => (
             <div
               key={`${index}-${item}`}
-              className={
-                positive
-                  ? "bg-green-50 border border-green-100 rounded-xl p-4 text-sm leading-6"
-                  : "bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm leading-6"
-              }
+              className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm leading-6 text-blue-900"
             >
               {item}
             </div>
@@ -391,7 +538,7 @@ function ListCard({ title, items = [], positive = false }) {
         </div>
       ) : (
         <p className="text-sm text-slate-500">
-          No supported content was found for this section.
+          No suggestions are available for this resume.
         </p>
       )}
     </div>

@@ -5,6 +5,8 @@ import pdfplumber
 import os
 import json
 import re
+import time
+import random
 from dotenv import load_dotenv
 from google import genai
 
@@ -349,59 +351,137 @@ Improvements:
 def tailor_resume(data: ResumeTailorRequest):
     try:
         prompt = f"""
-You are an expert ATS resume writer.
+You are an expert ATS resume editor.
 
-Tailor the candidate's resume for the supplied job description.
+Your task is to compare the candidate's original resume with the job
+description and produce honest, job-focused improvements.
 
 STRICT RULES:
-- Do not invent skills.
-- Do not invent experience.
-- Do not invent projects.
-- Do not invent certifications.
-- Do not invent numbers, results, or achievements.
-- Only rewrite information already present in the resume.
-- Missing job requirements must be listed separately as suggestions.
-- Keep the writing concise and ATS-friendly.
+- Never invent skills.
+- Never invent work experience.
+- Never invent projects.
+- Never invent certifications.
+- Never invent achievements, percentages, numbers, or results.
+- Only use facts already present in the original resume.
+- Preserve the candidate's meaning.
+- Keep writing concise and ATS-friendly.
+- If a requirement is not supported by the resume, put it only inside
+  "missing_keywords" or "suggestions".
+- Do not add unsupported requirements to the tailored resume.
 
-RESUME:
-{data.resume_text[:8000]}
+ORIGINAL RESUME:
+{data.resume_text[:10000]}
 
-JOB DESCRIPTION:
-{data.job_description[:5000]}
+TARGET JOB DESCRIPTION:
+{data.job_description[:6000]}
 
-Return a JSON object with exactly these fields:
+Return ONLY valid JSON using this exact structure:
 
 {{
-  "target_role": "Detected target role",
-  "summary": "Tailored professional summary",
-  "skills": ["Existing relevant skill"],
-  "projects": ["Rewritten project bullet"],
-  "experience": ["Rewritten experience bullet"],
-  "keywords": ["Relevant keyword found in both documents"],
-  "missing_keywords": ["Requirement not supported by resume"],
-  "suggestions": ["Honest improvement suggestion"]
+  "target_role": "Role detected from the job description",
+
+  "summary": {{
+    "original": "Original professional summary found in the resume, or a short truthful summary of the existing resume content",
+    "tailored": "Improved job-focused professional summary using only supported facts",
+    "reason": "Short explanation of what was improved"
+  }},
+
+  "skills": {{
+    "original": ["Skills already present in the resume"],
+    "tailored": ["Relevant existing skills reordered for this job"],
+    "reason": "Short explanation of why the skills were reordered"
+  }},
+
+  "projects": [
+    {{
+      "original": "Original project description or bullet",
+      "tailored": "Improved project description using only existing facts",
+      "reason": "Short explanation of the improvement"
+    }}
+  ],
+
+  "experience": [
+    {{
+      "original": "Original experience description or bullet",
+      "tailored": "Improved experience description using only existing facts",
+      "reason": "Short explanation of the improvement"
+    }}
+  ],
+
+  "keywords": [
+    "Relevant keyword supported by both the resume and job description"
+  ],
+
+  "missing_keywords": [
+    "Job requirement not supported by the original resume"
+  ],
+
+  "suggestions": [
+    "Honest improvement that does not fabricate information"
+  ]
 }}
 """
 
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-            config={
-                "response_mime_type": "application/json"
-            }
-        )
+        response = None
+        last_error = None
+        
+        for attempt in range(4):
+            try:
+                response = client.models.generate_content( 
+                    model="gemini-3.5-flash",
+                    contents=prompt,
+                    config={
+                        "response_mime_type": "application/json"
+                    }
+                )
+                break
+            except Exception as error:
+                last_error = error
+                error_text = str(error)
+
+                if "503" in error_text or "UNAVAILABLE" in error_text:
+                    if attempt < 3:
+                        wait_time = (2 ** attempt) + random.uniform(0, 1)
+                        time.sleep(wait_time)
+                        continue
+                
+                raise error
+        if response is None:
+            raise Exception(
+                "Server is temporarily busy. Please try again after a minute."
+            ) from last_error
+
 
         result = json.loads(response.text)
 
+        summary = result.get("summary", {})
+        skills = result.get("skills", {})
+
         return {
             "target_role": result.get("target_role", ""),
-            "summary": result.get("summary", ""),
-            "skills": result.get("skills", []),
+
+            "summary": {
+                "original": summary.get("original", ""),
+                "tailored": summary.get("tailored", ""),
+                "reason": summary.get("reason", "")
+            },
+
+            "skills": {
+                "original": skills.get("original", []),
+                "tailored": skills.get("tailored", []),
+                "reason": skills.get("reason", "")
+            },
+
             "projects": result.get("projects", []),
             "experience": result.get("experience", []),
             "keywords": result.get("keywords", []),
             "missing_keywords": result.get("missing_keywords", []),
-            "suggestions": result.get("suggestions", []),
+            "suggestions": result.get("suggestions", [])
+        }
+
+    except json.JSONDecodeError:
+        return {
+            "error": "The AI response was not valid JSON. Please try again."
         }
 
     except Exception as error:
