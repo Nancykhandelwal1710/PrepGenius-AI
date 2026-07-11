@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import ResumeAnalyzer from "./pages/ResumeAnalyzer";
 import MockInterview from "./pages/MockInterview";
 import Login from "./pages/Login";
+import ResumeBuilder from "./pages/ResumeBuilder";
 
 function App() {
   return (
@@ -43,6 +44,13 @@ function App() {
               <MockInterview />
             </ProtectedRoute>
           }
+        />
+
+        <Route 
+          path="/resume-builder" 
+          element={
+            <ResumeBuilder />
+          } 
         />
       </Routes>
     </>

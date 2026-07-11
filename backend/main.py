@@ -52,6 +52,9 @@ class ATSRequest(BaseModel):
     resume_text: str
     job_description: str
 
+class ResumeTailorRequest(BaseModel):
+    resume_text: str
+    job_description: str
 
 class InterviewRequest(BaseModel):
     role: str
@@ -341,5 +344,68 @@ Improvements:
     except Exception as e:
         return {
             "error": str(e)
+        }
+@app.post("/tailor-resume")
+def tailor_resume(data: ResumeTailorRequest):
+    try:
+        prompt = f"""
+You are an expert ATS resume writer.
+
+Tailor the candidate's resume for the supplied job description.
+
+STRICT RULES:
+- Do not invent skills.
+- Do not invent experience.
+- Do not invent projects.
+- Do not invent certifications.
+- Do not invent numbers, results, or achievements.
+- Only rewrite information already present in the resume.
+- Missing job requirements must be listed separately as suggestions.
+- Keep the writing concise and ATS-friendly.
+
+RESUME:
+{data.resume_text[:8000]}
+
+JOB DESCRIPTION:
+{data.job_description[:5000]}
+
+Return a JSON object with exactly these fields:
+
+{{
+  "target_role": "Detected target role",
+  "summary": "Tailored professional summary",
+  "skills": ["Existing relevant skill"],
+  "projects": ["Rewritten project bullet"],
+  "experience": ["Rewritten experience bullet"],
+  "keywords": ["Relevant keyword found in both documents"],
+  "missing_keywords": ["Requirement not supported by resume"],
+  "suggestions": ["Honest improvement suggestion"]
+}}
+"""
+
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+            config={
+                "response_mime_type": "application/json"
+            }
+        )
+
+        result = json.loads(response.text)
+
+        return {
+            "target_role": result.get("target_role", ""),
+            "summary": result.get("summary", ""),
+            "skills": result.get("skills", []),
+            "projects": result.get("projects", []),
+            "experience": result.get("experience", []),
+            "keywords": result.get("keywords", []),
+            "missing_keywords": result.get("missing_keywords", []),
+            "suggestions": result.get("suggestions", []),
+        }
+
+    except Exception as error:
+        return {
+            "error": str(error)
         }
     

@@ -45,6 +45,10 @@ function Navbar() {
           <Link to="/resume-analyzer" className={linkClass("/resume-analyzer")}>
             Resume Analyzer
           </Link>
+          
+          <Link to="/resume-builder" className={linkClass("/resume-builder")}>
+            Resume Builder
+          </Link>
 
           <Link to="/mock-interview" className={linkClass("/mock-interview")}>
             Mock Interview
@@ -112,6 +116,10 @@ function Navbar() {
 
         <Link to="/dashboard" className={linkClass("/dashboard")}>
           Dashboard
+        </Link>
+
+        <Link to="/resume-builder" className={linkClass("/resume-builder")}>
+          Builder
         </Link>
       </div>
     </nav>

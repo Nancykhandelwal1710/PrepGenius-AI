@@ -8,6 +8,8 @@ import {
   Clock,
   ArrowRight,
   RotateCcw,
+  Volume2,
+  Radio,
 } from "lucide-react";
 
 const API_URL = "https://prepgenius-backend-3841.onrender.com";
@@ -25,6 +27,7 @@ function MockInterview() {
   const [feedback, setFeedback] = useState("");
   const [score, setScore] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [listening, setListening] = useState(false);
 
   const generateQuestions = async () => {
     if (!role.trim()) {
@@ -58,14 +61,75 @@ function MockInterview() {
     }
   };
 
+  const speakQuestion = () => {
+    if (!questions[currentIndex]) return;
+
+    window.speechSynthesis.cancel();
+
+    const speech = new SpeechSynthesisUtterance(questions[currentIndex]);
+    speech.lang = "en-US";
+    speech.rate = 0.9;
+    speech.pitch = 1;
+
+    window.speechSynthesis.speak(speech);
+  };
+
+  const startVoiceAnswer = () => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Speech recognition is not supported in this browser. Please use Chrome.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    setListening(true);
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+
+
+      
+
+      setAnswer((prev) => {
+        if (!prev) return transcript;
+        return `${prev} ${transcript}`;
+      });
+    };
+
+    recognition.onerror = (event) => {
+      console.error(event.error);
+      setListening(false);
+      alert("Voice input stopped. Please try again.");
+    };
+
+    recognition.onend = () => {
+      setListening(false);
+    };
+
+    recognition.start();
+  };
+
   const submitAnswer = () => {
     let newScore = 0;
     let newFeedback = "";
 
+    const fillerWords = ["um", "uh", "like", "actually", "basically"];
+    const lowerAnswer = answer.toLowerCase();
+
+    const fillerCount = fillerWords.reduce((count, word) => {
+      return count + (lowerAnswer.split(word).length - 1);
+    }, 0);
+
     if (answer.length < 40) {
       newScore = 4;
       newFeedback =
-        "Your answer is too short. Add context, one example, and explain the result.";
+        "Your answer is short. Add context, one project example, and explain the result.";
     } else if (answer.length < 130) {
       newScore = 7;
       newFeedback =
@@ -74,6 +138,11 @@ function MockInterview() {
       newScore = 9;
       newFeedback =
         "Strong answer. You explained clearly, added detail, and sounded interview-ready.";
+    }
+
+    if (fillerCount > 3) {
+      newScore = Math.max(3, newScore - 1);
+      newFeedback += " Try reducing filler words like um, uh, like, and basically.";
     }
 
     setScore(newScore);
@@ -86,6 +155,7 @@ function MockInterview() {
     setAnswer("");
     setFeedback("");
     setScore(null);
+    window.speechSynthesis.cancel();
   };
 
   const restartInterview = () => {
@@ -93,6 +163,7 @@ function MockInterview() {
     setAnswer("");
     setFeedback("");
     setScore(null);
+    window.speechSynthesis.cancel();
   };
 
   const progress =
@@ -110,28 +181,26 @@ function MockInterview() {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
               <p className="text-sm uppercase tracking-widest text-blue-300 mb-3">
-                Mock Interview
+                AI Voice Mock Interview
               </p>
 
               <h1 className="text-4xl md:text-5xl font-bold">
-                Practice interviews with role-based questions
+                Practice interviews by speaking your answers
               </h1>
 
               <p className="text-slate-300 mt-4 max-w-3xl leading-7">
-                Generate interview questions from your target role, resume, and
-                job description. Practice structured answers before real interviews.
+                Generate role-based questions, listen to them aloud, answer by
+                voice, and get quick feedback on clarity, detail, and confidence.
               </p>
             </div>
 
             <div className="bg-white/10 border border-white/10 rounded-2xl p-5 min-w-[220px]">
-              <p className="text-sm text-slate-300">Preparation status</p>
+              <p className="text-sm text-slate-300">Voice mode</p>
               <h2 className="text-3xl font-bold mt-2">
-                {questions.length > 0 ? `${Math.round(progress)}%` : "Ready"}
+                {listening ? "Listening..." : "Ready"}
               </h2>
               <p className="text-sm text-slate-400 mt-1">
-                {questions.length > 0
-                  ? "Interview in progress"
-                  : "Start with your role"}
+                Works best in Chrome
               </p>
             </div>
           </div>
@@ -143,30 +212,21 @@ function MockInterview() {
               <Target />
             </div>
 
-            <h2 className="text-2xl font-bold mb-4">Interview Guide</h2>
+            <h2 className="text-2xl font-bold mb-4">Voice Interview Guide</h2>
 
             <div className="space-y-4">
               {[
+                "Listen to the question first.",
+                "Answer naturally like a real interview.",
                 "Use one real project example.",
-                "Mention tools and technologies.",
-                "Explain your role clearly.",
-                "Add result or impact.",
-                "Keep answers structured.",
+                "Mention tools and impact.",
+                "Avoid too many filler words.",
               ].map((tip, index) => (
                 <div key={index} className="flex gap-3">
                   <CheckCircle className="text-green-600 mt-1" size={18} />
                   <p className="text-sm text-slate-700 leading-6">{tip}</p>
                 </div>
               ))}
-            </div>
-
-            <div className="mt-8 bg-slate-50 rounded-2xl p-5">
-              <p className="text-sm font-semibold text-slate-900 mb-2">
-                Quick method
-              </p>
-              <p className="text-sm text-slate-600 leading-6">
-                Answer using: Situation → Work done → Tools used → Result.
-              </p>
             </div>
           </div>
 
@@ -181,7 +241,7 @@ function MockInterview() {
                   Interview Setup
                 </p>
                 <h2 className="text-2xl font-bold">
-                  Tell PrepGenius what you are preparing for
+                  Set your interview target
                 </h2>
               </div>
             </div>
@@ -227,7 +287,7 @@ function MockInterview() {
               disabled={loading}
               className="w-full bg-blue-600 text-white px-8 py-4 rounded-xl font-semibold hover:bg-blue-700 disabled:bg-slate-400"
             >
-              {loading ? "Preparing questions..." : "Generate Interview"}
+              {loading ? "Preparing questions..." : "Generate Voice Interview"}
             </button>
           </div>
         </div>
@@ -240,12 +300,12 @@ function MockInterview() {
                   Question {currentIndex + 1} of {questions.length}
                 </p>
 
-                <h2 className="text-3xl font-bold">Interview Practice</h2>
+                <h2 className="text-3xl font-bold">Verbal Answer Practice</h2>
               </div>
 
               <div className="flex items-center gap-2 text-sm text-slate-500">
                 <Clock size={18} />
-                Write a clear answer before moving ahead
+                Speak clearly and naturally
               </div>
             </div>
 
@@ -264,26 +324,47 @@ function MockInterview() {
               <p className="text-xl leading-9">
                 {questions[currentIndex]}
               </p>
+
+              <button
+                onClick={speakQuestion}
+                className="mt-6 bg-white text-slate-950 px-5 py-3 rounded-xl font-semibold inline-flex items-center gap-2"
+              >
+                <Volume2 size={18} />
+                Speak Question
+              </button>
             </div>
 
             <label className="block text-sm font-semibold mb-2">
-              Your answer
+              Your spoken answer
             </label>
 
             <textarea
               rows="8"
-              placeholder="Write your answer here. Try to include a project, tools used, and result."
+              placeholder="Your spoken answer will appear here. You can also type or edit it manually."
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
               className="w-full border border-slate-300 rounded-xl p-4 text-sm"
             />
 
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-4">
-              <p className="text-sm text-slate-500">
-                Characters: {answer.length}
-              </p>
+              <div>
+                <p className="text-sm text-slate-500">
+                  Characters: {answer.length}
+                </p>
+                <p className="text-sm text-slate-500">
+                  Status: {listening ? "Listening to your answer..." : "Not recording"}
+                </p>
+              </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={startVoiceAnswer}
+                  className="bg-indigo-600 text-white px-7 py-3 rounded-xl font-semibold hover:bg-indigo-700 inline-flex items-center justify-center gap-2"
+                >
+                  <Radio size={18} />
+                  Start Speaking
+                </button>
+
                 <button
                   onClick={submitAnswer}
                   className="bg-green-600 text-white px-7 py-3 rounded-xl font-semibold hover:bg-green-700"
@@ -315,13 +396,13 @@ function MockInterview() {
 
                   <div className="mt-5">
                     <p className="text-sm font-semibold text-blue-900 mb-2">
-                      Improve by adding:
+                      Voice interview focus:
                     </p>
 
                     <ul className="text-sm text-blue-900 space-y-2">
-                      <li>• One project example</li>
-                      <li>• Technologies used</li>
-                      <li>• Result or measurable outcome</li>
+                      <li>• Speak in complete sentences</li>
+                      <li>• Avoid repeated filler words</li>
+                      <li>• Mention tools, example, and impact</li>
                     </ul>
                   </div>
                 </div>
@@ -336,7 +417,7 @@ function MockInterview() {
                   </p>
 
                   <p className="text-sm text-green-700 mt-3">
-                    Based on answer clarity and detail.
+                    Based on answer length, clarity, and filler words.
                   </p>
                 </div>
               </div>
@@ -345,7 +426,7 @@ function MockInterview() {
             {completed && (
               <div className="mt-8 bg-slate-950 text-white rounded-3xl p-8">
                 <h3 className="text-3xl font-bold">
-                  Interview practice completed
+                  Voice interview completed
                 </h3>
 
                 <p className="text-slate-300 mt-3 max-w-2xl leading-7">
