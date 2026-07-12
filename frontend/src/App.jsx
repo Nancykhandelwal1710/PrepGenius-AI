@@ -9,6 +9,7 @@ import ResumeAnalyzer from "./pages/ResumeAnalyzer";
 import MockInterview from "./pages/MockInterview";
 import Login from "./pages/Login";
 import ResumeBuilder from "./pages/ResumeBuilder";
+import ResumePreview from "./pages/ResumePreview";
 
 function App() {
   return (
@@ -50,6 +51,12 @@ function App() {
           path="/resume-builder" 
           element={
             <ResumeBuilder />
+          } 
+        />
+        <Route 
+          path="/resume-preview" 
+          element={
+            <ResumePreview />
           } 
         />
       </Routes>

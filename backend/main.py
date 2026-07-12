@@ -7,6 +7,9 @@ import json
 import re
 import time
 import random
+from io import BytesIO
+from docx import Document
+from fastapi import File, UploadFile, HTTPException
 from dotenv import load_dotenv
 from google import genai
 
@@ -62,6 +65,12 @@ class InterviewRequest(BaseModel):
     role: str
     resume_text: str = ""
     job_description: str = ""
+
+class ResumeHealthRequest(BaseModel):
+    resume_text: str
+    ats_score: int = 0
+    matched_skills: list[str] = []
+    missing_skills: list[str] = []
 
 def fallback_ats_analysis(resume_text, job_description):
     jd_words = re.findall(r"\b[a-zA-Z][a-zA-Z+#. ]{2,}\b", job_description.lower())
@@ -488,4 +497,186 @@ Return ONLY valid JSON using this exact structure:
         return {
             "error": str(error)
         }
+@app.post("/extract-docx")
+async def extract_docx(file: UploadFile = File(...)):
+    filename = file.filename or ""
+
+    if not filename.lower().endswith(".docx"):
+        raise HTTPException(
+            status_code=400,
+            detail="Please upload a DOCX file."
+        )
+
+    try:
+        file_content = await file.read()
+
+        if not file_content:
+            raise HTTPException(
+                status_code=400,
+                detail="The uploaded file is empty."
+            )
+
+        document = Document(BytesIO(file_content))
+
+        paragraphs = []
+
+        for index, paragraph in enumerate(document.paragraphs):
+            text = paragraph.text.strip()
+
+            if text:
+                paragraphs.append({
+                    "index": index,
+                    "text": text,
+                    "style": paragraph.style.name
+                    if paragraph.style
+                    else "Normal",
+                    "run_count": len(paragraph.runs),
+                })
+
+        tables = []
+
+        for table_index, table in enumerate(document.tables):
+            rows = []
+
+            for row_index, row in enumerate(table.rows):
+                cells = []
+
+                for cell_index, cell in enumerate(row.cells):
+                    cells.append({
+                        "cell_index": cell_index,
+                        "text": cell.text.strip(),
+                    })
+
+                rows.append({
+                    "row_index": row_index,
+                    "cells": cells,
+                })
+
+            tables.append({
+                "table_index": table_index,
+                "rows": rows,
+            })
+
+        full_text = []
+
+        for item in paragraphs:
+            full_text.append(item["text"])
+
+        for table in tables:
+            for row in table["rows"]:
+                for cell in row["cells"]:
+                    if cell["text"]:
+                        full_text.append(cell["text"])
+
+        return {
+            "filename": filename,
+            "paragraph_count": len(document.paragraphs),
+            "non_empty_paragraph_count": len(paragraphs),
+            "table_count": len(document.tables),
+            "paragraphs": paragraphs,
+            "tables": tables,
+            "full_text": "\n".join(full_text),
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception as error:
+        print("DOCX extraction error:", error)
+
+        raise HTTPException(
+            status_code=500,
+            detail="The DOCX file could not be read."
+        )
     
+@app.post("/resume-health")
+async def resume_health(data: ResumeHealthRequest):
+
+    text = data.resume_text.lower()
+
+    # ---------- Summary ----------
+    summary_score = 95 if len(text) > 600 else 75
+
+    # ---------- Projects ----------
+    project_keywords = [
+        "project",
+        "developed",
+        "built",
+        "implemented",
+        "created",
+    ]
+
+    project_score = 70
+
+    for word in project_keywords:
+        if word in text:
+            project_score += 5
+
+    project_score = min(project_score, 100)
+
+    # ---------- Skills ----------
+    total = len(data.matched_skills) + len(data.missing_skills)
+
+    if total == 0:
+        skills_score = 70
+    else:
+        skills_score = int(
+            len(data.matched_skills) / total * 100
+        )
+
+    # ---------- Action Verbs ----------
+
+    action_verbs = [
+        "developed",
+        "designed",
+        "implemented",
+        "optimized",
+        "engineered",
+        "built",
+        "created",
+        "deployed",
+        "integrated",
+        "improved",
+    ]
+
+    count = 0
+
+    for verb in action_verbs:
+        if verb in text:
+            count += 1
+
+    action_score = min(100, 50 + count * 8)
+
+    # ---------- Achievements ----------
+
+    numbers = len(re.findall(r"\d+", text))
+
+    achievement_score = min(100, 60 + numbers * 5)
+
+    # ---------- Grammar ----------
+
+    grammar_score = 95
+
+    overall = int(
+        (
+            data.ats_score
+            + summary_score
+            + project_score
+            + skills_score
+            + action_score
+            + achievement_score
+            + grammar_score
+        )
+        / 7
+    )
+
+    return {
+        "overall": overall,
+        "ats": data.ats_score,
+        "summary": summary_score,
+        "projects": project_score,
+        "skills": skills_score,
+        "grammar": grammar_score,
+        "action_verbs": action_score,
+        "achievements": achievement_score,
+    }

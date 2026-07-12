@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-const API_URL = "https://prepgenius-backend-3841.onrender.com";
+const API_URL = "http://127.0.0.1:8000";
 
 function ResumeAnalyzer() {
   const [file, setFile] = useState(null);
@@ -16,6 +16,7 @@ function ResumeAnalyzer() {
   const [jobDomain, setJobDomain] = useState("");
   const [experienceLevel, setExperienceLevel] = useState("");
   const [suggestions, setSuggestions] = useState([]);
+  const [health, setHealth] = useState(null);
 
   const handleUpload = async (e) => {
     const selectedFile = e.target.files[0];
@@ -69,6 +70,18 @@ function ResumeAnalyzer() {
       setRequiredSkills(atsResponse.data.required_skills || []);
       setJobDomain(atsResponse.data.job_domain || "");
       setExperienceLevel(atsResponse.data.experience_level || "");
+      
+      const healthResponse = await axios.post(
+        `${API_URL}/resume-health`,
+        {
+          resume_text: text,
+          ats_score: atsResponse.data.ats_score,
+          matched_skills: atsResponse.data.matched_skills || [],
+          missing_skills: atsResponse.data.missing_skills || [],
+        }
+      );
+
+      setHealth(healthResponse.data);
 
       localStorage.setItem("atsScore", atsResponse.data.ats_score);
       localStorage.setItem(
@@ -202,6 +215,36 @@ function ResumeAnalyzer() {
 
         {atsScore !== null && (
           <div className="bg-white rounded-3xl shadow p-8">
+            {health && (
+              <div className="bg-slate-50 rounded-2xl p-6 mb-8">
+
+                <p className="text-sm text-blue-600 font-semibold">
+                  Resume Health
+                </p>
+
+                <h2 className="text-3xl font-bold mt-2">
+                  {health.overall}/100
+                </h2>
+
+                <div className="w-full bg-slate-200 rounded-full h-5 mt-5 overflow-hidden">
+                  <div
+                    className="h-5 bg-green-500 rounded-full"
+                    style={{ width: `${health.overall}%` }}
+                  />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6 mt-8">
+                  <HealthBar title="ATS Compatibility" value={health.ats} />
+                  <HealthBar title="Summary" value={health.summary} />
+                  <HealthBar title="Projects" value={health.projects} />
+                  <HealthBar title="Skills" value={health.skills} />
+                  <HealthBar title="Grammar" value={health.grammar} />
+                  <HealthBar title="Action Verbs" value={health.action_verbs} />
+                  <HealthBar title="Achievements" value={health.achievements} />
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
               <div>
                 <p className="text-sm text-blue-600 font-semibold">
@@ -337,6 +380,38 @@ function ResumeAnalyzer() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function HealthBar({ title, value }) {
+
+  return (
+    <div>
+
+      <div className="flex justify-between mb-2">
+
+        <span className="font-medium">
+          {title}
+        </span>
+
+        <span className="font-semibold">
+          {value}%
+        </span>
+
+      </div>
+
+      <div className="w-full bg-slate-200 rounded-full h-3">
+
+        <div
+          className="bg-blue-600 h-3 rounded-full"
+          style={{
+            width: `${value}%`,
+          }}
+        />
+
+      </div>
+
     </div>
   );
 }

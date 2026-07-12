@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   Upload,
@@ -6,13 +7,16 @@ import {
   CheckCircle,
   AlertTriangle,
   FileText,
+  Pencil,
+  Plus,
+  Trash2,
+  Save,
 } from "lucide-react";
-
-import SummaryCard from "../components/resumeBuilder/SummaryCard";
 
 const API_URL = "https://prepgenius-backend-3841.onrender.com";
 
 function ResumeBuilder() {
+  const navigate = useNavigate();
   const [file, setFile] = useState(null);
 
   const [resumeText, setResumeText] = useState(
@@ -24,7 +28,15 @@ function ResumeBuilder() {
   const [tailoring, setTailoring] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
-  const [acceptedSummary, setAcceptedSummary] = useState("");
+
+  const [editedResume, setEditedResume] = useState({
+    summary: "",
+    skills: [],
+    projects: [],
+    experience: [],
+  });
+
+  const [saved, setSaved] = useState(false);
 
   const handleUpload = async (event) => {
     const selectedFile = event.target.files?.[0];
@@ -33,7 +45,7 @@ function ResumeBuilder() {
 
     setFile(selectedFile);
     setResult(null);
-    setAcceptedSummary("");
+    setSaved(false);
     setError("");
 
     const formData = new FormData();
@@ -76,7 +88,7 @@ function ResumeBuilder() {
     try {
       setTailoring(true);
       setResult(null);
-      setAcceptedSummary("");
+      setSaved(false);
       setError("");
 
       const response = await axios.post(
@@ -92,7 +104,20 @@ function ResumeBuilder() {
         return;
       }
 
-      setResult(response.data);
+      const generatedResult = response.data;
+
+      setResult(generatedResult);
+
+      setEditedResume({
+        summary: generatedResult.summary?.tailored || "",
+        skills: generatedResult.skills?.tailored || [],
+        projects: (generatedResult.projects || []).map(
+          (item) => item.tailored || ""
+        ),
+        experience: (generatedResult.experience || []).map(
+          (item) => item.tailored || ""
+        ),
+      });
     } catch (requestError) {
       console.error(requestError);
 
@@ -104,6 +129,92 @@ function ResumeBuilder() {
     }
   };
 
+  const updateProject = (index, value) => {
+    setEditedResume((previous) => {
+      const updatedProjects = [...previous.projects];
+      updatedProjects[index] = value;
+
+      return {
+        ...previous,
+        projects: updatedProjects,
+      };
+    });
+
+    setSaved(false);
+  };
+
+  const addProject = () => {
+    setEditedResume((previous) => ({
+      ...previous,
+      projects: [...previous.projects, ""],
+    }));
+
+    setSaved(false);
+  };
+
+  const removeProject = (index) => {
+    setEditedResume((previous) => ({
+      ...previous,
+      projects: previous.projects.filter(
+        (_, projectIndex) => projectIndex !== index
+      ),
+    }));
+
+    setSaved(false);
+  };
+
+  const updateExperience = (index, value) => {
+    setEditedResume((previous) => {
+      const updatedExperience = [...previous.experience];
+      updatedExperience[index] = value;
+
+      return {
+        ...previous,
+        experience: updatedExperience,
+      };
+    });
+
+    setSaved(false);
+  };
+
+  const addExperience = () => {
+    setEditedResume((previous) => ({
+      ...previous,
+      experience: [...previous.experience, ""],
+    }));
+
+    setSaved(false);
+  };
+
+  const removeExperience = (index) => {
+    setEditedResume((previous) => ({
+      ...previous,
+      experience: previous.experience.filter(
+        (_, experienceIndex) => experienceIndex !== index
+      ),
+    }));
+
+    setSaved(false);
+  };
+
+  const saveFinalResume = () => {
+    const finalResume = {
+      targetRole: result?.target_role || "",
+      summary: editedResume.summary,
+      skills: editedResume.skills,
+      projects: editedResume.projects.filter((item) => item.trim()),
+      experience: editedResume.experience.filter((item) => item.trim()),
+    };
+
+    localStorage.setItem(
+      "tailoredResume",
+      JSON.stringify(finalResume)
+    );
+
+    setSaved(true);
+  };
+  
+
   return (
     <div className="min-h-screen bg-slate-100 px-4 py-10">
       <div className="max-w-7xl mx-auto">
@@ -113,13 +224,12 @@ function ResumeBuilder() {
           </p>
 
           <h1 className="text-4xl md:text-5xl font-bold max-w-4xl">
-            Tailor your existing resume for a specific job
+            Build a job-focused version of your resume
           </h1>
 
           <p className="text-slate-300 mt-4 max-w-3xl leading-7">
-            Upload your resume and add a job description. PrepGenius compares
-            the original content with a tailored version without inventing
-            experience, skills, or achievements.
+            Upload your resume, add a job description, review the AI changes,
+            and edit every section before creating the final version.
           </p>
         </section>
 
@@ -147,10 +257,6 @@ function ResumeBuilder() {
               </div>
             </div>
 
-            <p className="text-sm text-slate-600 mb-5 leading-6">
-              Upload a text-based PDF resume or paste the content manually.
-            </p>
-
             <input
               type="file"
               accept=".pdf"
@@ -164,9 +270,7 @@ function ResumeBuilder() {
                   Selected resume
                 </p>
 
-                <p className="font-medium mt-1">
-                  {file.name}
-                </p>
+                <p className="font-medium mt-1">{file.name}</p>
               </div>
             )}
 
@@ -206,18 +310,13 @@ function ResumeBuilder() {
               </div>
             </div>
 
-            <p className="text-sm text-slate-600 mb-5 leading-6">
-              Paste the complete job description so PrepGenius can identify
-              the role, important skills, and relevant keywords.
-            </p>
-
             <textarea
               rows="18"
               value={jobDescription}
               onChange={(event) =>
                 setJobDescription(event.target.value)
               }
-              placeholder="Paste the job description here..."
+              placeholder="Paste the complete job description here..."
               className="w-full border border-slate-300 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
@@ -249,65 +348,175 @@ function ResumeBuilder() {
               </h2>
             </div>
 
-            <SummaryCard
-              summary={result.summary}
-              onAccept={setAcceptedSummary}
-            />
+            <div className="bg-white rounded-3xl shadow p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <Pencil className="text-blue-600" />
 
-            {acceptedSummary && (
-              <div className="bg-green-50 border border-green-200 rounded-2xl p-5">
-                <div className="flex items-center gap-3">
-                  <CheckCircle className="text-green-600" />
+                <div>
+                  <p className="text-sm text-blue-600 font-semibold">
+                    Final Resume Editor
+                  </p>
+
+                  <h2 className="text-3xl font-bold">
+                    Review and edit every section
+                  </h2>
+                </div>
+              </div>
+
+              <div className="space-y-10">
+                <ComparisonEditor
+                  title="Professional Summary"
+                  original={
+                    result.summary?.original ||
+                    "No original summary detected."
+                  }
+                  reason={result.summary?.reason}
+                >
+                  <textarea
+                    rows="8"
+                    value={editedResume.summary}
+                    onChange={(event) => {
+                      setEditedResume((previous) => ({
+                        ...previous,
+                        summary: event.target.value,
+                      }));
+
+                      setSaved(false);
+                    }}
+                    className="w-full border border-slate-300 rounded-xl p-4 text-sm leading-7 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </ComparisonEditor>
+
+                <ComparisonEditor
+                  title="Skills"
+                  original={
+                    (result.skills?.original || []).join(", ") ||
+                    "No original skills detected."
+                  }
+                  reason={result.skills?.reason}
+                >
+                  <textarea
+                    rows="5"
+                    value={editedResume.skills.join(", ")}
+                    onChange={(event) => {
+                      const skills = event.target.value
+                        .split(",")
+                        .map((skill) => skill.trim())
+                        .filter(Boolean);
+
+                      setEditedResume((previous) => ({
+                        ...previous,
+                        skills,
+                      }));
+
+                      setSaved(false);
+                    }}
+                    placeholder="Python, FastAPI, React, SQL"
+                    className="w-full border border-slate-300 rounded-xl p-4 text-sm leading-7 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+
+                  <p className="text-xs text-slate-500 mt-2">
+                    Separate each skill using a comma.
+                  </p>
+                </ComparisonEditor>
+
+                <EditableListSection
+                  title="Projects"
+                  originalItems={(result.projects || []).map(
+                    (item) => item.original || ""
+                  )}
+                  editedItems={editedResume.projects}
+                  onUpdate={updateProject}
+                  onAdd={addProject}
+                  onRemove={removeProject}
+                />
+
+                <EditableListSection
+                  title="Experience"
+                  originalItems={(result.experience || []).map(
+                    (item) => item.original || ""
+                  )}
+                  editedItems={editedResume.experience}
+                  onUpdate={updateExperience}
+                  onAdd={addExperience}
+                  onRemove={removeExperience}
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={saveFinalResume}
+                className="mt-10 w-full bg-green-600 text-white py-4 rounded-xl font-semibold hover:bg-green-700 inline-flex items-center justify-center gap-2"
+              >
+                <Save size={20} />
+                Save Final Resume
+              </button>
+
+              {saved && (
+                <button
+                  type="button"
+                  onClick={() => navigate("/resume-preview")}
+                  className="mt-4 w-full bg-slate-900 text-white py-4 rounded-xl font-semibold hover:bg-slate-800"
+                >
+                  Preview & Download Resume
+                </button>
+              )}
+              
+              {saved && (
+                <div className="mt-5 bg-green-50 border border-green-200 rounded-xl p-5 flex gap-3">
+                  <CheckCircle className="text-green-600 shrink-0" />
 
                   <div>
                     <p className="font-semibold text-green-900">
-                      Professional summary accepted
+                      Final resume saved
                     </p>
 
                     <p className="text-sm text-green-700 mt-1">
-                      This version will be used in the final tailored resume.
+                      Your edited content is ready for resume preview and
+                      download.
                     </p>
                   </div>
                 </div>
-              </div>
-            )}
-
-            <SkillsComparison skills={result.skills} />
-
-            <div className="grid lg:grid-cols-2 gap-8">
-              <ComparisonListCard
-                title="Project improvements"
-                description="Compare original project content with the tailored version."
-                items={result.projects || []}
-              />
-
-              <ComparisonListCard
-                title="Experience improvements"
-                description="Review how your existing experience has been rewritten."
-                items={result.experience || []}
-              />
+              )}
             </div>
 
             <div className="grid lg:grid-cols-2 gap-8">
               <KeywordCard
                 title="Matched keywords"
-                description="These keywords are supported by your resume and the job description."
+                description="These keywords are supported by your resume."
                 items={result.keywords || []}
-                type="matched"
+                matched
               />
 
               <KeywordCard
                 title="Unsupported requirements"
-                description="Do not add these unless you genuinely have the skill or experience."
+                description="Only add these if you genuinely have the skill or experience."
                 items={result.missing_keywords || []}
-                type="missing"
               />
             </div>
 
-            <ListCard
-              title="What to improve before applying"
-              items={result.suggestions || []}
-            />
+            <div className="bg-white rounded-3xl shadow p-8">
+              <h2 className="text-2xl font-bold mb-5">
+                What to improve before applying
+              </h2>
+
+              {(result.suggestions || []).length > 0 ? (
+                <div className="space-y-3">
+                  {result.suggestions.map((suggestion, index) => (
+                    <div
+                      key={index}
+                      className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-900 leading-6"
+                    >
+                      {suggestion}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-slate-500">
+                  No additional suggestions are available.
+                </p>
+              )}
+            </div>
           </section>
         )}
       </div>
@@ -315,83 +524,43 @@ function ResumeBuilder() {
   );
 }
 
-function SkillsComparison({ skills }) {
-  const originalSkills = skills?.original || [];
-  const tailoredSkills = skills?.tailored || [];
-
+function ComparisonEditor({
+  title,
+  original,
+  reason,
+  children,
+}) {
   return (
-    <div className="bg-white rounded-3xl shadow p-8">
-      <div className="mb-6">
-        <p className="text-sm text-blue-600 font-semibold mb-1">
-          Skills comparison
-        </p>
-
-        <h2 className="text-2xl font-bold">
-          Relevant skills
-        </h2>
-
-        <p className="text-sm text-slate-600 mt-2">
-          The tailored version reorders existing skills according to the
-          target job.
-        </p>
-      </div>
+    <div className="border-b border-slate-200 pb-10">
+      <h3 className="text-2xl font-bold mb-5">{title}</h3>
 
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
-          <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-4">
-            Original skills
+          <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-3">
+            Original
           </p>
 
-          <div className="flex flex-wrap gap-3">
-            {originalSkills.length > 0 ? (
-              originalSkills.map((skill, index) => (
-                <span
-                  key={`original-${skill}-${index}`}
-                  className="bg-slate-200 text-slate-800 px-4 py-2 rounded-lg text-sm font-medium"
-                >
-                  {skill}
-                </span>
-              ))
-            ) : (
-              <p className="text-sm text-slate-500">
-                No original skills were detected.
-              </p>
-            )}
-          </div>
+          <p className="text-sm text-slate-700 leading-7 whitespace-pre-wrap">
+            {original}
+          </p>
         </div>
 
         <div className="bg-green-50 border border-green-200 rounded-2xl p-6">
-          <p className="text-xs uppercase tracking-wider text-green-700 font-semibold mb-4">
-            Tailored order
+          <p className="text-xs uppercase tracking-wider text-green-700 font-semibold mb-3">
+            Editable tailored version
           </p>
 
-          <div className="flex flex-wrap gap-3">
-            {tailoredSkills.length > 0 ? (
-              tailoredSkills.map((skill, index) => (
-                <span
-                  key={`tailored-${skill}-${index}`}
-                  className="bg-green-100 text-green-800 px-4 py-2 rounded-lg text-sm font-medium"
-                >
-                  {skill}
-                </span>
-              ))
-            ) : (
-              <p className="text-sm text-slate-500">
-                No tailored skills were generated.
-              </p>
-            )}
-          </div>
+          {children}
         </div>
       </div>
 
-      {skills?.reason && (
-        <div className="mt-6 bg-amber-50 border border-amber-200 rounded-2xl p-5">
-          <p className="text-sm font-semibold text-amber-900 mb-1">
-            Why the order changed
-          </p>
-
-          <p className="text-sm text-amber-800 leading-6">
-            {skills.reason}
+      {reason && (
+        <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <p className="text-sm text-amber-900">
+            <span className="font-semibold">
+              Why this changed:{" "}
+            </span>
+            {reason}
           </p>
         </div>
       )}
@@ -399,69 +568,89 @@ function SkillsComparison({ skills }) {
   );
 }
 
-function ComparisonListCard({
+function EditableListSection({
   title,
-  description,
-  items = [],
+  originalItems,
+  editedItems,
+  onUpdate,
+  onAdd,
+  onRemove,
 }) {
   return (
-    <div className="bg-white rounded-3xl shadow p-8">
-      <h2 className="text-2xl font-bold mb-2">
-        {title}
-      </h2>
+    <div className="border-b border-slate-200 pb-10">
+      <div className="flex items-center justify-between gap-4 mb-5">
+        <h3 className="text-2xl font-bold">{title}</h3>
 
-      <p className="text-sm text-slate-600 mb-6">
-        {description}
-      </p>
+        <button
+          type="button"
+          onClick={onAdd}
+          className="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold inline-flex items-center gap-2"
+        >
+          <Plus size={17} />
+          Add item
+        </button>
+      </div>
 
-      {items.length > 0 ? (
-        <div className="space-y-6">
-          {items.map((item, index) => (
-            <div
-              key={index}
-              className="border border-slate-200 rounded-2xl p-5"
-            >
-              <div className="mb-5">
-                <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-2">
-                  Original
-                </p>
+      <div className="grid lg:grid-cols-2 gap-6">
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+          <p className="text-xs uppercase tracking-wider text-slate-500 font-semibold mb-4">
+            Original
+          </p>
 
-                <p className="text-sm text-slate-700 leading-6 whitespace-pre-wrap">
-                  {item?.original ||
-                    "No original content was detected."}
-                </p>
-              </div>
-
-              <div className="bg-green-50 border border-green-100 rounded-xl p-4">
-                <p className="text-xs uppercase tracking-wider text-green-700 font-semibold mb-2">
-                  Tailored
-                </p>
-
-                <p className="text-sm text-green-900 leading-6 whitespace-pre-wrap">
-                  {item?.tailored ||
-                    "No tailored version was generated."}
-                </p>
-              </div>
-
-              {item?.reason && (
-                <div className="mt-4 bg-amber-50 rounded-xl p-4">
-                  <p className="text-sm text-amber-900">
-                    <span className="font-semibold">
-                      Why this changed:{" "}
-                    </span>
-
-                    {item.reason}
-                  </p>
+          {originalItems.length > 0 ? (
+            <div className="space-y-4">
+              {originalItems.map((item, index) => (
+                <div
+                  key={index}
+                  className="bg-white border border-slate-200 rounded-xl p-4 text-sm text-slate-700 leading-6"
+                >
+                  {item || "No original content detected."}
                 </div>
-              )}
+              ))}
             </div>
-          ))}
+          ) : (
+            <p className="text-sm text-slate-500">
+              No original content was detected.
+            </p>
+          )}
         </div>
-      ) : (
-        <p className="text-sm text-slate-500">
-          No supported content was found for this section.
-        </p>
-      )}
+
+        <div className="bg-green-50 border border-green-200 rounded-2xl p-6">
+          <p className="text-xs uppercase tracking-wider text-green-700 font-semibold mb-4">
+            Editable tailored version
+          </p>
+
+          {editedItems.length > 0 ? (
+            <div className="space-y-4">
+              {editedItems.map((item, index) => (
+                <div key={index} className="flex gap-3">
+                  <textarea
+                    rows="4"
+                    value={item}
+                    onChange={(event) =>
+                      onUpdate(index, event.target.value)
+                    }
+                    className="flex-1 border border-slate-300 bg-white rounded-xl p-4 text-sm leading-6 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => onRemove(index)}
+                    className="self-start bg-red-50 text-red-600 border border-red-200 p-3 rounded-xl hover:bg-red-100"
+                    aria-label={`Remove ${title} item`}
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-500 mb-4">
+              No tailored content is available. Add an item manually.
+            </p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -469,23 +658,19 @@ function ComparisonListCard({
 function KeywordCard({
   title,
   description,
-  items = [],
-  type,
+  items,
+  matched = false,
 }) {
-  const isMatched = type === "matched";
-
   return (
     <div className="bg-white rounded-3xl shadow p-8">
-      <div className="flex items-center gap-3 mb-5">
-        {isMatched ? (
+      <div className="flex items-center gap-3 mb-4">
+        {matched ? (
           <CheckCircle className="text-green-600" />
         ) : (
           <AlertTriangle className="text-amber-600" />
         )}
 
-        <h2 className="text-2xl font-bold">
-          {title}
-        </h2>
+        <h2 className="text-2xl font-bold">{title}</h2>
       </div>
 
       <p className="text-sm text-slate-600 mb-5">
@@ -498,7 +683,7 @@ function KeywordCard({
             <span
               key={`${item}-${index}`}
               className={
-                isMatched
+                matched
                   ? "bg-green-100 text-green-800 px-4 py-2 rounded-lg text-sm"
                   : "bg-amber-100 text-amber-800 px-4 py-2 rounded-lg text-sm"
               }
@@ -508,39 +693,10 @@ function KeywordCard({
           ))
         ) : (
           <p className="text-sm text-slate-500">
-            {isMatched
-              ? "No matching keywords were found."
-              : "No unsupported requirements were detected."}
+            No items were found.
           </p>
         )}
       </div>
-    </div>
-  );
-}
-
-function ListCard({ title, items = [] }) {
-  return (
-    <div className="bg-white rounded-3xl shadow p-8">
-      <h2 className="text-2xl font-bold mb-5">
-        {title}
-      </h2>
-
-      {items.length > 0 ? (
-        <div className="space-y-3">
-          {items.map((item, index) => (
-            <div
-              key={`${index}-${item}`}
-              className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm leading-6 text-blue-900"
-            >
-              {item}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-sm text-slate-500">
-          No suggestions are available for this resume.
-        </p>
-      )}
     </div>
   );
 }
