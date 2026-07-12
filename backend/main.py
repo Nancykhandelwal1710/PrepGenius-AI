@@ -670,6 +670,39 @@ async def resume_health(data: ResumeHealthRequest):
         / 7
     )
 
+    feedback = []
+
+    if summary_score < 80:
+        feedback.append(
+            "Add a concise professional summary highlighting your strongest skills and target role."
+        )
+
+    if project_score < 85:
+        feedback.append(
+            "Add clearer project descriptions with technologies used, your contribution, and outcomes."
+        )
+
+    if skills_score < 80:
+        feedback.append(
+            "Your resume is missing some important skills from the job description."
+        )
+
+    if action_score < 80:
+        feedback.append(
+            "Use stronger action verbs such as Developed, Implemented, Designed, Optimized, and Deployed."
+        )
+        
+    
+    if achievement_score < 80:
+        feedback.append(
+            "Add measurable results where genuine, such as accuracy, users, performance improvement, or time saved."
+        )
+
+    if data.ats_score < 75:
+        feedback.append(
+            "Improve keyword alignment by using relevant terms from the job description naturally."
+        )
+
     return {
         "overall": overall,
         "ats": data.ats_score,
@@ -679,4 +712,5 @@ async def resume_health(data: ResumeHealthRequest):
         "grammar": grammar_score,
         "action_verbs": action_score,
         "achievements": achievement_score,
+        "feedback": feedback,
     }

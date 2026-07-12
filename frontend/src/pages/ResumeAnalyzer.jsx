@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "https://prepgenius-backend-3841.onrender.com";
 
 function ResumeAnalyzer() {
   const [file, setFile] = useState(null);
@@ -242,6 +242,30 @@ function ResumeAnalyzer() {
                   <HealthBar title="Action Verbs" value={health.action_verbs} />
                   <HealthBar title="Achievements" value={health.achievements} />
                 </div>
+                {health.feedback?.length > 0 && (
+                  <div className="mt-8">
+                    <h3 className="text-xl font-bold text-slate-800 mb-4">
+                      AI Recommendations
+                    </h3>
+
+                    <div className="space-y-3">
+                      {health.feedback.map((item, index) => (
+                        <div
+                          key={index}
+                          className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4"
+                        >
+                          <div className="mt-1 text-amber-600 text-xl">
+                            💡
+                          </div>
+
+                          <p className="text-slate-700">
+                            {item}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -415,5 +439,6 @@ function HealthBar({ title, value }) {
     </div>
   );
 }
+
 
 export default ResumeAnalyzer;
