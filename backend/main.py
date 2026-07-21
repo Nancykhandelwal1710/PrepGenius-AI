@@ -1204,4 +1204,85 @@ async def extract_pdf_layout(file: UploadFile = File(...)):
             status_code=500,
             detail=f"Could not extract PDF layout: {str(error)}"
         )
+@app.post("/replace-pdf-text-test")
+async def replace_pdf_text_test(
+    file: UploadFile = File(...)
+):
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(
+            status_code=400,
+            detail="Please upload a PDF file."
+        )
+
+    pdf_bytes = await file.read()
+
+    try:
+        document = fitz.open(stream=pdf_bytes, filetype="pdf")
+        page = document[0]
+
+        search_text = "AI & ML Engineer"
+        replacement_text = "Software Engineer"
+
+        locations = page.search_for(search_text)
+
+        if not locations:
+            document.close()
+            raise HTTPException(
+                status_code=404,
+                detail="Text was not found in the PDF."
+            )
+
+        rect = locations[0]
+
+        # Actually remove the original text
+        page.add_redact_annot(
+            rect,
+            fill=(1, 1, 1)
+        )
+
+        page.apply_redactions()
+
+        # Add the replacement text in the same position
+
+        replacement_rect = fitz.Rect(
+           rect.x0,
+           rect.y0 - 3,
+           rect.x1 + 100,
+           rect.y1 + 5
+        )
+
+        result = page.insert_textbox(
+            replacement_rect,
+            replacement_text,
+            fontsize=9,
+            fontname="helv",
+            color=(0, 0, 0),
+            align=fitz.TEXT_ALIGN_LEFT
+        )
+
+        print("Textbox result:", result)
+
+
+        output = BytesIO()
+        document.save(output)
+        output.seek(0)
+        document.close()
+
+        return StreamingResponse(
+            output,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition":
+                "attachment; filename=updated_resume.pdf"
+            }
+        )
+
+    except HTTPException:
+        raise
+
+    except Exception as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Could not replace PDF text: {str(error)}"
+        )
     
