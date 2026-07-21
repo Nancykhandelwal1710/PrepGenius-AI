@@ -1141,21 +1141,32 @@ async def extract_pdf_layout(file: UploadFile = File(...)):
 
     try:
         document = fitz.open(stream=pdf_bytes, filetype="pdf")
-
         pages = []
 
         for page_number, page in enumerate(document):
-            blocks = page.get_text("blocks")
-
+            page_dict = page.get_text("dict")
             page_blocks = []
 
-            for block_index, block in enumerate(blocks):
-                x0, y0, x1, y1, text, block_no, block_type = block
-
-                cleaned_text = text.strip()
-
-                if not cleaned_text:
+            for block_index, block in enumerate(page_dict["blocks"]):
+                if "lines" not in block:
                     continue
+
+                block_text = []
+                first_span = None
+
+                for line in block["lines"]:
+                    for span in line["spans"]:
+                        if first_span is None:
+                            first_span = span
+
+                        block_text.append(span["text"])
+
+                cleaned_text = " ".join(block_text).strip()
+
+                if not cleaned_text or first_span is None:
+                    continue
+
+                x0, y0, x1, y1 = block["bbox"]
 
                 page_blocks.append({
                     "block_id": f"page:{page_number}:block:{block_index}",
@@ -1166,8 +1177,12 @@ async def extract_pdf_layout(file: UploadFile = File(...)):
                     "y1": y1,
                     "width": x1 - x0,
                     "height": y1 - y0,
+                    "font": first_span["font"],
+                    "font_size": first_span["size"],
+                    "color": first_span["color"],
                 })
 
+            # Keep this outside the block loop
             pages.append({
                 "page_number": page_number + 1,
                 "width": page.rect.width,
@@ -1175,11 +1190,12 @@ async def extract_pdf_layout(file: UploadFile = File(...)):
                 "blocks": page_blocks,
             })
 
+        total_pages = len(pages)
         document.close()
 
         return {
             "filename": file.filename,
-            "total_pages": len(pages),
+            "total_pages": total_pages,
             "pages": pages,
         }
 
@@ -1188,4 +1204,4 @@ async def extract_pdf_layout(file: UploadFile = File(...)):
             status_code=500,
             detail=f"Could not extract PDF layout: {str(error)}"
         )
-         
+    
