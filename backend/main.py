@@ -7,6 +7,7 @@ import json
 import re
 import time
 import random
+import fitz
 from io import BytesIO
 from pathlib import Path
 from uuid import uuid4
@@ -1128,4 +1129,63 @@ Return exactly:
             status_code=500,
             detail=str(error),
         )
-       
+@app.post("/extract-pdf-layout")
+async def extract_pdf_layout(file: UploadFile = File(...)):
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(
+            status_code=400,
+            detail="Please upload a PDF file."
+        )
+
+    pdf_bytes = await file.read()
+
+    try:
+        document = fitz.open(stream=pdf_bytes, filetype="pdf")
+
+        pages = []
+
+        for page_number, page in enumerate(document):
+            blocks = page.get_text("blocks")
+
+            page_blocks = []
+
+            for block_index, block in enumerate(blocks):
+                x0, y0, x1, y1, text, block_no, block_type = block
+
+                cleaned_text = text.strip()
+
+                if not cleaned_text:
+                    continue
+
+                page_blocks.append({
+                    "block_id": f"page:{page_number}:block:{block_index}",
+                    "text": cleaned_text,
+                    "x0": x0,
+                    "y0": y0,
+                    "x1": x1,
+                    "y1": y1,
+                    "width": x1 - x0,
+                    "height": y1 - y0,
+                })
+
+            pages.append({
+                "page_number": page_number + 1,
+                "width": page.rect.width,
+                "height": page.rect.height,
+                "blocks": page_blocks,
+            })
+
+        document.close()
+
+        return {
+            "filename": file.filename,
+            "total_pages": len(pages),
+            "pages": pages,
+        }
+
+    except Exception as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Could not extract PDF layout: {str(error)}"
+        )
+         
