@@ -8,8 +8,12 @@ import re
 import time
 import random
 from io import BytesIO
+from pathlib import Path
+from uuid import uuid4
+from typing import Annotated
 from docx import Document
-from fastapi import File, UploadFile, HTTPException
+from fastapi import File, Form, UploadFile, HTTPException
+from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from google import genai
 
@@ -144,6 +148,62 @@ def fallback_ats_analysis(resume_text, job_description):
         "matched_skills": matched,
         "missing_skills": missing
     }
+def collect_docx_text_locations(document: Document):
+    locations = []
+
+    for paragraph_index, paragraph in enumerate(document.paragraphs):
+        text = paragraph.text.strip()
+
+        if text:
+            locations.append({
+                "location_id": f"paragraph:{paragraph_index}",
+                "kind": "paragraph",
+                "text": text,
+                "paragraph_index": paragraph_index,
+            })
+
+    for table_index, table in enumerate(document.tables):
+        for row_index, row in enumerate(table.rows):
+            for cell_index, cell in enumerate(row.cells):
+                for paragraph_index, paragraph in enumerate(cell.paragraphs):
+                    text = paragraph.text.strip()
+
+                    if text:
+                        locations.append({
+                            "location_id": f"table:{table_index}:row:{row_index}:cell:{cell_index}:paragraph:{paragraph_index}",
+                            "kind": "table_paragraph",
+                            "text": text,
+                            "table_index": table_index,
+                            "row_index": row_index,
+                            "cell_index": cell_index,
+                            "paragraph_index": paragraph_index,
+                        })
+
+    return locations
+
+def replace_paragraph_text_preserving_style(paragraph, new_text: str):
+    if not paragraph.runs:
+        paragraph.add_run(new_text)
+        return
+
+    paragraph.runs[0].text = new_text
+
+    for run in paragraph.runs[1:]:
+        run.text = ""
+
+
+def get_docx_paragraph_by_location(document: Document, location: dict):
+    if location["kind"] == "paragraph":
+        return document.paragraphs[location["paragraph_index"]]
+
+    if location["kind"] == "table_paragraph":
+        table = document.tables[location["table_index"]]
+        row = table.rows[location["row_index"]]
+        cell = row.cells[location["cell_index"]]
+
+        return cell.paragraphs[location["paragraph_index"]]
+
+    raise ValueError("Unsupported DOCX text location.")
 
 @app.post("/ats-score")
 def ats_score(data: ATSRequest):
@@ -189,7 +249,7 @@ JSON format:
 """
 
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-3.5-flash",
             contents=prompt
         )
 
@@ -281,7 +341,7 @@ Rules:
 """
 
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.5-flash",
             contents=prompt
         )
 
@@ -344,7 +404,7 @@ Improvements:
 """
 
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-3.5-flash",
             contents=prompt
         )
 
@@ -714,3 +774,358 @@ async def resume_health(data: ResumeHealthRequest):
         "achievements": achievement_score,
         "feedback": feedback,
     }
+@app.post("/preserve-docx-test")
+async def preserve_docx_test(file: UploadFile = File(...)):
+    filename = file.filename or ""
+
+    if not filename.lower().endswith(".docx"):
+        raise HTTPException(
+            status_code=400,
+            detail="Please upload a DOCX file.",
+        )
+
+    content = await file.read()
+
+    if not content:
+        raise HTTPException(
+            status_code=400,
+            detail="The uploaded file is empty.",
+        )
+
+    try:
+        document = Document(BytesIO(content))
+
+        output = BytesIO()
+        document.save(output)
+        output.seek(0)
+
+        output_name = f"preserved_{Path(filename).name}"
+
+        return StreamingResponse(
+            output,
+            media_type=(
+                "application/vnd.openxmlformats-officedocument."
+                "wordprocessingml.document"
+            ),
+            headers={
+                "Content-Disposition": (
+                    f'attachment; filename="{output_name}"'
+                )
+            },
+        )
+
+    except Exception as error:
+        print("DOCX preservation error:", error)
+
+        raise HTTPException(
+            status_code=500,
+            detail="The DOCX file could not be processed.",
+        ) 
+@app.post("/replace-docx-text-test")
+async def replace_docx_text_test(
+    file: Annotated[UploadFile, File()],
+    location_id: Annotated[str, Form()],
+    replacement_text: Annotated[str, Form()],
+):
+    filename = file.filename or ""
+
+    if not filename.lower().endswith(".docx"):
+        raise HTTPException(
+            status_code=400,
+            detail="Please upload a DOCX file.",
+        )
+
+    file_content = await file.read()
+
+    if not file_content:
+        raise HTTPException(
+            status_code=400,
+            detail="The uploaded file is empty.",
+        )
+
+    try:
+        document = Document(BytesIO(file_content))
+        locations = collect_docx_text_locations(document)
+
+        selected_location = next(
+            (
+                location
+                for location in locations
+                if location["location_id"] == location_id
+            ),
+            None,
+        )
+
+        if not selected_location:
+            raise HTTPException(
+                status_code=404,
+                detail="The selected text location was not found.",
+            )
+
+        paragraph = get_docx_paragraph_by_location(
+            document,
+            selected_location,
+        )
+
+        replace_paragraph_text_preserving_style(
+            paragraph,
+            replacement_text,
+        )
+
+        output = BytesIO()
+        document.save(output)
+        output.seek(0)
+
+        original_name = Path(filename).stem
+        output_name = f"{original_name}_replacement_test.docx"
+
+        return StreamingResponse(
+            output,
+            media_type=(
+                "application/vnd.openxmlformats-officedocument."
+                "wordprocessingml.document"
+            ),
+            headers={
+                "Content-Disposition": (
+                    f'attachment; filename="{output_name}"'
+                )
+            },
+        )
+
+    except HTTPException:
+        raise
+
+    except Exception as error:
+        print("DOCX replacement test error:", error)
+
+        raise HTTPException(
+            status_code=500,
+            detail="The DOCX text could not be replaced.",
+        )
+@app.post("/optimize-docx")
+async def optimize_docx(
+    file: Annotated[UploadFile, File()],
+    job_description: Annotated[str, Form()],
+):
+    filename = file.filename or ""
+
+    if not filename.lower().endswith(".docx"):
+        raise HTTPException(
+            status_code=400,
+            detail="Please upload a DOCX file.",
+        )
+
+    if not job_description.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Job description is required.",
+        )
+
+    file_content = await file.read()
+
+    if not file_content:
+        raise HTTPException(
+            status_code=400,
+            detail="The uploaded file is empty.",
+        )
+
+    try:
+        document = Document(BytesIO(file_content))
+        locations = collect_docx_text_locations(document)
+
+        editable_locations = []
+
+        current_section = ""
+
+        for location in locations:
+            text = location["text"].strip()
+
+            if not text:
+                continue
+            upper = text.upper()
+
+            if upper in {
+                "SUMMARY",
+                "EDUCATION",
+                "PROJECTS",
+                "SKILLS",
+                "CERTIFICATIONS",
+                "CODING PROFILES",
+            }:
+                current_section = upper
+                continue
+            if current_section not in {
+                "SUMMARY",
+                "PROJECTS",
+                "SKILLS",
+            }:
+                continue
+
+            if len(text) < 20:
+                continue
+
+            editable_locations.append({
+                "location_id": location["location_id"],
+                "section": current_section,
+                "text": text,
+                "max_characters": int(len(text) * 1.25),
+            })
+
+        prompt = f"""
+You are an expert ATS resume editor.
+
+Improve the resume text for the supplied job description.
+
+STRICT RULES:
+- Preserve every existing fact.
+- Do not invent skills, achievements, metrics, projects, experience, or certifications.
+- Keep the same meaning.
+- Improve clarity, impact, action verbs, and job relevance.
+- Keep each improved text close to the original length.
+- Do not change headings.
+- Do not add new sections.
+- If a sentence is already strong, keep it nearly unchanged.
+- Return only valid JSON.
+
+JOB DESCRIPTION:
+{job_description[:6000]}
+
+TEXT LOCATIONS:
+{json.dumps(editable_locations, ensure_ascii=False)}
+
+Return exactly:
+
+{{
+  "changes": [
+    {{
+      "location_id": "paragraph:5",
+      "original": "original text",
+      "improved": "improved text"
+    }}
+  ]
+}}
+"""
+        response = None
+        last_error = None
+        model_candidates = [
+            "gemini-3.5-flash",
+            "gemini-2.5-flash",
+        ]
+
+        for model_name in model_candidates:
+            for attempt in range(4):
+                try:
+                    response = client.models.generate_content(
+                        model=model_name,
+                        contents=prompt,
+                        config={
+                            "response_mime_type": "application/json"
+                        }
+                    )
+                    break
+                except Exception as error:
+                    last_error = error
+                    error_text = str(error)
+                is_temporary = (
+                    "503" in error_text or "UNAVAILABLE" in error_text or "RESOURCE_EXHAUSTED" in error_text
+                )    
+                if is_temporary and attempt < 3:
+                    wait_seconds = (2 ** attempt) + random.uniform(0, 1)
+                    time.sleep(wait_seconds)
+                    continue
+                break
+                
+            if response is None:
+               break
+        if response is None:
+
+           raise HTTPException(
+                status_code=503,
+                detail=(
+                   "Gemini is temporarily unavailable after trying multiple "
+                   "models. Please try again in a few minutes." 
+                )
+            ) from last_error
+                
+        
+        result = json.loads(response.text)
+        changes = result.get("changes", [])
+
+        location_map = {
+            location["location_id"]: location
+            for location in locations
+        }
+
+        applied_changes = []
+
+        for change in changes:
+            location_id = change.get("location_id", "")
+            improved_text = change.get("improved", "").strip()
+
+            if not location_id or not improved_text:
+                continue
+
+            location = location_map.get(location_id)
+
+            if not location:
+                continue
+
+            original_text = location["text"].strip()
+
+            if original_text != change.get("original", "").strip():
+                continue
+
+            paragraph = get_docx_paragraph_by_location(
+                document,
+                location,
+            )
+
+            replace_paragraph_text_preserving_style(
+                paragraph,
+                improved_text,
+            )
+
+            applied_changes.append({
+                "location_id": location_id,
+                "original": original_text,
+                "improved": improved_text,
+            })
+
+        output = BytesIO()
+        document.save(output)
+        output.seek(0)
+
+        original_name = Path(filename).stem
+        output_name = f"{original_name}_optimized.docx"
+
+        return StreamingResponse(
+            output,
+            media_type=(
+                "application/vnd.openxmlformats-officedocument."
+                "wordprocessingml.document"
+            ),
+            headers={
+                "Content-Disposition": (
+                    f'attachment; filename="{output_name}"'
+                ),
+                "X-Applied-Changes": str(len(applied_changes)),
+            },
+        )
+
+    except HTTPException:
+        raise
+
+    except json.JSONDecodeError:
+        raise HTTPException(
+            status_code=502,
+            detail="The AI response was not valid JSON.",
+        )
+
+    except Exception as error:
+        print("DOCX optimization error:", error)
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(error),
+        )
+       
