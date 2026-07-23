@@ -246,7 +246,7 @@ function ResumeBuilder() {
             </div>
 
             <p className="text-sm text-slate-600 leading-6 mb-5">
-              Upload the original PDF that contains your complete
+              Upload the original PDF or DOCX file that contains your complete
               resume design and information.
             </p>
 
