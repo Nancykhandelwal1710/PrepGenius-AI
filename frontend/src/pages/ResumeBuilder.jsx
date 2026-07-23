@@ -116,26 +116,27 @@ function ResumeBuilder() {
         }
       );
 
-      const contentType =
-        response.headers["content-type"] || "";
-
-      if (!contentType.includes(expectedContentType)) {
-        throw new Error(
-          "Unexpected file returned from server."
-        );
-      }
-
-      const Blob = new Blob([response.data], {
+      const blob = new Blob([response.data], {
         type: expectedContentType,
       });
 
       const downloadUrl =
-        window.URL.createObjectURL(Blob);
+        window.URL.createObjectURL(blob);
 
       const dot = file.name.lastIndexOf(".");
-      const base = file.name.substring(0, dot);
-      const ext = file.name.substring(dot);
       
+      const base = 
+        dot === -1
+          ? file.name
+          : file.name.substring(0, dot);
+
+      const ext = 
+        dot === -1
+          ? isPDF
+            ? ".pdf"
+            : ".docx"
+          : file.name.substring(dot);
+
       const link =
         document.createElement("a");
 
@@ -147,14 +148,39 @@ function ResumeBuilder() {
       link.click();
       link.remove();
 
-      window.URL.revokeObjectURL(downloadUrl);
+      setTimeout(() => {
+        window.URL.revokeObjectURL(downloadUrl);
+      }, 1000);
 
       setSuccess(
         "Your optimized resume has been downloaded successfully."
       );
+
     } catch (requestError) {
-      console.error(requestError);
-      setError("Resume optimization failed. Please try again.");
+      console.error("Optimization error:", requestError);
+
+      let message =
+        "Resume optimization failed. Please try again.";
+
+      if (requestError.response?.data instanceof Blob) {
+        try{
+          const errorText =
+            await requestError.response.data.text();
+
+          const parsedError = JSON.parse(errorText);
+
+          message =
+            parsedError.detail ||
+            parsedError.error ||
+            message; 
+        }catch {
+          message =
+            "The server could not optimize this resume. Please try again.";
+        }
+      }else if (requestError.message) {
+        message = requestError.message;
+      }
+      setError(message);
     } finally {
       setOptimizing(false);
     }
@@ -262,7 +288,7 @@ function ResumeBuilder() {
                   </p>
 
                   <p className="text-sm text-green-700 mt-1">
-                    The text was extracted and the PDF is ready
+                    The text was extracted and the resume is ready
                     for optimization.
                   </p>
                 </div>
