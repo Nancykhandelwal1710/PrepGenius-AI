@@ -50,6 +50,73 @@ function ResumeAnalyzer() {
     }
   };
 
+  const optimizePDF = async () => {
+    if (!file) {
+      setError("Please upload your original PDF resume first.");
+      return;
+    }
+
+    if (!jobDescription.trim()) {
+      setError("Please paste the target job description first.");
+      return;
+    }
+
+    try {
+      setOptimizing(true);
+      setError("");
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("job_description", jobDescription);
+
+      const response = await axios.post(
+        `${API_URL}/optimize-pdf`, 
+        formData, 
+        {
+          responseType: "blob",
+        }
+      );
+
+      const pdfBlob = new Blob([response.data], {
+        type: "application/pdf",
+      });
+
+      const downloadUrl = window.URL.createObjectURL(pdfBlob);
+
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `optimized_${file.name}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (requestError) {
+      console.error(requestError);
+      
+      let message =
+        "The optimized PDF could not be generated. Please try again.";
+
+      if (requestError.response?.data instanceof Blob) {
+        try{
+          const errorText = await requestError.response.data.text();
+          const parsedError = JSON.parse(errorText);
+
+          message =
+            parsedError.detail ||
+            parsedError.error ||
+            message;
+        } catch {
+          // Keep the default error message.
+        }
+      }
+
+      setError(message);
+    } finally {
+      setOptimizing(false);
+    }
+  };
+
   const analyzeResume = async () => {
     if (!jobDescription.trim()) {
       alert("Please paste a job description first.");
