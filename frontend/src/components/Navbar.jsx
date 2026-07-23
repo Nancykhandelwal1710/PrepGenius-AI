@@ -101,25 +101,25 @@ function Navbar() {
         </div>
       </div>
 
-      <div className="lg:hidden px-5 pb-4 grid grid-cols-2 gap-3 text-sm font-medium text-center text-slate-600">
+      <div className="lg:hidden px-5 pb-5 grid grid-cols-5 gap-2 text-sm font-medium text-center text-slate-700">
         <Link to="/" className={linkClass("/")}>
           Home
-        </Link>
-
-        <Link to="/resume-analyzer" className={linkClass("/resume-analyzer")}>
-          Resume
-        </Link>
-
-        <Link to="/mock-interview" className={linkClass("/mock-interview")}>
-          Interview
         </Link>
 
         <Link to="/dashboard" className={linkClass("/dashboard")}>
           Dashboard
         </Link>
+        
+        <Link to="/resume-analyzer" className={linkClass("/resume-analyzer")}>
+          Resume Analyzer
+        </Link>
 
         <Link to="/resume-builder" className={linkClass("/resume-builder")}>
-          Builder
+          Resume Optimizer
+        </Link>
+        
+        <Link to="/mock-interview" className={linkClass("/mock-interview")}>
+          Mock Interview
         </Link>
       </div>
     </nav>

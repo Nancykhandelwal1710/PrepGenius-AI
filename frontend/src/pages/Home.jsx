@@ -33,13 +33,20 @@ function Home() {
                 to="/mock-interview"
                 className="border border-slate-500 hover:bg-white hover:text-slate-950 px-7 py-3 rounded-xl font-semibold text-center"
               >
+                Optimize Resume
+              </Link>
+
+              <Link
+                to="/resume-builder"
+                className="bg-blue-600 hover:bg-blue-700 px-7 py-3 rounded-xl font-semibold text-center"
+              >
                 Practice Interview
               </Link>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 mt-10 max-w-xl">
+            <div className="grid grid-cols-4 gap-4 mt-13 max-w-xxxl">
               <div>
-                <h3 className="text-lg font-bold text-blue-300">
+                <h3 className="text-xl font-bold text-blue-300">
                   Resume
                 </h3>
                 <p className="text-sm text-slate-400">
@@ -48,7 +55,7 @@ function Home() {
               </div>
 
               <div>
-                <h3 className="text-lg font-bold text-blue-300">
+                <h3 className="text-xl font-bold text-blue-300">
                   Skills
                 </h3>
                 <p className="text-sm text-slate-400">
@@ -57,7 +64,16 @@ function Home() {
               </div>
 
               <div>
-                <h3 className="text-lg font-bold text-blue-300">
+                <h3 className="text-xl font-bold text-blue-300">
+                  Resume
+                </h3>
+                <p className="text-sm text-slate-400">
+                  Optimization
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-bold text-blue-300">
                   Interview
                 </h3>
                 <p className="text-sm text-slate-400">
@@ -131,10 +147,10 @@ function Home() {
                   Next focus
                 </p>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-3">
                   <div className="bg-slate-800 p-4 rounded-xl">
                     <p className="text-sm text-slate-400">
-                      Resume
+                      Resume Analyzer
                     </p>
                     <p className="font-semibold mt-1">
                       Add project impact
@@ -143,7 +159,16 @@ function Home() {
 
                   <div className="bg-slate-800 p-4 rounded-xl">
                     <p className="text-sm text-slate-400">
-                      Interview
+                      Resume Optimizer
+                    </p>
+                    <p className="font-semibold mt-1">
+                      Optimize with Job description
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-800 p-4 rounded-xl">
+                    <p className="text-sm text-slate-400">
+                      Mock Interview
                     </p>
                     <p className="font-semibold mt-1">
                       Practice 5 questions
@@ -213,6 +238,11 @@ function Home() {
               ],
               [
                 "4",
+                "Optimize Resume",
+                "Enhance resume based on Target role and Job Description.",
+              ],
+              [
+                "5",
                 "Practice interview",
                 "Generate role-based questions and prepare answers.",
               ],
@@ -274,6 +304,10 @@ function Home() {
                 "Get simple suggestions to improve your resume content.",
               ],
               [
+                "Resume Optimizer",
+                "Enhance your resume with targeted job description & improvements.",
+              ],
+              [
                 "Mock Interview",
                 "Generate questions for your target role and practice answers.",
               ],
@@ -306,7 +340,7 @@ function Home() {
           </h2>
 
           <p className="text-slate-600 leading-7 max-w-2xl mx-auto mb-8">
-            Start by checking your resume against a real job description, then
+            Start by checking your resume against a real job description, enhance it accordingly and then
             practice interview questions based on your target role.
           </p>
 
@@ -322,8 +356,16 @@ function Home() {
               to="/mock-interview"
               className="bg-slate-900 hover:bg-slate-800 px-7 py-3 rounded-xl font-semibold text-white text-center"
             >
+              Optimize Resume
+            </Link>
+
+            <Link
+              to="/resume-analyzer"
+              className="bg-blue-600 hover:bg-blue-700 px-7 py-3 rounded-xl font-semibold text-white text-center"
+            >
               Practice Interview
             </Link>
+
           </div>
         </div>
       </section>
@@ -335,9 +377,13 @@ function Home() {
               PrepGenius AI
             </h3>
 
+            <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full text-xs text-blue-300 mb-4">
+              AI Career Assistant
+            </div>
+
             <p className="text-sm leading-7 text-slate-400">
-              A career preparation platform built to help students improve
-              resumes and practice interviews before applying.
+              Helping students build ATS-friendly resumes,
+              optimize resumes and prepare for interviews.
             </p>
           </div>
 
@@ -350,6 +396,9 @@ function Home() {
               <Link to="/resume-analyzer" className="block hover:text-white">
                 Resume Analyzer
               </Link>
+              <Link to="/resume-builder" className="block hover:text-white transition">
+                Resume Optimizer
+              </Link>
               <Link to="/mock-interview" className="block hover:text-white">
                 Mock Interview
               </Link>
@@ -361,12 +410,34 @@ function Home() {
 
           <div>
             <h4 className="text-white font-semibold mb-4">
-              Built With
+              Meet the Creator
             </h4>
 
-            <p className="text-sm leading-7 text-slate-400">
-              React, FastAPI, Firebase, Gemini AI, Tailwind CSS, Vercel and Render.
+            <p className="text-sm text-white font-medium">
+              Nancy Khandelwal
             </p>
+
+            <p className="text-sm text-slate-400 mt-1">
+              AI/ML Developer
+            </p>
+
+            <div className="mt-5 space-y-3 text-sm">
+              <a
+                href="mailto:khandelwalnancy27@gmail.com"
+                className="block hover:text-white transition"
+              >
+                📧 khandelwalnancy27@gmail.com
+              </a>
+
+              <a
+                href="https://www.linkedin.com/in/nancyk-ai-dev/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block hover:text-white transition"
+              >
+                💼 LinkedIn
+              </a>
+            </div>
           </div>
         </div>
 
