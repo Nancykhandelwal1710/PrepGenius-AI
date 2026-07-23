@@ -46,16 +46,39 @@ def home():
 
 @app.post("/extract-text")
 async def extract_text(file: UploadFile = File(...)):
-    text = ""
+    filename = file.filename.lower()
 
-    with pdfplumber.open(file.file) as pdf:
-        for page in pdf.pages:
-            page_text = page.extract_text()
+    # ---------- PDF ----------
+    if filename.endswith(".pdf"):
+        text = ""
 
-            if page_text:
-                text += page_text + "\n"
+        with pdfplumber.open(file.file) as pdf:
+            for page in pdf.pages:
+                page_text = page.extract_text()
 
-    return {"text": text}
+                if page_text:
+                    text += page_text + "\n"
+
+        return {"text": text} 
+
+    # ---------- DOCX ----------
+    elif filename.endswith(".docx"):
+        contents = await file.read()
+
+        document = Document(BytesIO(contents))
+
+        text = "\n".join(
+            paragraph.text 
+            for paragraph in document.paragraphs
+            if paragraph.text.strip()
+        )
+
+        return {"text": text}
+
+    raise HTTPException(
+        status_code=400,
+        detail="Only PDF and DOCX files are supported."
+    )
 
 
 class ATSRequest(BaseModel):

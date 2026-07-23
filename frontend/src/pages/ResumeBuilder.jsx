@@ -30,8 +30,14 @@ function ResumeBuilder() {
       return;
     }
 
-    if (selectedFile.type !== "application/pdf") {
-      setError("Please upload a PDF resume only.");
+    const isPDF =
+      selectedFile.name.toLowerCase().endsWith(".pdf");
+    
+    const isDOCX =
+      selectedFile.name.toLowerCase().endsWith(".docx");
+        
+    if (!isPDF && !isDOCX) {
+      setError("Please upload a PDF or DOCX resume.");
       setFile(null);
       return;
     }
@@ -60,7 +66,7 @@ function ResumeBuilder() {
       console.error(uploadError);
 
       setError(
-        "The resume could not be read. Please upload a text-based PDF and try again."
+        "The resume could not be read. Please upload a text-based PDF or DOCX file and try again."
       );
     } finally {
       setExtracting(false);
@@ -69,7 +75,7 @@ function ResumeBuilder() {
 
   const optimizePDF = async () => {
     if (!file) {
-      setError("Please upload your original PDF resume first.");
+      setError("Please upload your original PDF or DOCX resume first.");
       return;
     }
 
@@ -88,8 +94,21 @@ function ResumeBuilder() {
       formData.append("file", file);
       formData.append("job_description", jobDescription);
 
+      const fileName = file.name.toLowerCase();
+      
+      const isPDF = fileName.endsWith(".pdf");
+      const isDOCX = fileName.endsWith(".docx");
+
+      const endpoint = isPDF
+        ? "/optimize-pdf"
+        : "/optimize-docx";
+
+      const expectedContentType = isPDF
+        ? "application/pdf"
+        : "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        
       const response = await axios.post(
-        `${API_URL}/optimize-pdf`,
+        `${API_URL}${endpoint}`,
         formData,
         {
           responseType: "blob",
@@ -98,36 +117,35 @@ function ResumeBuilder() {
       );
 
       const contentType =
-        response.headers["content-type"] || "application/pdf";
+        response.headers["content-type"] || "";
 
-      if (!contentType.includes("application/pdf")) {
-        const responseText = await response.data.text();
-
+      if (!contentType.includes(expectedContentType)) {
         throw new Error(
-          responseText || "The server did not return a PDF."
+          "Unexpected file returned from server."
         );
       }
 
-      const pdfBlob = new Blob([response.data], {
-        type: "application/pdf",
+      const Blob = new Blob([response.data], {
+        type: expectedContentType,
       });
 
       const downloadUrl =
-        window.URL.createObjectURL(pdfBlob);
+        window.URL.createObjectURL(Blob);
 
-      const originalName =
-        file.name.replace(/\.pdf$/i, "") || "resume";
-
-      const downloadLink =
+      const dot = file.name.lastIndexOf(".");
+      const base = file.name.substring(0, dot);
+      const ext = file.name.substring(dot);
+      
+      const link =
         document.createElement("a");
 
-      downloadLink.href = downloadUrl;
-      downloadLink.download =
-        `${originalName}_optimized.pdf`;
+      link.href = downloadUrl;
+      link.download =
+        `${base}_optimized${ext}`;
 
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      downloadLink.remove();
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
 
       window.URL.revokeObjectURL(downloadUrl);
 
@@ -136,36 +154,7 @@ function ResumeBuilder() {
       );
     } catch (requestError) {
       console.error(requestError);
-
-      let message =
-        "The optimized PDF could not be generated. Please try again.";
-
-      if (requestError.response?.data instanceof Blob) {
-        try {
-          const errorText =
-            await requestError.response.data.text();
-
-          const parsedError = JSON.parse(errorText);
-
-          message =
-            parsedError.detail ||
-            parsedError.error ||
-            message;
-        } catch {
-          message =
-            "The server could not optimize this PDF. Please try another text-based resume.";
-        }
-      } else if (requestError.message) {
-        if (
-          requestError.code === "ECONNABORTED" ||
-          requestError.message.toLowerCase().includes("timeout")
-        ) {
-          message =
-            "Optimization took too long. Please try again after a few seconds.";
-        }
-      }
-
-      setError(message);
+      setError("Resume optimization failed. Please try again.");
     } finally {
       setOptimizing(false);
     }
@@ -184,7 +173,7 @@ function ResumeBuilder() {
           </h1>
 
           <p className="text-slate-300 mt-4 max-w-3xl leading-7">
-            Upload your original PDF resume and paste the target job
+            Upload your original PDF or Docx resume and paste the target job
             description. PrepGenius will improve relevant content and
             return an optimized PDF using your existing resume design.
           </p>
@@ -237,7 +226,7 @@ function ResumeBuilder() {
 
             <input
               type="file"
-              accept=".pdf,application/pdf"
+              accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               onChange={handleUpload}
               className="w-full border border-dashed border-slate-300 rounded-xl p-4 text-sm"
             />
