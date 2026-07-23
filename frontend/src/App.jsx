@@ -50,7 +50,9 @@ function App() {
         <Route 
           path="/resume-builder" 
           element={
-            <ResumeBuilder />
+            <ProtectedRoute>
+              <ResumeBuilder />
+            </ProtectedRoute>
           } 
         />
         <Route 

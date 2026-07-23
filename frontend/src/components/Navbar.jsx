@@ -101,7 +101,7 @@ function Navbar() {
         </div>
       </div>
 
-      <div className="lg:hidden px-5 pb-5 grid grid-cols-5 gap-2 text-sm font-medium text-center text-slate-700">
+      <div className="lg:hidden px-2 pb-6 grid grid-cols-2 gap-1 text-lg font-medium text-center text-slate-700">
         <Link to="/" className={linkClass("/")}>
           Home
         </Link>
@@ -109,7 +109,9 @@ function Navbar() {
         <Link to="/dashboard" className={linkClass("/dashboard")}>
           Dashboard
         </Link>
-        
+      </div>
+
+      <div className="lg:hidden px-1 pb-5 grid grid-cols-3 gap-12 text-sm font-medium text-center text-slate-700">
         <Link to="/resume-analyzer" className={linkClass("/resume-analyzer")}>
           Resume Analyzer
         </Link>
