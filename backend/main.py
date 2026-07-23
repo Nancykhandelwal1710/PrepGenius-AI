@@ -67,11 +67,32 @@ async def extract_text(file: UploadFile = File(...)):
 
         document = Document(BytesIO(contents))
 
-        text = "\n".join(
-            paragraph.text 
-            for paragraph in document.paragraphs
-            if paragraph.text.strip()
-        )
+        text_parts = []
+
+        # Read normal paragraphs
+        for paragraph in document.paragraphs:
+            paragraph_text = paragraph.text.strip()
+
+            if paragraph_text:
+                text_parts.append(paragraph_text)
+
+        # Read text inside tables
+        for table in document.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    for paragraph in cell.paragraphs:
+                        paragraph_text = paragraph.text.strip()
+
+                        if paragraph_text:
+                            text_parts.append(paragraph_text)
+
+        text = "\n".join(text_parts)
+
+        if not text.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="No readable text was found in this DOCX file."
+            )
 
         return {"text": text}
 
