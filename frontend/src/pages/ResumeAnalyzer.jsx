@@ -303,7 +303,7 @@ function ResumeAnalyzer() {
                 <div className="grid md:grid-cols-2 gap-6 mt-8">
                   <HealthBar title="ATS Compatibility" value={health.ats} />
                   <HealthBar title="Summary" value={health.summary} />
-                  <HealthBar title="Projects" value={health.projects} />
+                  <HealthBar title="Experience / Projects" value={health.experience} />
                   <HealthBar title="Skills" value={health.skills} />
                   <HealthBar title="Grammar" value={health.grammar} />
                   <HealthBar title="Action Verbs" value={health.action_verbs} />
@@ -487,7 +487,7 @@ function HealthBar({ title, value }) {
         </span>
 
         <span className="font-semibold">
-          {value}%
+          {value ?? 0}%
         </span>
 
       </div>
@@ -497,7 +497,7 @@ function HealthBar({ title, value }) {
         <div
           className="bg-blue-600 h-3 rounded-full"
           style={{
-            width: `${value}%`,
+            width: `${value || 0}%`,
           }}
         />
 

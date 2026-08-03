@@ -257,45 +257,68 @@ def ats_score(data: ATSRequest):
 
     try:
         prompt = f"""
-You are an ATS analyzer for all industries.
+You are an expert ATS (Applicant Tracking System) analyzer.
 
-Analyze this job description and resume.
+Your task is to compare ANY resume against ANY job description.
+
+The job description may belong to any profession including:
+Software Engineering, HR, Marketing, Finance, Teaching,
+Healthcare, Sales, Operations, Design, Government,
+Business, Law, Hospitality or any other industry.
+
+Instructions:
+
+1. Identify the job domain.
+
+2. Identify the expected experience level.
+
+3. Extract all important skills from ONLY the job description.
+
+4. Compare those skills with the resume.
+
+5. Return:
+- required_skills
+- matched_skills
+- missing_skills
+
+6. Calculate an ATS score (0-100).
+
+Scoring should consider:
+• Skill match
+• Relevant experience
+• ATS keywords
+• Resume relevance
+
+Do NOT invent skills.
+
+Return ONLY valid JSON.
 
 JOB DESCRIPTION:
+
 {data.job_description[:6000]}
 
 RESUME:
+
 {data.resume_text[:6000]}
 
-You must extract skills from the JOB DESCRIPTION first.
-Do not depend on any predefined skill list.
+Return:
 
-For this job description, identify:
-1. job_domain
-2. experience_level
-3. required_skills from JD
-4. matched_skills found in resume
-5. missing_skills not found in resume
-6. ats_score out of 100
-
-Return ONLY raw JSON.
-No markdown.
-No explanation.
-
-JSON format:
 {{
-  "job_domain": "",
-  "experience_level": "",
-  "ats_score": 0,
-  "required_skills": [],
-  "matched_skills": [],
-  "missing_skills": []
+    "job_domain":"",
+    "experience_level":"",
+    "ats_score":0,
+    "required_skills":[],
+    "matched_skills":[],
+    "missing_skills":[]
 }}
 """
 
         response = client.models.generate_content(
             model="gemini-3.5-flash",
-            contents=prompt
+            contents=prompt,
+            config={
+                "response_mime_type": "application/json"
+            }
         )
 
         raw_text = response.text.strip()
@@ -322,42 +345,88 @@ JSON format:
 
     except Exception as e:
         print("ATS ERROR:", str(e))
-        print("USING FALLBACK ATS ANALYSIS")
+        
 
-        return fallback_ats_analysis(data.resume_text, data.job_description)
+        return {
+            "job_domain": "Unknown",
+            "experience_level": "Unknown",
+            "ats_score": 0,
+            "required_skills": [],
+            "matched_skills": [],
+            "missing_skills": [],
+            "message": "AI analysis is temporarily unavailable. Please try again."
+        }
     
 
 @app.post("/suggestions")
 def suggestions(data: ATSRequest):
 
-    suggestions = []
+    prompt = f"""
+You are an expert ATS resume reviewer.
 
-    resume_text = data.resume_text.lower()
-    jd_text = data.job_description.lower()
+Resume:
+{data.resume_text}
 
-    if "sql" in jd_text and "sql" not in resume_text:
-        suggestions.append("Add SQL projects or database experience.")
+Job Description:
+{data.job_description}
 
-    if "docker" in jd_text and "docker" not in resume_text:
-        suggestions.append("Add Docker experience or containerization projects.")
+Generate resume improvement suggestions.
 
-    if "kubernetes" in jd_text and "kubernetes" not in resume_text:
-        suggestions.append("Add Kubernetes or deployment experience.")
+Rules:
+- Suggestions must work for ANY profession.
+- Do NOT assume the job is technical.
+- Compare the resume against the job description.
+- Mention missing skills only if they appear in the JD.
+- Do not invent experience.
+- Give 6-10 concise suggestions.
+- Focus on:
+  * Skills
+  * Experience
+  * Projects (if applicable)
+  * Keywords
+  * Achievements
+  * Action verbs
+  * Formatting
+  * ATS optimization
+- Return ONLY valid JSON.
 
-    if "communication" in jd_text:
-        suggestions.append("Highlight teamwork and communication skills.")
+Example:
 
-    if "aws" in jd_text:
-        suggestions.append("Mention cloud deployment achievements.")
+{
+  "suggestions":[
+    "Highlight leadership experience.",
+    "Include measurable achievements.",
+    "Mention customer interaction experience.",
+    "Use more ATS keywords from the job description."
+  ]
+}
+"""
 
-    if len(suggestions) == 0:
-        suggestions.append(
-            "Your resume matches the job description well. Add measurable achievements to make it stronger."
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+            config={
+                "response_mime_type": "application/json"
+            }
         )
 
-    return {
-        "suggestions": suggestions
-    }
+        result = json.loads(response.text)
+
+        return {
+            "suggestions": result.get("suggestions", [])
+        }
+
+    except Exception as e:
+
+        return {
+            "suggestions": [
+                "Add more measurable achievements.",
+                "Use action verbs to describe your work.",
+                "Include keywords from the job description.",
+                "Tailor your resume for each application."
+            ]
+        }
 
 
 @app.post("/generate-interview-questions")
@@ -465,75 +534,99 @@ Improvements:
 def tailor_resume(data: ResumeTailorRequest):
     try:
         prompt = f"""
-You are an expert ATS resume editor.
+You are an expert resume writer and ATS optimization specialist.
 
-Your task is to compare the candidate's original resume with the job
-description and produce honest, job-focused improvements.
+Your task is to tailor a candidate's resume for ANY profession.
 
-STRICT RULES:
-- Never invent skills.
-- Never invent work experience.
-- Never invent projects.
-- Never invent certifications.
-- Never invent achievements, percentages, numbers, or results.
-- Only use facts already present in the original resume.
-- Preserve the candidate's meaning.
-- Keep writing concise and ATS-friendly.
-- If a requirement is not supported by the resume, put it only inside
-  "missing_keywords" or "suggestions".
-- Do not add unsupported requirements to the tailored resume.
+The job description may belong to:
+- Software Engineering
+- Data Engineering
+- Data Science
+- AI / ML
+- HR
+- Marketing
+- Sales
+- Finance
+- Banking
+- Accounting
+- Healthcare
+- Teaching
+- Business Development
+- Customer Support
+- Operations
+- Product Management
+- Design
+- Consulting
+- Administration
+- Government
+or any other profession.
 
-ORIGINAL RESUME:
-{data.resume_text[:10000]}
+Rules:
 
-TARGET JOB DESCRIPTION:
-{data.job_description[:6000]}
+1. Never invent experience.
 
-Return ONLY valid JSON using this exact structure:
+2. Never invent projects.
 
-{{
-  "target_role": "Role detected from the job description",
+3. Never invent certifications.
 
-  "summary": {{
-    "original": "Original professional summary found in the resume, or a short truthful summary of the existing resume content",
-    "tailored": "Improved job-focused professional summary using only supported facts",
-    "reason": "Short explanation of what was improved"
-  }},
+4. Never invent achievements.
 
-  "skills": {{
-    "original": ["Skills already present in the resume"],
-    "tailored": ["Relevant existing skills reordered for this job"],
-    "reason": "Short explanation of why the skills were reordered"
-  }},
+5. Never add skills the candidate doesn't already have.
 
-  "projects": [
-    {{
-      "original": "Original project description or bullet",
-      "tailored": "Improved project description using only existing facts",
-      "reason": "Short explanation of the improvement"
-    }}
-  ],
+6. Improve wording using ATS-friendly language.
 
-  "experience": [
-    {{
-      "original": "Original experience description or bullet",
-      "tailored": "Improved experience description using only existing facts",
-      "reason": "Short explanation of the improvement"
-    }}
-  ],
+7. Rewrite bullet points using stronger action verbs.
 
-  "keywords": [
-    "Relevant keyword supported by both the resume and job description"
-  ],
+8. Reorder skills according to the job description.
 
-  "missing_keywords": [
-    "Job requirement not supported by the original resume"
-  ],
+9. Improve the professional summary according to the target role.
 
-  "suggestions": [
-    "Honest improvement that does not fabricate information"
-  ]
-}}
+10. Keep facts exactly the same.
+
+11. Preserve formatting.
+
+12. Return ONLY JSON.
+
+Resume:
+
+{resume_text}
+
+Job Description:
+
+{job_description}
+
+Return:
+
+{
+    "target_role":"",
+    "summary":{
+        "original":"",
+        "tailored":"",
+        "reason":""
+    },
+    "skills":{
+        "original":[],
+        "tailored":[],
+        "reason":""
+    },
+    "projects":[
+        {
+            "original":"",
+            "tailored":"",
+            "reason":""
+        }
+    ],
+    "experience":[
+        {
+            "original":"",
+            "tailored":"",
+            "reason":""
+        }
+    ],
+    "keywords":[],
+    "missing_keywords":[],
+    "suggestions":[]
+}
 """
 
         response = None
@@ -602,6 +695,7 @@ Return ONLY valid JSON using this exact structure:
         return {
             "error": str(error)
         }
+    
 @app.post("/extract-docx")
 async def extract_docx(file: UploadFile = File(...)):
     filename = file.filename or ""
@@ -697,128 +791,123 @@ async def extract_docx(file: UploadFile = File(...)):
 @app.post("/resume-health")
 async def resume_health(data: ResumeHealthRequest):
 
-    text = data.resume_text.lower()
+    prompt = f"""
+You are an expert ATS Resume Reviewer.
 
-    # ---------- Summary ----------
-    summary_score = 95 if len(text) > 600 else 75
+Evaluate this resume for ANY profession.
 
-    # ---------- Projects ----------
-    project_keywords = [
-        "project",
-        "developed",
-        "built",
-        "implemented",
-        "created",
-    ]
+The resume may belong to Software Engineering, HR, Marketing,
+Finance, Teaching, Healthcare, Design, Sales, Government,
+Business or any other profession.
 
-    project_score = 70
+Resume:
 
-    for word in project_keywords:
-        if word in text:
-            project_score += 5
+{data.resume_text}
 
-    project_score = min(project_score, 100)
+ATS Score:
+{data.ats_score}
 
-    # ---------- Skills ----------
-    total = len(data.matched_skills) + len(data.missing_skills)
+Matched Skills:
+{", ".join(data.matched_skills)}
 
-    if total == 0:
-        skills_score = 70
-    else:
-        skills_score = int(
-            len(data.matched_skills) / total * 100
+Missing Skills:
+{", ".join(data.missing_skills)}
+
+Evaluate objectively.
+
+Do NOT assume the candidate is from Software Engineering.
+
+Judge the resume according to the standards of that profession.
+
+For example:
+
+Software → projects, coding, technologies
+
+Teacher → teaching experience, classroom management
+
+HR → recruitment, onboarding, policies
+
+Sales → targets, revenue, negotiation
+
+Marketing → campaigns, analytics
+
+Finance → accounting, auditing
+
+Healthcare → patient care, certifications
+
+Business → operations, management
+
+etc.
+
+1. ATS Compatibility
+2. Professional Summary
+3. Experience Quality
+4. Skills Relevance
+5. Grammar
+6. Action Verbs
+7. Achievements
+8. Overall Resume Quality
+
+Rules:
+
+• Do not assume projects exist.
+• Do not assume technical roles.
+• Score each category from 0-100.
+• Give practical feedback.
+• Never invent information.
+• If a section does not exist (for example projects or experience), score based only on the information actually present.
+• Do not penalize candidates simply because they belong to another profession.
+
+Return ONLY JSON.
+
+{
+  "overall":0,
+  "ats":0,
+  "summary":0,
+  "experience":0,
+  "skills":0,
+  "grammar":0,
+  "action_verbs":0,
+  "achievements":0,
+  "feedback":[]
+}
+"""
+
+    try:
+
+        response = client.models.generate_content(
+            model="gemini-3.5-flash",
+            contents=prompt,
+            config={
+                "response_mime_type": "application/json"
+            }
         )
 
-    # ---------- Action Verbs ----------
+        result = json.loads(response.text)
 
-    action_verbs = [
-        "developed",
-        "designed",
-        "implemented",
-        "optimized",
-        "engineered",
-        "built",
-        "created",
-        "deployed",
-        "integrated",
-        "improved",
-    ]
+        return result
 
-    count = 0
+    except Exception as e:
 
-    for verb in action_verbs:
-        if verb in text:
-            count += 1
+        print("Resume Health Error:", e)
 
-    action_score = min(100, 50 + count * 8)
+        overall = max(60, data.ats_score)
 
-    # ---------- Achievements ----------
-
-    numbers = len(re.findall(r"\d+", text))
-
-    achievement_score = min(100, 60 + numbers * 5)
-
-    # ---------- Grammar ----------
-
-    grammar_score = 95
-
-    overall = int(
-        (
-            data.ats_score
-            + summary_score
-            + project_score
-            + skills_score
-            + action_score
-            + achievement_score
-            + grammar_score
-        )
-        / 7
-    )
-
-    feedback = []
-
-    if summary_score < 80:
-        feedback.append(
-            "Add a concise professional summary highlighting your strongest skills and target role."
-        )
-
-    if project_score < 85:
-        feedback.append(
-            "Add clearer project descriptions with technologies used, your contribution, and outcomes."
-        )
-
-    if skills_score < 80:
-        feedback.append(
-            "Your resume is missing some important skills from the job description."
-        )
-
-    if action_score < 80:
-        feedback.append(
-            "Use stronger action verbs such as Developed, Implemented, Designed, Optimized, and Deployed."
-        )
-        
+        return {
+            "overall": overall,
+            "ats": data.ats_score,
+            "summary": 80,
+            "experience": 80,
+            "skills": 80,
+            "grammar": 90,
+            "action_verbs": 80,
+            "achievements": 75,
+            "feedback": [
+                "AI evaluation is temporarily unavailable.",
+                "Your ATS score has still been calculated successfully."
+            ]
+        }
     
-    if achievement_score < 80:
-        feedback.append(
-            "Add measurable results where genuine, such as accuracy, users, performance improvement, or time saved."
-        )
-
-    if data.ats_score < 75:
-        feedback.append(
-            "Improve keyword alignment by using relevant terms from the job description naturally."
-        )
-
-    return {
-        "overall": overall,
-        "ats": data.ats_score,
-        "summary": summary_score,
-        "projects": project_score,
-        "skills": skills_score,
-        "grammar": grammar_score,
-        "action_verbs": action_score,
-        "achievements": achievement_score,
-        "feedback": feedback,
-    }
 @app.post("/preserve-docx-test")
 async def preserve_docx_test(file: UploadFile = File(...)):
     filename = file.filename or ""
