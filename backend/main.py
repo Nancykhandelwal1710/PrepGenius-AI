@@ -494,42 +494,89 @@ def evaluate_answer(data: AnswerEvaluationRequest):
 
     try:
         prompt = f"""
-You are an expert interview evaluator.
+You are a Senior Technical Recruiter conducting a real interview.
 
-Evaluate the candidate's answer.
-
-Question:
+Interview Question:
 {data.question}
 
 Candidate Answer:
 {data.answer}
 
-Return the response in this exact format:
+Evaluate exactly like a recruiter.
 
-Score: <number out of 10>
+Scoring Rules:
 
-Feedback:
-<short feedback>
+Technical Accuracy (0-4)
+Communication (0-2)
+Completeness (0-2)
+Confidence (0-1)
+Practical Example (0-1)
 
-Improvements:
-- <improvement 1>
-- <improvement 2>
-- <improvement 3>
+Never give high marks for long but incorrect answers.
+
+If the answer is factually wrong,
+deduct marks heavily.
+
+If the answer avoids the question,
+give low score.
+
+If the answer is copied,
+reduce confidence.
+
+After evaluating provide:
+
+{
+"score":8,
+"feedback":"...",
+"strengths":[
+"...",
+"..."
+],
+"weaknesses":[
+"...",
+"..."
+],
+"improvements":[
+"...",
+"..."
+],
+"followup_question":"...",
+"ideal_answer":"..."
+}
+
+Return ONLY JSON.
 """
 
         response = client.models.generate_content(
             model="gemini-3.5-flash",
-            contents=prompt
+            contents=prompt,
+            config={
+                "response_mime_type": "application/json"
+            }
         )
 
-        return {
-            "evaluation": response.text
-        }
+        result = json.loads(response.text)
+
+        return result
 
     except Exception as e:
+        print(e)
+
         return {
-            "error": str(e)
+            "overall_score": 0,
+            "technical_accuracy": 0,
+            "completeness": 0,
+            "communication": 0,
+            "confidence": 0,
+            "practical_example": 0,
+            "conciseness": 0,
+            "strengths": [],
+            "weaknesses": [],
+            "verdict": "Evaluation failed.",
+            "ideal_answer": "",
+            "followup_question": ""
         }
+    
 @app.post("/tailor-resume")
 def tailor_resume(data: ResumeTailorRequest):
     try:
@@ -907,6 +954,7 @@ Return ONLY JSON.
                 "Your ATS score has still been calculated successfully."
             ]
         }
+    
     
 @app.post("/preserve-docx-test")
 async def preserve_docx_test(file: UploadFile = File(...)):

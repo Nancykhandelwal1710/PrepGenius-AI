@@ -24,10 +24,11 @@ function MockInterview() {
   const [questions, setQuestions] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answer, setAnswer] = useState("");
-  const [feedback, setFeedback] = useState("");
+  const [feedback, setFeedback] = useState(null);
   const [score, setScore] = useState(null);
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
+  const [improvements, setImprovements] = useState([]);
 
   const generateQuestions = async () => {
     if (!role.trim()) {
@@ -42,6 +43,7 @@ function MockInterview() {
       setAnswer("");
       setFeedback("");
       setScore(null);
+      setImprovements([]);
 
       const response = await axios.post(
         `${API_URL}/generate-interview-questions`,
@@ -115,39 +117,47 @@ function MockInterview() {
     recognition.start();
   };
 
-  const submitAnswer = () => {
-    let newScore = 0;
-    let newFeedback = "";
-
-    const fillerWords = ["um", "uh", "like", "actually", "basically"];
-    const lowerAnswer = answer.toLowerCase();
-
-    const fillerCount = fillerWords.reduce((count, word) => {
-      return count + (lowerAnswer.split(word).length - 1);
-    }, 0);
-
-    if (answer.length < 40) {
-      newScore = 4;
-      newFeedback =
-        "Your answer is short. Add context, one project example, and explain the result.";
-    } else if (answer.length < 130) {
-      newScore = 7;
-      newFeedback =
-        "Good start. Add tools used, project details, and measurable impact to make it stronger.";
-    } else {
-      newScore = 9;
-      newFeedback =
-        "Strong answer. You explained clearly, added detail, and sounded interview-ready.";
+  const submitAnswer = async () => {
+    if (!answer.trim()) {
+      alert("Please answer the question first.");
+      return;
     }
 
-    if (fillerCount > 3) {
-      newScore = Math.max(3, newScore - 1);
-      newFeedback += " Try reducing filler words like um, uh, like, and basically.";
+    try {
+
+      setLoading(true);
+
+      const response = await axios.post(
+        `${API_URL}/evaluate-answer`,
+        {
+          question: questions[currentIndex],
+          answer: answer,
+        }
+      );
+
+      const result = response.data;
+
+      setScore(result.score);
+      setFeedback(result.feedback);
+      setImprovements(result.improvements || []);
+
+      localStorage.setItem(
+        "interviewScore",
+        `${result.score}/10`
+      );
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert("Failed to evaluate answer.");
+
+    } finally {
+
+      setLoading(false);
+
     }
 
-    setScore(newScore);
-    setFeedback(newFeedback);
-    localStorage.setItem("interviewScore", `${newScore}/10`);
   };
 
   const nextQuestion = () => {
@@ -367,9 +377,10 @@ function MockInterview() {
 
                 <button
                   onClick={submitAnswer}
+                  disabled={loading}
                   className="bg-green-600 text-white px-7 py-3 rounded-xl font-semibold hover:bg-green-700"
                 >
-                  Submit Answer
+                  {loading ? "Evaluating..." : "Submit Answer"}
                 </button>
 
                 {feedback && currentIndex < questions.length - 1 && (
@@ -384,44 +395,184 @@ function MockInterview() {
             </div>
 
             {feedback && (
-              <div className="mt-8 grid lg:grid-cols-3 gap-5">
-                <div className="lg:col-span-2 bg-blue-50 border border-blue-100 rounded-2xl p-6">
-                  <h3 className="text-xl font-bold text-blue-900 mb-3">
-                    Feedback
+              <div className="mt-8 grid lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 bg-white border rounded-2xl p-6 shadow">
+                  <h3 className="text-2xl font-bold mb-5">
+                    Recruiter Evaluation
                   </h3>
 
-                  <p className="text-sm text-blue-900 leading-7">
-                    {feedback}
-                  </p>
+                  {feedback.feedback && (
+                    <div className="mb-6 bg-blue-50 border border-blue-100 rounded-xl p-4">
+                      <h4 className="font-bold text-blue-900 mb-2">
+                        Recruiter's Feedback
+                      </h4>
 
-                  <div className="mt-5">
-                    <p className="text-sm font-semibold text-blue-900 mb-2">
-                      Voice interview focus:
+                      <p className="text-blue-900 whitespace-pre-wrap leading-7">
+                        {feedback.feedback}
+                      </p>
+                    </div>
+                  )}
+                  
+
+                  <div className="grid md:grid-cols-2 gap-4 mb-6">
+                    <div className="bg-slate-100 rounded-xl p-4">
+                      <p className="text-sm text-slate-500">Technical Accuracy</p>
+                      <p className="text-2xl font-bold">
+                        {feedback.technical_accuracy}/40
+                      </p>
+                    </div>
+                    <div className="bg-slate-100 rounded-xl p-4">
+                      <p className="text-sm text-slate-500">Completeness</p>
+                      <p className="text-2xl font-bold">
+                        {feedback.completeness}/20
+                      </p>
+                    </div>
+                    <div className="bg-slate-100 rounded-xl p-4">
+                      <p className="text-sm text-slate-500">Communication</p>
+                      <p className="text-2xl font-bold">
+                        {feedback.communication}/15
+                      </p>
+                    </div>
+                    <div className="bg-slate-100 rounded-xl p-4">
+                      <p className="text-sm text-slate-500">Confidence</p>
+                      <p className="text-2xl font-bold">
+                        {feedback.confidence}/10
+                      </p>
+                    </div>
+                    <div className="bg-slate-100 rounded-xl p-4">
+                      <p className="text-sm text-slate-500">Practical Example</p>
+                      <p className="text-2xl font-bold">
+                        {feedback.practical_example}/10
+                      </p>
+                    </div>
+                    <div className="bg-slate-100 rounded-xl p-4">
+                      <p className="text-sm text-slate-500">Conciseness</p>
+                      <p className="text-2xl font-bold">
+                        {feedback.conciseness}/5
+                      </p>
+                    </div>
+                  </div>
+
+                  <hr className="my-6"/>
+                  <h4 className="font-bold text-lg">
+                    Strengths
+                  </h4>
+
+                  <ul className="list-disc pl-6 mt-2">
+                    {feedback?.strengths?.map((item,index)=>(
+                      <li key={index}>{item}</li>
+                    ))}
+                  </ul>
+                  
+
+                  <h4 className="font-bold text-lg mt-6">
+                    Weaknesses
+                  </h4>
+
+                  <ul className="list-disc pl-6 mt-2">
+
+                    {feedback?.weaknesses?.map((item,index)=>(
+
+                      <li key={index}>{item}</li>
+
+                    ))}
+
+                  </ul>
+
+                  <div className="mt-6">
+
+                    <h4 className="font-bold text-lg">
+                      Recruiter Verdict
+                    </h4>
+
+                    <p className="mt-2">
+                      {feedback?.verdict || "No verdict available."}
                     </p>
 
-                    <ul className="text-sm text-blue-900 space-y-2">
-                      <li>• Speak in complete sentences</li>
-                      <li>• Avoid repeated filler words</li>
-                      <li>• Mention tools, example, and impact</li>
-                    </ul>
                   </div>
+
+                  <div className="mt-6">
+
+                    <h4 className="font-bold text-lg">
+                      Ideal Answer
+                    </h4>
+
+                    <p className="mt-2 whitespace-pre-wrap">
+                      {feedback?.ideal_answer || "Not available."}
+                    </p>
+
+                  </div>
+
+                  <div className="mt-6">
+
+                    <h4 className="font-bold text-lg">
+                      Follow-up Question
+                    </h4>
+
+                    <p className="mt-2">
+                      {feedback?.followup_question || "No follow-up question available."}
+                    </p>
+
+                  </div>
+
                 </div>
 
-                <div className="bg-green-50 border border-green-100 rounded-2xl p-6">
-                  <p className="text-sm text-green-700">
-                    Practice score
+                <div className="bg-blue-600 text-white rounded-2xl p-8 flex flex-col justify-center items-center">
+
+                  <p className="text-lg">
+                    Overall Score
                   </p>
 
-                  <p className="text-5xl font-bold text-green-800 mt-2">
-                    {score}/10
+                  <p className="text-6xl font-bold mt-4">
+                    {score}
                   </p>
 
-                  <p className="text-sm text-green-700 mt-3">
-                    Based on answer length, clarity, and filler words.
+                  <p className="mt-2">
+                    /100
                   </p>
+
                 </div>
+
+              </div>
+
+            )}
+
+            {feedback?.followup_question && (
+              <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-xl p-5">
+                 <h3 className="font-bold text-lg">
+                  Recruiter's Follow-up Question
+                 </h3>
+                 <p className="mt-2">
+                  {feedback?.followup_question || "No follow-up question available."}
+                 </p>
               </div>
             )}
+
+            {feedback?.ideal_answer && (
+              <div className="mt-6 bg-green-50 border border-green-200 rounded-xl p-5">
+                <h3 className="font-bold text-lg">
+                  Ideal Answer
+                </h3>
+                <p className="mt-2 whitespace-pre-wrap">
+                  {feedback?.ideal_answer || "Not available."}
+                </p>
+              </div>
+            )}
+            
+
+            {improvements.length > 0 && (
+              <div className="mt-5">
+                <p className="font-semibold text-blue-900 mb-2">
+                  Suggested Improvements
+                </p>
+                <ul className="list-disc ml-5 space-y-2 text-sm text-blue-900">
+                  {improvements.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          
 
             {completed && (
               <div className="mt-8 bg-slate-950 text-white rounded-3xl p-8">
