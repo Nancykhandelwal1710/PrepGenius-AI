@@ -458,7 +458,9 @@ Rules:
             model="gemini-3.5-flash",
             contents=prompt
         )
-
+        print("========== GEMINI QUESTION RESPONSE ==========")
+        print(response.text)
+        print("=============================================")
         questions_text = response.text
 
         questions = []
@@ -480,7 +482,9 @@ Rules:
         }
 
     except Exception as e:
+        print("QUESTION GENERATION ERROR:", e)
         return {
+            "questions": [],
             "error": str(e)
         }
     
@@ -525,26 +529,23 @@ reduce confidence.
 
 After evaluating provide:
 
-{
-"score":8,
-"feedback":"...",
-"strengths":[
-"...",
-"..."
-],
-"weaknesses":[
-"...",
-"..."
-],
-"improvements":[
-"...",
-"..."
-],
-"followup_question":"...",
-"ideal_answer":"..."
-}
+Return ONLY JSON in this exact format:
 
-Return ONLY JSON.
+score (number)
+feedback (string)
+technical_accuracy (number)
+completeness (number)
+communication (number)
+confidence (number)
+practical_example (number)
+conciseness (number)
+strengths (array of strings)
+weaknesses (array of strings)
+improvements (array of strings)
+verdict (string)
+followup_question (string)
+ideal_answer (string)
+
 """
 
         response = client.models.generate_content(
@@ -555,27 +556,49 @@ Return ONLY JSON.
             }
         )
 
-        result = json.loads(response.text)
+        print("========== GEMINI RAW ==========")
+        print(response.text)
+        print("================================")
 
-        return result
+        clean_text = response.text.strip()
+        # Remove markdown if Gemini adds it
+        clean_text = clean_text.replace("```json", "").replace("```", "").strip()
+        
+        result = json.loads(clean_text)
+
+        print("========== RESULT ==========")
+        print(result)
+        print("============================")
+
+        return {
+            "score": result.get("score", 0),
+
+            "feedback": {
+                "feedback": result.get("feedback", ""),
+                "technical_accuracy": result.get("technical_accuracy", 0),
+                "completeness": result.get("completeness", 0),
+                "communication": result.get("communication", 0),
+                "confidence": result.get("confidence", 0),
+                "practical_example": result.get("practical_example", 0),
+                "conciseness": result.get("conciseness", 0),
+                "strengths": result.get("strengths", []),
+                "weaknesses": result.get("weaknesses", []),
+                "verdict": result.get("verdict", ""),
+                "ideal_answer": result.get("ideal_answer", ""),
+                "followup_question": result.get("followup_question", "")
+            },
+            "improvements": result.get("improvements", [])
+
+        }
 
     except Exception as e:
+        print("EVALUATE ANSWER ERROR")
         print(e)
 
         return {
-            "overall_score": 0,
-            "technical_accuracy": 0,
-            "completeness": 0,
-            "communication": 0,
-            "confidence": 0,
-            "practical_example": 0,
-            "conciseness": 0,
-            "strengths": [],
-            "weaknesses": [],
-            "verdict": "Evaluation failed.",
-            "ideal_answer": "",
-            "followup_question": ""
+            "error": str(e)
         }
+    
     
 @app.post("/tailor-resume")
 def tailor_resume(data: ResumeTailorRequest):

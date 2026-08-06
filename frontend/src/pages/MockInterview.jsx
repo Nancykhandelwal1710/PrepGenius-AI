@@ -41,7 +41,7 @@ function MockInterview() {
       setQuestions([]);
       setCurrentIndex(0);
       setAnswer("");
-      setFeedback("");
+      setFeedback(null);
       setScore(null);
       setImprovements([]);
 
@@ -53,8 +53,15 @@ function MockInterview() {
           job_description: jobDescription,
         }
       );
+      
+      console.log(response.data);
+      if (response.data.error) {
+        alert(response.data.error);
+        return;
+      }
 
       setQuestions(response.data.questions || []);
+    
     } catch (error) {
       console.error(error);
       alert("Could not generate questions right now. Please try again.");
@@ -134,21 +141,38 @@ function MockInterview() {
           answer: answer,
         }
       );
-
+      
+      console.log(response.data);
       const result = response.data;
-
-      setScore(result.score);
-      setFeedback(result.feedback);
+      alert(JSON.stringify(result, null, 2));
+      console.log("FULL RESPONSE:", result);
+      console.log("FEEDBACK OBJECT:", result.feedback);
+      setScore(result.score ?? 0);
+      setFeedback({
+        feedback: result.feedback?.feedback || "",
+        technical_accuracy: result.feedback?.technical_accuracy || 0,
+        completeness: result.feedback?.completeness || 0,
+        communication: result.feedback?.communication || 0,
+        confidence: result.feedback?.confidence || 0,
+        practical_example: result.feedback?.practical_example || 0,
+        conciseness: result.feedback?.conciseness || 0,
+        strengths: result.feedback?.strengths || [],
+        weaknesses: result.feedback?.weaknesses || [],
+        verdict: result.feedback?.verdict || "",
+        ideal_answer: result.feedback?.ideal_answer || "",
+        followup_question: result.feedback?.followup_question || "",
+      });
+      
       setImprovements(result.improvements || []);
 
       localStorage.setItem(
         "interviewScore",
-        `${result.score}/10`
+        `${result.score || 0}/100`
       );
 
-    } catch (error) {
+    } catch (err) {
 
-      console.error(error);
+      console.error(err);
 
       alert("Failed to evaluate answer.");
 
@@ -163,7 +187,7 @@ function MockInterview() {
   const nextQuestion = () => {
     setCurrentIndex(currentIndex + 1);
     setAnswer("");
-    setFeedback("");
+    setFeedback(null);
     setScore(null);
     window.speechSynthesis.cancel();
   };
@@ -171,7 +195,7 @@ function MockInterview() {
   const restartInterview = () => {
     setCurrentIndex(0);
     setAnswer("");
-    setFeedback("");
+    setFeedback(null);
     setScore(null);
     window.speechSynthesis.cancel();
   };
@@ -181,7 +205,7 @@ function MockInterview() {
 
   const completed =
     questions.length > 0 &&
-    feedback &&
+    feedback !== null &&
     currentIndex === questions.length - 1;
 
   return (
@@ -394,21 +418,21 @@ function MockInterview() {
               </div>
             </div>
 
-            {feedback && (
+            {feedback !== null && (
               <div className="mt-8 grid lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 bg-white border rounded-2xl p-6 shadow">
                   <h3 className="text-2xl font-bold mb-5">
                     Recruiter Evaluation
                   </h3>
 
-                  {feedback.feedback && (
+                  {feedback?.feedback && (
                     <div className="mb-6 bg-blue-50 border border-blue-100 rounded-xl p-4">
                       <h4 className="font-bold text-blue-900 mb-2">
                         Recruiter's Feedback
                       </h4>
 
                       <p className="text-blue-900 whitespace-pre-wrap leading-7">
-                        {feedback.feedback}
+                        {feedback?.feedback}
                       </p>
                     </div>
                   )}
@@ -418,37 +442,37 @@ function MockInterview() {
                     <div className="bg-slate-100 rounded-xl p-4">
                       <p className="text-sm text-slate-500">Technical Accuracy</p>
                       <p className="text-2xl font-bold">
-                        {feedback.technical_accuracy}/40
+                        {feedback?.technical_accuracy}/40
                       </p>
                     </div>
                     <div className="bg-slate-100 rounded-xl p-4">
                       <p className="text-sm text-slate-500">Completeness</p>
                       <p className="text-2xl font-bold">
-                        {feedback.completeness}/20
+                        {feedback?.completeness}/20
                       </p>
                     </div>
                     <div className="bg-slate-100 rounded-xl p-4">
                       <p className="text-sm text-slate-500">Communication</p>
                       <p className="text-2xl font-bold">
-                        {feedback.communication}/15
+                        {feedback?.communication}/15
                       </p>
                     </div>
                     <div className="bg-slate-100 rounded-xl p-4">
                       <p className="text-sm text-slate-500">Confidence</p>
                       <p className="text-2xl font-bold">
-                        {feedback.confidence}/10
+                        {feedback?.confidence}/10
                       </p>
                     </div>
                     <div className="bg-slate-100 rounded-xl p-4">
                       <p className="text-sm text-slate-500">Practical Example</p>
                       <p className="text-2xl font-bold">
-                        {feedback.practical_example}/10
+                        {feedback?.practical_example}/10
                       </p>
                     </div>
                     <div className="bg-slate-100 rounded-xl p-4">
                       <p className="text-sm text-slate-500">Conciseness</p>
                       <p className="text-2xl font-bold">
-                        {feedback.conciseness}/5
+                        {feedback?.conciseness}/5
                       </p>
                     </div>
                   </div>
