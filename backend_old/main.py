@@ -18,12 +18,45 @@ from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from google import genai
 
+print("RUNNING FILE:", __file__)
 load_dotenv()
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 print("Gemini Key:", GEMINI_API_KEY)
 
 client = genai.Client(api_key=GEMINI_API_KEY)
+
+import time
+
+def generate_with_fallback(prompt, config=None):
+    MODELS = [
+        "gemini-2.5-flash-lite",
+        "gemini-2.5-flash",
+    ]
+
+    last_error = None
+
+    for model_name in MODELS:
+        try:
+            print("=" * 50)
+            print("TRYING MODEL:", model_name)
+            print("=" * 50)
+
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt,
+                config=config,
+            )
+
+            print("SUCCESS:", model_name)
+            return response
+
+        except Exception as e:
+            print("FAILED:", model_name)
+            print(e)
+            last_error = e
+
+    raise last_error
 
 app = FastAPI()
 
@@ -313,12 +346,11 @@ Return:
 }}
 """
 
-        response = client.models.generate_content(
-            model="gemini-3.5-flash",
-            contents=prompt,
-            config={
+        response = generate_with_fallback(
+           prompt,
+            {
                 "response_mime_type": "application/json"
-            }
+            } 
         )
 
         raw_text = response.text.strip()
@@ -403,10 +435,9 @@ Example:
 """
 
     try:
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt,
-            config={
+        response = generate_with_fallback(
+            prompt,
+            {
                 "response_mime_type": "application/json"
             }
         )
@@ -454,13 +485,13 @@ Rules:
 - Include technical, project-based, and HR questions.
 """
 
-        response = client.models.generate_content(
-            model="gemini-3.5-flash",
-            contents=prompt
-        )
+        response = generate_with_fallback(prompt)
+
+
         print("========== GEMINI QUESTION RESPONSE ==========")
         print(response.text)
         print("=============================================")
+
         questions_text = response.text
 
         questions = []
@@ -487,11 +518,6 @@ Rules:
             "questions": [],
             "error": str(e)
         }
-    
-class AnswerEvaluationRequest(BaseModel):
-    question: str
-    answer: str
-
 
 @app.post("/evaluate-answer")
 def evaluate_answer(data: AnswerEvaluationRequest):
@@ -506,7 +532,31 @@ Interview Question:
 Candidate Answer:
 {data.answer}
 
-Evaluate exactly like a recruiter.
+Act as a Senior Hiring Manager.
+
+Analyze whether the answer actually answers the question.
+
+Detect:
+
+• incorrect facts
+• missing concepts
+• shallow explanation
+• lack of examples
+• communication quality
+• confidence
+• STAR method
+• technical depth
+• industry relevance
+
+If the answer is wrong,
+explain WHY.
+
+If the answer is incomplete,
+list what is missing.
+
+Give actionable advice.
+
+Write detailed feedback of 120-200 words.
 
 Scoring Rules:
 
@@ -529,29 +579,30 @@ reduce confidence.
 
 After evaluating provide:
 
-Return ONLY JSON in this exact format:
+Return ONLY valid JSON.
 
-score (number)
-feedback (string)
-technical_accuracy (number)
-completeness (number)
-communication (number)
-confidence (number)
-practical_example (number)
-conciseness (number)
-strengths (array of strings)
-weaknesses (array of strings)
-improvements (array of strings)
-verdict (string)
-followup_question (string)
-ideal_answer (string)
+{
+  "score": 0,
+  "feedback": "",
+  "technical_accuracy": 0,
+  "completeness": 0,
+  "communication": 0,
+  "confidence": 0,
+  "practical_example": 0,
+  "conciseness": 0,
+  "strengths": [],
+  "weaknesses": [],
+  "improvements": [],
+  "verdict": "",
+  "followup_question": "",
+  "ideal_answer": ""
+}
 
 """
 
-        response = client.models.generate_content(
-            model="gemini-3.5-flash",
-            contents=prompt,
-            config={
+        response = generate_with_fallback(
+            prompt,
+            {
                 "response_mime_type": "application/json"
             }
         )
@@ -563,8 +614,12 @@ ideal_answer (string)
         clean_text = response.text.strip()
         # Remove markdown if Gemini adds it
         clean_text = clean_text.replace("```json", "").replace("```", "").strip()
-        
-        result = json.loads(clean_text)
+        json_match = re.search(r"\{.*\}", clean_text, re.DOTALL)
+        if not json_match:
+            raise Exception(f"No valid JSON returned.\nGemini Response:\n{clean_text}")
+
+
+        result = json.loads(json_match.group(0))
 
         print("========== RESULT ==========")
         print(result)
@@ -592,8 +647,13 @@ ideal_answer (string)
         }
 
     except Exception as e:
-        print("EVALUATE ANSWER ERROR")
-        print(e)
+        print("\n========== EVALUATE ANSWER ERROR ==========")
+        print(type(e).__name__)
+        print(str(e))
+        if 'response' in locals():
+            print("\n========== RAW GEMINI RESPONSE ==========")
+            print(response.text)
+            print("===========================================")
 
         return {
             "error": str(e)
@@ -634,100 +694,66 @@ or any other profession.
 Rules:
 
 1. Never invent experience.
-
 2. Never invent projects.
-
 3. Never invent certifications.
-
 4. Never invent achievements.
-
 5. Never add skills the candidate doesn't already have.
-
 6. Improve wording using ATS-friendly language.
-
 7. Rewrite bullet points using stronger action verbs.
-
 8. Reorder skills according to the job description.
-
 9. Improve the professional summary according to the target role.
-
 10. Keep facts exactly the same.
-
 11. Preserve formatting.
-
 12. Return ONLY JSON.
 
 Resume:
 
-{resume_text}
+{data.resume_text}
 
 Job Description:
 
-{job_description}
+{data.job_description}
 
 Return:
 
-{
+{{
     "target_role":"",
-    "summary":{
+    "summary":{{
         "original":"",
         "tailored":"",
         "reason":""
-    },
-    "skills":{
+    }},
+    "skills":{{
         "original":[],
         "tailored":[],
         "reason":""
-    },
+    }},
     "projects":[
-        {
+        {{
             "original":"",
             "tailored":"",
             "reason":""
-        }
+        }}
     ],
     "experience":[
-        {
+        {{
             "original":"",
             "tailored":"",
             "reason":""
-        }
+        }}
     ],
     "keywords":[],
     "missing_keywords":[],
     "suggestions":[]
-}
+}}
 """
 
-        response = None
-        last_error = None
-        
-        for attempt in range(4):
-            try:
-                response = client.models.generate_content( 
-                    model="gemini-3.5-flash",
-                    contents=prompt,
-                    config={
-                        "response_mime_type": "application/json"
-                    }
-                )
-                break
-            except Exception as error:
-                last_error = error
-                error_text = str(error)
-
-                if "503" in error_text or "UNAVAILABLE" in error_text:
-                    if attempt < 3:
-                        wait_time = (2 ** attempt) + random.uniform(0, 1)
-                        time.sleep(wait_time)
-                        continue
-                
-                raise error
-        if response is None:
-            raise Exception(
-                "Server is temporarily busy. Please try again after a minute."
-            ) from last_error
-
+        response = generate_with_fallback(
+            prompt,
+            {
+                "response_mime_type": "application/json"
+            }
+        )
 
         result = json.loads(response.text)
 
@@ -945,10 +971,9 @@ Return ONLY JSON.
 
     try:
 
-        response = client.models.generate_content(
-            model="gemini-3.5-flash",
-            contents=prompt,
-            config={
+        response = generate_with_fallback(
+            prompt,
+            {
                 "response_mime_type": "application/json"
             }
         )
@@ -1213,8 +1238,10 @@ Return exactly:
         response = None
         last_error = None
         model_candidates = [
-            "gemini-3.5-flash",
+            
             "gemini-2.5-flash",
+            "gemini-2.5-flash-lite",
+            
         ]
 
         for model_name in model_candidates:
@@ -1900,8 +1927,10 @@ Return exactly this JSON structure:
         last_error = None
 
         model_candidates = [
-            "gemini-3.5-flash",
+            
             "gemini-2.5-flash",
+            "gemini-2.5-flash-lite"
+        
         ]
 
         for model_name in model_candidates:

@@ -144,10 +144,29 @@ function MockInterview() {
       
       console.log(response.data);
       const result = response.data;
-      alert(JSON.stringify(result, null, 2));
+      
       console.log("FULL RESPONSE:", result);
       console.log("FEEDBACK OBJECT:", result.feedback);
-      setScore(result.score ?? 0);
+      if (result.error) {
+        setFeedback({
+          feedback:
+            "AI evaluation is temporarily unavailable because the Gemini API quota has been exceeded. Please try again in a minute.",
+          technical_accuracy: 0,
+          completeness: 0,
+          communication: 0,
+          confidence: 0,
+          practical_example: 0,
+          conciseness: 0,
+          strengths: [],
+          weaknesses: [],
+          verdict: "Evaluation unavailable",
+          ideal_answer: "",
+          followup_question: "",
+        });
+        setScore(null);
+        return;
+      }
+      
       setFeedback({
         feedback: result.feedback?.feedback || "",
         technical_accuracy: result.feedback?.technical_accuracy || 0,
