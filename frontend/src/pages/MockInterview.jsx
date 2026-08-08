@@ -12,7 +12,7 @@ import {
   Radio,
 } from "lucide-react";
 
-const API_URL = "https://prepgenius-backend-3841.onrender.com";
+const API_URL = "http://127.0.0.1:8000";
 
 function MockInterview() {
   const [role, setRole] = useState("");
@@ -184,9 +184,17 @@ function MockInterview() {
       
       setImprovements(result.improvements || []);
 
+      const totalScore =
+        result.score ??
+        result.overall_score ??
+        result.feedback?.score ??
+        0;
+
+      setScore(totalScore);
+
       localStorage.setItem(
         "interviewScore",
-        `${result.score || 0}/100`
+        `${totalScore}/100`
       );
 
     } catch (err) {

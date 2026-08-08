@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-const API_URL = "https://prepgenius-backend-3841.onrender.com";
+const API_URL = "http://127.0.0.1:8000";
 
 function ResumeAnalyzer() {
   const [file, setFile] = useState(null);
@@ -126,6 +126,7 @@ function ResumeAnalyzer() {
     try {
       setAnalyzing(true);
 
+      // 1. ATS ANALYSIS
       const atsResponse = await axios.post(`${API_URL}/ats-score`, {
         resume_text: text,
         job_description: jobDescription,
@@ -137,38 +138,67 @@ function ResumeAnalyzer() {
       setRequiredSkills(atsResponse.data.required_skills || []);
       setJobDomain(atsResponse.data.job_domain || "");
       setExperienceLevel(atsResponse.data.experience_level || "");
-      
-      const healthResponse = await axios.post(
-        `${API_URL}/resume-health`,
-        {
-          resume_text: text,
-          ats_score: atsResponse.data.ats_score,
-          matched_skills: atsResponse.data.matched_skills || [],
-          missing_skills: atsResponse.data.missing_skills || [],
-        }
+
+      localStorage.setItem(
+        "atsScore",
+        atsResponse.data.ats_score
       );
 
-      setHealth(healthResponse.data);
-
-      localStorage.setItem("atsScore", atsResponse.data.ats_score);
       localStorage.setItem(
         "matchedSkills",
         JSON.stringify(atsResponse.data.matched_skills || [])
       );
+
       localStorage.setItem(
         "missingSkills",
         JSON.stringify(atsResponse.data.missing_skills || [])
       );
 
-      const suggestionResponse = await axios.post(`${API_URL}/suggestions`, {
-        resume_text: text,
-        job_description: jobDescription,
-      });
+      // 2. RESUME HEALTH
+      try {
+        const healthResponse = await axios.post(
+          `${API_URL}/resume-health`,
+          {
+            resume_text: text,
+            ats_score: atsResponse.data.ats_score,
+            matched_skills: atsResponse.data.matched_skills || [],
+            missing_skills: atsResponse.data.missing_skills || [],
+          }
+        );
 
-      setSuggestions(suggestionResponse.data.suggestions || []);
+        setHealth(healthResponse.data);
+
+      } catch (healthError) {
+        console.error("Resume Health failed:", healthError);
+        setHealth(null);
+      }
+
+      // 3. RESUME SUGGESTIONS
+      try {
+        const suggestionResponse = await axios.post(
+          `${API_URL}/resume-suggestions`,
+          {
+            resume_text: text,
+            job_description: jobDescription,
+          }
+        );
+        setSuggestions(
+          suggestionResponse.data.suggestions || []
+        );
+
+      } catch (suggestionError) {
+        console.error(
+          "Resume Suggestions failed:",
+          suggestionError
+        );
+
+        setSuggestions([]);
+      }
+
     } catch (error) {
-      console.error(error);
-      alert("Analysis failed. Please try again.");
+      console.error("ATS Analysis failed:", error);
+      alert("ATS analysis failed. Please try again.");
+
     } finally {
       setAnalyzing(false);
     }

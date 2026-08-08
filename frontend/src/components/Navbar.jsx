@@ -101,7 +101,7 @@ function Navbar() {
         </div>
       </div>
 
-      <div className="lg:hidden px-2 pb-6 grid grid-cols-2 gap-1 text-lg font-medium text-center text-slate-700">
+      <div className="lg:hidden px-2 pb-6 grid grid-cols-2 gap-1 text-med font-medium text-center text-slate-700">
         <Link to="/" className={linkClass("/")}>
           Home
         </Link>
@@ -111,12 +111,16 @@ function Navbar() {
         </Link>
       </div>
 
-      <div className="lg:hidden px-1 pb-5 grid grid-cols-3 gap-12 text-sm font-medium text-center text-slate-700">
+      <div className="lg:hidden px-6 pb-5 grid grid-cols-2 gap-8 text-sm font-medium text-center text-slate-700">
         <Link to="/resume-analyzer" className={linkClass("/resume-analyzer")}>
           Resume Analyzer
         </Link>
 
         <Link to="/resume-builder" className={linkClass("/resume-builder")}>
+          Resume Builder
+        </Link>
+
+        <Link to="/resume-optimizer" className={linkClass("/resume-optimizer")}>
           Resume Optimizer
         </Link>
         

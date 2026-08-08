@@ -1,403 +1,1078 @@
-import { useState } from "react";
-import axios from "axios";
-import {
-  Upload,
-  Sparkles,
-  FileText,
-  Download,
-  CheckCircle,
-  AlertCircle,
-} from "lucide-react";
 
-const API_URL = "https://prepgenius-backend-3841.onrender.com";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+const createEmptyResume = () => ({
+  personal: {
+    name: "",
+    email: "",
+    phone: "",
+    location: "",
+    linkedin: "",
+    github: "",
+  },
+
+  summary: "",
+
+  skills: [],
+
+  experience: [
+    {
+      jobTitle: "",
+      company: "",
+      location: "",
+      startDate: "",
+      endDate: "",
+      description: "",
+    },
+  ],
+
+  education: [
+    {
+      degree: "",
+      institution: "",
+      location: "",
+      year: "",
+    },
+  ],
+
+  projects: [
+    {
+      name: "",
+      technologies: "",
+      description: "",
+      link: "",
+    },
+  ],
+
+  certifications: [
+    {
+      name: "",
+      issuer: "",
+      year: "",
+    },
+  ],
+});
+
 
 function ResumeBuilder() {
-  const [file, setFile] = useState(null);
-  const [resumeText, setResumeText] = useState(
-    localStorage.getItem("resumeText") || ""
+  const navigate = useNavigate();
+
+  // Load saved draft if one exists
+  const getInitialResume = () => {
+    try {
+      const draft = localStorage.getItem("resumeBuilderDraft");
+
+      if (draft) {
+        const parsedDraft = JSON.parse(draft);
+
+        return {
+          ...createEmptyResume(),
+          ...parsedDraft,
+          personal: {
+            ...createEmptyResume().personal,
+            ...(parsedDraft.personal || {}),
+          },
+        };
+      }
+    } catch (error) {
+      console.error(
+        "Could not load resume draft:",
+        error
+      );
+    }
+
+    return createEmptyResume();
+  };
+
+  const [resume, setResume] = useState(
+    getInitialResume
   );
 
-  const [jobDescription, setJobDescription] = useState("");
-  const [extracting, setExtracting] = useState(false);
-  const [optimizing, setOptimizing] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [savedMessage, setSavedMessage] =
+    useState("");
 
-  const handleUpload = async (event) => {
-    const selectedFile = event.target.files?.[0];
+  // -----------------------------
+  // PERSONAL INFORMATION
+  // -----------------------------
 
-    if (!selectedFile) {
-      return;
-    }
+  const updatePersonal = (field, value) => {
+    setResume((previous) => ({
+      ...previous,
 
-    const isPDF =
-      selectedFile.name.toLowerCase().endsWith(".pdf");
-    
-    const isDOCX =
-      selectedFile.name.toLowerCase().endsWith(".docx");
-        
-    if (!isPDF && !isDOCX) {
-      setError("Please upload a PDF or DOCX resume.");
-      setFile(null);
-      return;
-    }
+      personal: {
+        ...previous.personal,
+        [field]: value,
+      },
+    }));
+  };
 
-    setFile(selectedFile);
-    setResumeText("");
-    setError("");
-    setSuccess("");
 
-    const formData = new FormData();
-    formData.append("file", selectedFile);
+  // -----------------------------
+  // NORMAL FIELDS
+  // -----------------------------
 
+  const updateField = (field, value) => {
+    setResume((previous) => ({
+      ...previous,
+      [field]: value,
+    }));
+  };
+
+
+  // -----------------------------
+  // ARRAY SECTIONS
+  // -----------------------------
+
+  const updateArrayItem = (
+    section,
+    index,
+    field,
+    value
+  ) => {
+    setResume((previous) => ({
+      ...previous,
+
+      [section]: previous[section].map(
+        (item, itemIndex) =>
+          itemIndex === index
+            ? {
+                ...item,
+                [field]: value,
+              }
+            : item
+      ),
+    }));
+  };
+
+
+  const addItem = (
+    section,
+    item
+  ) => {
+    setResume((previous) => ({
+      ...previous,
+
+      [section]: [
+        ...previous[section],
+        item,
+      ],
+    }));
+  };
+
+
+  const removeItem = (
+    section,
+    index
+  ) => {
+    setResume((previous) => ({
+      ...previous,
+
+      [section]: previous[section].filter(
+        (_, itemIndex) =>
+          itemIndex !== index
+      ),
+    }));
+  };
+
+
+  // -----------------------------
+  // SKILLS
+  // -----------------------------
+
+  const handleSkills = (value) => {
+    const skills = value
+      .split(",")
+      .map((skill) => skill.trim())
+      .filter(Boolean);
+
+    updateField(
+      "skills",
+      skills
+    );
+  };
+
+
+  // -----------------------------
+  // SAVE DRAFT
+  // -----------------------------
+
+  const saveDraft = () => {
     try {
-      setExtracting(true);
-
-      const response = await axios.post(
-        `${API_URL}/extract-text`,
-        formData
+      localStorage.setItem(
+        "resumeBuilderDraft",
+        JSON.stringify(resume)
       );
 
-      const extractedText = response.data.text || "";
+      alert("✅ Resume draft saved successfully!");
 
-      setResumeText(extractedText);
-      localStorage.setItem("resumeText", extractedText);
-    } catch (uploadError) {
-      console.error(uploadError);
-
-      setError(
-        "The resume could not be read. Please upload a text-based PDF or DOCX file and try again."
+    } catch (error) {
+      console.error(
+        "Could not save resume draft:",
+        error
       );
-    } finally {
-      setExtracting(false);
+
+      alert("❌ Unable to save resume draft.");
     }
   };
 
-  const optimizePDF = async () => {
-    if (!file) {
-      setError("Please upload your original PDF or DOCX resume first.");
-      return;
-    }
+  // -----------------------------
+  // PREVIEW
+  // -----------------------------
 
-    if (!jobDescription.trim()) {
-      setError("Please paste the target job description first.");
-      return;
-    }
-
+  const saveAndPreview = () => {
     try {
-      setOptimizing(true);
-      setError("");
-      setSuccess("");
-
-      const formData = new FormData();
-
-      formData.append("file", file);
-      formData.append("job_description", jobDescription);
-
-      const fileName = file.name.toLowerCase();
-      
-      const isPDF = fileName.endsWith(".pdf");
-      const isDOCX = fileName.endsWith(".docx");
-
-      const endpoint = isPDF
-        ? "/optimize-pdf"
-        : "/optimize-docx";
-
-      const expectedContentType = isPDF
-        ? "application/pdf"
-        : "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-        
-      const response = await axios.post(
-        `${API_URL}${endpoint}`,
-        formData,
-        {
-          responseType: "blob",
-          timeout: 180000,
-        }
+      // Save the current Builder data
+      // for Resume Preview.
+      localStorage.setItem(
+        "tailoredResume",
+        JSON.stringify(resume)
       );
 
-      const blob = new Blob([response.data], {
-        type: expectedContentType,
-      });
-
-      const downloadUrl =
-        window.URL.createObjectURL(blob);
-
-      const dot = file.name.lastIndexOf(".");
-      
-      const base = 
-        dot === -1
-          ? file.name
-          : file.name.substring(0, dot);
-
-      const ext = 
-        dot === -1
-          ? isPDF
-            ? ".pdf"
-            : ".docx"
-          : file.name.substring(dot);
-
-      const link =
-        document.createElement("a");
-
-      link.href = downloadUrl;
-      link.download =
-        `${base}_optimized${ext}`;
-
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-
-      setTimeout(() => {
-        window.URL.revokeObjectURL(downloadUrl);
-      }, 1000);
-
-      setSuccess(
-        "Your optimized resume has been downloaded successfully."
+      // Also keep a draft copy.
+      localStorage.setItem(
+        "resumeBuilderDraft",
+        JSON.stringify(resume)
       );
 
-    } catch (requestError) {
-      console.error("Optimization error:", requestError);
+      navigate(
+        "/resume-preview"
+      );
 
-      let message =
-        "Resume optimization failed. Please try again.";
+    } catch (error) {
+      console.error(
+        "Could not prepare resume preview:",
+        error
+      );
 
-      if (requestError.response?.data instanceof Blob) {
-        try{
-          const errorText =
-            await requestError.response.data.text();
-
-          const parsedError = JSON.parse(errorText);
-
-          message =
-            parsedError.detail ||
-            parsedError.error ||
-            message; 
-        }catch {
-          message =
-            "The server could not optimize this resume. Please try again.";
-        }
-      }else if (requestError.message) {
-        message = requestError.message;
-      }
-      setError(message);
-    } finally {
-      setOptimizing(false);
+      setSavedMessage(
+        "Could not open resume preview."
+      );
     }
   };
+
 
   return (
-    <div className="min-h-screen bg-slate-100 px-4 py-10">
-      <div className="max-w-7xl mx-auto">
-        <section className="bg-slate-950 text-white rounded-3xl p-8 md:p-10 shadow-xl mb-8">
-          <p className="text-sm uppercase tracking-widest text-blue-300 mb-3">
-            AI Resume Optimizer
+    <div className="min-h-screen bg-slate-100 py-10 px-4">
+
+      <div className="max-w-6xl mx-auto">
+
+        {/* ========================================= */}
+        {/* HEADER */}
+        {/* ========================================= */}
+
+        <div className="bg-slate-950 text-white rounded-3xl p-8 mb-8">
+
+          <p className="text-blue-300 text-sm uppercase tracking-widest mb-3">
+            Resume Builder
           </p>
 
-          <h1 className="text-4xl md:text-5xl font-bold max-w-4xl">
-            Optimize your resume while preserving its original layout
+          <h1 className="text-4xl md:text-5xl font-bold">
+            Build Your Professional Resume
           </h1>
 
-          <p className="text-slate-300 mt-4 max-w-3xl leading-7">
-            Upload your original PDF or Docx resume and paste the target job
-            description. PrepGenius will improve relevant content and
-            return an optimized PDF using your existing resume design.
+          <p className="text-slate-300 mt-4 max-w-2xl">
+            Create a professional,
+            ATS-friendly resume from
+            scratch using your own
+            information.
           </p>
-        </section>
 
-        {error && (
-          <div className="mb-8 bg-red-50 border border-red-200 text-red-800 rounded-2xl p-5 flex items-start gap-3">
-            <AlertCircle
-              size={22}
-              className="shrink-0 mt-0.5"
-            />
+        </div>
 
-            <p>{error}</p>
+
+        {/* ========================================= */}
+        {/* SAVE MESSAGE */}
+        {/* ========================================= */}
+
+        {savedMessage && (
+          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-5 py-4 rounded-xl font-medium">
+            {savedMessage}
           </div>
         )}
 
-        {success && (
-          <div className="mb-8 bg-green-50 border border-green-200 text-green-800 rounded-2xl p-5 flex items-start gap-3">
-            <CheckCircle
-              size={22}
-              className="shrink-0 mt-0.5"
-            />
 
-            <p>{success}</p>
-          </div>
-        )}
+        {/* ========================================= */}
+        {/* PERSONAL INFORMATION */}
+        {/* ========================================= */}
 
-        <section className="grid lg:grid-cols-2 gap-8">
-          <div className="bg-white rounded-3xl shadow p-8">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                <Upload size={22} />
-              </div>
+        <section className="bg-white rounded-3xl shadow-sm p-8 mb-6">
 
-              <div>
-                <p className="text-sm text-blue-600 font-semibold">
-                  Step 1
-                </p>
+          <h2 className="text-2xl font-bold mb-6">
+            Personal Information
+          </h2>
 
-                <h2 className="text-2xl font-bold">
-                  Upload your current resume
-                </h2>
-              </div>
-            </div>
-
-            <p className="text-sm text-slate-600 leading-6 mb-5">
-              Upload the original PDF or DOCX file that contains your complete
-              resume design and information.
-            </p>
+          <div className="grid md:grid-cols-2 gap-5">
 
             <input
-              type="file"
-              accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-              onChange={handleUpload}
-              className="w-full border border-dashed border-slate-300 rounded-xl p-4 text-sm"
+              type="text"
+              placeholder="Full Name"
+              value={
+                resume.personal.name
+              }
+              onChange={(event) =>
+                updatePersonal(
+                  "name",
+                  event.target.value
+                )
+              }
+              className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
             />
 
-            {file && (
-              <div className="mt-4 bg-slate-50 border border-slate-200 rounded-xl p-4">
-                <p className="text-xs text-slate-500">
-                  Selected resume
-                </p>
+            <input
+              type="email"
+              placeholder="Email"
+              value={
+                resume.personal.email
+              }
+              onChange={(event) =>
+                updatePersonal(
+                  "email",
+                  event.target.value
+                )
+              }
+              className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+            />
 
-                <p className="font-medium mt-1 break-all">
-                  {file.name}
-                </p>
-              </div>
-            )}
+            <input
+              type="text"
+              placeholder="Phone"
+              value={
+                resume.personal.phone
+              }
+              onChange={(event) =>
+                updatePersonal(
+                  "phone",
+                  event.target.value
+                )
+              }
+              className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+            />
 
-            {extracting && (
-              <p className="mt-4 text-sm text-blue-600 font-medium">
-                Reading your resume...
-              </p>
-            )}
+            <input
+              type="text"
+              placeholder="Location"
+              value={
+                resume.personal.location
+              }
+              onChange={(event) =>
+                updatePersonal(
+                  "location",
+                  event.target.value
+                )
+              }
+              className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+            />
 
-            {resumeText && !extracting && (
-              <div className="mt-5 bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3">
-                <CheckCircle
-                  size={20}
-                  className="text-green-600 shrink-0 mt-0.5"
-                />
+            <input
+              type="url"
+              placeholder="LinkedIn URL"
+              value={
+                resume.personal.linkedin
+              }
+              onChange={(event) =>
+                updatePersonal(
+                  "linkedin",
+                  event.target.value
+                )
+              }
+              className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+            />
 
-                <div>
-                  <p className="font-semibold text-green-900">
-                    Resume uploaded successfully
-                  </p>
+            <input
+              type="url"
+              placeholder="GitHub URL"
+              value={
+                resume.personal.github
+              }
+              onChange={(event) =>
+                updatePersonal(
+                  "github",
+                  event.target.value
+                )
+              }
+              className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+            />
 
-                  <p className="text-sm text-green-700 mt-1">
-                    The text was extracted and the resume is ready
-                    for optimization.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {resumeText && (
-              <>
-                <label className="block text-sm font-semibold mt-6 mb-2">
-                  Extracted resume text
-                </label>
-
-                <textarea
-                  rows="12"
-                  value={resumeText}
-                  readOnly
-                  className="w-full border border-slate-300 rounded-xl p-4 text-sm bg-slate-50 text-slate-700"
-                />
-              </>
-            )}
           </div>
 
-          <div className="bg-white rounded-3xl shadow p-8">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                <FileText size={22} />
-              </div>
+        </section>
 
-              <div>
-                <p className="text-sm text-blue-600 font-semibold">
-                  Step 2
-                </p>
 
-                <h2 className="text-2xl font-bold">
-                  Add the target job
-                </h2>
-              </div>
+        {/* ========================================= */}
+        {/* SUMMARY */}
+        {/* ========================================= */}
+
+        <section className="bg-white rounded-3xl shadow-sm p-8 mb-6">
+
+          <h2 className="text-2xl font-bold mb-2">
+            Professional Summary
+          </h2>
+
+          <p className="text-sm text-slate-500 mb-5">
+            Write 2–4 sentences describing
+            your professional profile.
+          </p>
+
+          <textarea
+            rows={6}
+            placeholder="Write your professional summary..."
+            value={
+              resume.summary
+            }
+            onChange={(event) =>
+              updateField(
+                "summary",
+                event.target.value
+              )
+            }
+            className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+          />
+
+        </section>
+
+
+        {/* ========================================= */}
+        {/* SKILLS */}
+        {/* ========================================= */}
+
+        <section className="bg-white rounded-3xl shadow-sm p-8 mb-6">
+
+          <h2 className="text-2xl font-bold mb-2">
+            Skills
+          </h2>
+
+          <p className="text-sm text-slate-500 mb-5">
+            Separate each skill with a comma.
+          </p>
+
+          <input
+            type="text"
+            placeholder="Python, React, SQL, FastAPI, Git"
+            value={
+              resume.skills.join(", ")
+            }
+            onChange={(event) =>
+              handleSkills(
+                event.target.value
+              )
+            }
+            className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+          />
+
+          {resume.skills.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-4">
+
+              {resume.skills.map(
+                (skill, index) => (
+                  <span
+                    key={index}
+                    className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm"
+                  >
+                    {skill}
+                  </span>
+                )
+              )}
+
             </div>
+          )}
 
-            <p className="text-sm text-slate-600 leading-6 mb-5">
-              Paste the complete job description so the optimizer
-              can tailor your summary, projects, and skills.
-            </p>
+        </section>
 
-            <textarea
-              rows="18"
-              value={jobDescription}
-              onChange={(event) => {
-                setJobDescription(event.target.value);
-                setError("");
-                setSuccess("");
-              }}
-              placeholder="Paste the complete job description here..."
-              className="w-full border border-slate-300 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+
+        {/* ========================================= */}
+        {/* EXPERIENCE */}
+        {/* ========================================= */}
+
+        <section className="bg-white rounded-3xl shadow-sm p-8 mb-6">
+
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+
+            <h2 className="text-2xl font-bold">
+              Experience
+            </h2>
 
             <button
               type="button"
-              onClick={optimizePDF}
-              disabled={
-                optimizing ||
-                extracting ||
-                !file ||
-                !jobDescription.trim()
+              onClick={() =>
+                addItem(
+                  "experience",
+                  {
+                    jobTitle: "",
+                    company: "",
+                    location: "",
+                    startDate: "",
+                    endDate: "",
+                    description: "",
+                  }
+                )
               }
-              className="mt-5 w-full bg-blue-600 text-white py-4 rounded-xl font-semibold hover:bg-blue-700 disabled:bg-slate-400 disabled:cursor-not-allowed inline-flex justify-center items-center gap-2"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold"
             >
-              {optimizing ? (
-                <>
-                  <Sparkles
-                    size={20}
-                    className="animate-pulse"
-                  />
-                  Optimizing your resume...
-                </>
-              ) : (
-                <>
-                  <Download size={20} />
-                  Optimize & Download Resume
-                </>
-              )}
+              + Add Experience
             </button>
 
-            <div className="mt-6 bg-blue-50 border border-blue-100 rounded-xl p-5">
-              <h3 className="font-semibold text-blue-900">
-                What will be preserved?
-              </h3>
-
-              <div className="mt-3 space-y-2 text-sm text-blue-800">
-                <p>✓ Your name and contact information</p>
-                <p>✓ Original PDF layout and design</p>
-                <p>✓ Project names and technologies</p>
-                <p>✓ Education and certifications</p>
-                <p>✓ Dates and coding-profile details</p>
-              </div>
-            </div>
-
-            <div className="mt-5 bg-amber-50 border border-amber-200 rounded-xl p-5">
-              <p className="text-sm text-amber-900 leading-6">
-                The first request may take longer because the Render
-                backend can require time to wake up. Keep the page open
-                until the download begins.
-              </p>
-            </div>
           </div>
+
+
+          {resume.experience.map(
+            (item, index) => (
+              <div
+                key={index}
+                className="border border-slate-200 rounded-2xl p-6 mb-5"
+              >
+
+                <div className="grid md:grid-cols-2 gap-5">
+
+                  <input
+                    type="text"
+                    placeholder="Job Title"
+                    value={
+                      item.jobTitle
+                    }
+                    onChange={(event) =>
+                      updateArrayItem(
+                        "experience",
+                        index,
+                        "jobTitle",
+                        event.target.value
+                      )
+                    }
+                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="Company"
+                    value={
+                      item.company
+                    }
+                    onChange={(event) =>
+                      updateArrayItem(
+                        "experience",
+                        index,
+                        "company",
+                        event.target.value
+                      )
+                    }
+                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="Location"
+                    value={
+                      item.location
+                    }
+                    onChange={(event) =>
+                      updateArrayItem(
+                        "experience",
+                        index,
+                        "location",
+                        event.target.value
+                      )
+                    }
+                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="Start Date (e.g. Jan 2023)"
+                    value={
+                      item.startDate
+                    }
+                    onChange={(event) =>
+                      updateArrayItem(
+                        "experience",
+                        index,
+                        "startDate",
+                        event.target.value
+                      )
+                    }
+                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="End Date (e.g. Present)"
+                    value={
+                      item.endDate
+                    }
+                    onChange={(event) =>
+                      updateArrayItem(
+                        "experience",
+                        index,
+                        "endDate",
+                        event.target.value
+                      )
+                    }
+                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+
+                </div>
+
+
+                <textarea
+                  rows={5}
+                  placeholder="Describe your responsibilities, achievements and impact..."
+                  value={
+                    item.description
+                  }
+                  onChange={(event) =>
+                    updateArrayItem(
+                      "experience",
+                      index,
+                      "description",
+                      event.target.value
+                    )
+                  }
+                  className="w-full border border-slate-300 rounded-xl px-4 py-3 mt-5 outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+                />
+
+
+                {resume.experience.length >
+                  1 && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      removeItem(
+                        "experience",
+                        index
+                      )
+                    }
+                    className="text-red-600 hover:text-red-700 font-medium mt-4"
+                  >
+                    Remove Experience
+                  </button>
+                )}
+
+              </div>
+            )
+          )}
+
         </section>
+
+
+        {/* ========================================= */}
+        {/* EDUCATION */}
+        {/* ========================================= */}
+
+        <section className="bg-white rounded-3xl shadow-sm p-8 mb-6">
+
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+
+            <h2 className="text-2xl font-bold">
+              Education
+            </h2>
+
+            <button
+              type="button"
+              onClick={() =>
+                addItem(
+                  "education",
+                  {
+                    degree: "",
+                    institution: "",
+                    location: "",
+                    year: "",
+                  }
+                )
+              }
+              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold"
+            >
+              + Add Education
+            </button>
+
+          </div>
+
+
+          {resume.education.map(
+            (item, index) => (
+              <div
+                key={index}
+                className="border border-slate-200 rounded-2xl p-6 mb-5"
+              >
+
+                <div className="grid md:grid-cols-2 gap-5">
+
+                  <input
+                    type="text"
+                    placeholder="Degree"
+                    value={
+                      item.degree
+                    }
+                    onChange={(event) =>
+                      updateArrayItem(
+                        "education",
+                        index,
+                        "degree",
+                        event.target.value
+                      )
+                    }
+                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="Institution"
+                    value={
+                      item.institution
+                    }
+                    onChange={(event) =>
+                      updateArrayItem(
+                        "education",
+                        index,
+                        "institution",
+                        event.target.value
+                      )
+                    }
+                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="Location"
+                    value={
+                      item.location
+                    }
+                    onChange={(event) =>
+                      updateArrayItem(
+                        "education",
+                        index,
+                        "location",
+                        event.target.value
+                      )
+                    }
+                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="Graduation Year"
+                    value={
+                      item.year
+                    }
+                    onChange={(event) =>
+                      updateArrayItem(
+                        "education",
+                        index,
+                        "year",
+                        event.target.value
+                      )
+                    }
+                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+
+                </div>
+
+
+                {resume.education.length >
+                  1 && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      removeItem(
+                        "education",
+                        index
+                      )
+                    }
+                    className="text-red-600 hover:text-red-700 font-medium mt-4"
+                  >
+                    Remove Education
+                  </button>
+                )}
+
+              </div>
+            )
+          )}
+
+        </section>
+
+
+        {/* ========================================= */}
+        {/* PROJECTS */}
+        {/* ========================================= */}
+
+        <section className="bg-white rounded-3xl shadow-sm p-8 mb-6">
+
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+
+            <h2 className="text-2xl font-bold">
+              Projects
+            </h2>
+
+            <button
+              type="button"
+              onClick={() =>
+                addItem(
+                  "projects",
+                  {
+                    name: "",
+                    technologies: "",
+                    description: "",
+                    link: "",
+                  }
+                )
+              }
+              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold"
+            >
+              + Add Project
+            </button>
+
+          </div>
+
+
+          {resume.projects.map(
+            (item, index) => (
+              <div
+                key={index}
+                className="border border-slate-200 rounded-2xl p-6 mb-5"
+              >
+
+                <div className="grid md:grid-cols-2 gap-5">
+
+                  <input
+                    type="text"
+                    placeholder="Project Name"
+                    value={
+                      item.name
+                    }
+                    onChange={(event) =>
+                      updateArrayItem(
+                        "projects",
+                        index,
+                        "name",
+                        event.target.value
+                      )
+                    }
+                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="Technologies"
+                    value={
+                      item.technologies
+                    }
+                    onChange={(event) =>
+                      updateArrayItem(
+                        "projects",
+                        index,
+                        "technologies",
+                        event.target.value
+                      )
+                    }
+                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+
+                  <input
+                    type="url"
+                    placeholder="Project Link"
+                    value={
+                      item.link
+                    }
+                    onChange={(event) =>
+                      updateArrayItem(
+                        "projects",
+                        index,
+                        "link",
+                        event.target.value
+                      )
+                    }
+                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+
+                </div>
+
+
+                <textarea
+                  rows={5}
+                  placeholder="Describe the project, your contribution and results..."
+                  value={
+                    item.description
+                  }
+                  onChange={(event) =>
+                    updateArrayItem(
+                      "projects",
+                      index,
+                      "description",
+                      event.target.value
+                    )
+                  }
+                  className="w-full border border-slate-300 rounded-xl px-4 py-3 mt-5 outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+                />
+
+
+                {resume.projects.length >
+                  1 && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      removeItem(
+                        "projects",
+                        index
+                      )
+                    }
+                    className="text-red-600 hover:text-red-700 font-medium mt-4"
+                  >
+                    Remove Project
+                  </button>
+                )}
+
+              </div>
+            )
+          )}
+
+        </section>
+
+
+        {/* ========================================= */}
+        {/* CERTIFICATIONS */}
+        {/* ========================================= */}
+
+        <section className="bg-white rounded-3xl shadow-sm p-8 mb-8">
+
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+
+            <h2 className="text-2xl font-bold">
+              Certifications
+            </h2>
+
+            <button
+              type="button"
+              onClick={() =>
+                addItem(
+                  "certifications",
+                  {
+                    name: "",
+                    issuer: "",
+                    year: "",
+                  }
+                )
+              }
+              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold"
+            >
+              + Add Certification
+            </button>
+
+          </div>
+
+
+          {resume.certifications.map(
+            (item, index) => (
+              <div
+                key={index}
+                className="border border-slate-200 rounded-2xl p-6 mb-5"
+              >
+
+                <div className="grid md:grid-cols-3 gap-5">
+
+                  <input
+                    type="text"
+                    placeholder="Certification Name"
+                    value={
+                      item.name
+                    }
+                    onChange={(event) =>
+                      updateArrayItem(
+                        "certifications",
+                        index,
+                        "name",
+                        event.target.value
+                      )
+                    }
+                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="Issuing Organization"
+                    value={
+                      item.issuer
+                    }
+                    onChange={(event) =>
+                      updateArrayItem(
+                        "certifications",
+                        index,
+                        "issuer",
+                        event.target.value
+                      )
+                    }
+                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="Year"
+                    value={
+                      item.year
+                    }
+                    onChange={(event) =>
+                      updateArrayItem(
+                        "certifications",
+                        index,
+                        "year",
+                        event.target.value
+                      )
+                    }
+                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+
+                </div>
+
+
+                {resume.certifications.length >
+                  1 && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      removeItem(
+                        "certifications",
+                        index
+                      )
+                    }
+                    className="text-red-600 hover:text-red-700 font-medium mt-4"
+                  >
+                    Remove Certification
+                  </button>
+                )}
+
+              </div>
+            )
+          )}
+
+        </section>
+
+
+        {/* ========================================= */}
+        {/* ACTION BUTTONS */}
+        {/* ========================================= */}
+
+        <div className="flex flex-col sm:flex-row justify-end gap-4 pb-10">
+
+          <button
+            type="button"
+            onClick={saveDraft}
+            className="border border-slate-300 bg-white hover:bg-slate-50 px-7 py-3 rounded-xl font-semibold"
+          >
+            Save Draft
+          </button>
+
+
+          <button
+            type="button"
+            onClick={saveAndPreview}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-7 py-3 rounded-xl font-semibold"
+          >
+            Preview Resume
+          </button>
+
+        </div>
+
       </div>
     </div>
   );
 }
 
 export default ResumeBuilder;
+

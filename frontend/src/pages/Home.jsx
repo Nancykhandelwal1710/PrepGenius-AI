@@ -1,8 +1,10 @@
+
 import { Link } from "react-router-dom";
 
 function Home() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
+      {/* HERO */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-slate-950 to-slate-950" />
 
@@ -18,10 +20,12 @@ function Home() {
 
             <p className="text-slate-300 text-lg leading-8 mb-8 max-w-xl">
               PrepGenius helps you compare your resume with a job description,
-              find missing skills, and practice interview questions before applying.
+              find missing skills, optimize your resume, build a new resume,
+              and practice interview questions before applying.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4">
+            {/* MAIN ACTIONS */}
+            <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
               <Link
                 to="/resume-analyzer"
                 className="bg-blue-600 hover:bg-blue-700 px-7 py-3 rounded-xl font-semibold text-center"
@@ -30,7 +34,7 @@ function Home() {
               </Link>
 
               <Link
-                to="/mock-interview"
+                to="/resume-optimizer"
                 className="border border-slate-500 hover:bg-white hover:text-slate-950 px-7 py-3 rounded-xl font-semibold text-center"
               >
                 Optimize Resume
@@ -40,11 +44,19 @@ function Home() {
                 to="/resume-builder"
                 className="bg-blue-600 hover:bg-blue-700 px-7 py-3 rounded-xl font-semibold text-center"
               >
+                Build Resume
+              </Link>
+
+              <Link
+                to="/mock-interview"
+                className="border border-slate-500 hover:bg-white hover:text-slate-950 px-7 py-3 rounded-xl font-semibold text-center"
+              >
                 Practice Interview
               </Link>
             </div>
 
-            <div className="grid grid-cols-4 gap-4 mt-13 max-w-xxxl">
+            {/* QUICK STATS */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-13 max-w-xxxl">
               <div>
                 <h3 className="text-xl font-bold text-blue-300">
                   Resume
@@ -83,6 +95,7 @@ function Home() {
             </div>
           </div>
 
+          {/* DASHBOARD PREVIEW */}
           <div className="bg-white/10 border border-white/10 rounded-3xl p-6 shadow-2xl">
             <div className="bg-slate-900 rounded-2xl p-6 border border-slate-700">
               <div className="flex items-center justify-between mb-6">
@@ -181,6 +194,7 @@ function Home() {
         </div>
       </section>
 
+      {/* TECHNOLOGIES */}
       <section className="bg-slate-950 border-y border-white/10 py-10">
         <div className="max-w-7xl mx-auto px-6">
           <p className="text-center text-sm text-slate-400 mb-6">
@@ -202,6 +216,7 @@ function Home() {
         </div>
       </section>
 
+      {/* HOW IT WORKS */}
       <section className="bg-slate-50 text-slate-900 py-20">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto mb-14">
@@ -215,36 +230,37 @@ function Home() {
 
             <p className="text-slate-600 leading-7">
               The process is built around what students actually need before
-              applying: resume matching, skill clarity, and interview practice.
+              applying: resume matching, skill clarity, resume optimization,
+              resume building, and interview practice.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-5 gap-6">
             {[
               [
                 "1",
-                "Upload resume",
-                "Add your latest PDF resume for text extraction.",
+                "Analyze resume",
+                "Upload your resume and compare it with a real job description.",
               ],
               [
                 "2",
-                "Paste job description",
-                "Add the role requirements you want to target.",
+                "Review score",
+                "Check matched skills, missing skills, and resume suggestions.",
               ],
               [
                 "3",
-                "Review score",
-                "Check matched skills, missing skills, and suggestions.",
+                "Optimize resume",
+                "Enhance your existing resume based on the target job description.",
               ],
               [
                 "4",
-                "Optimize Resume",
-                "Enhance resume based on Target role and Job Description.",
+                "Build resume",
+                "Create a professional resume from scratch using your own information.",
               ],
               [
                 "5",
                 "Practice interview",
-                "Generate role-based questions and prepare answers.",
+                "Generate role-based questions and practice your answers.",
               ],
             ].map((item) => (
               <div
@@ -268,6 +284,7 @@ function Home() {
         </div>
       </section>
 
+      {/* FEATURES */}
       <section className="bg-white text-slate-900 py-20">
         <div className="max-w-7xl mx-auto px-6">
           <div className="max-w-3xl mb-12">
@@ -280,8 +297,9 @@ function Home() {
             </h2>
 
             <p className="text-slate-600 leading-7">
-              PrepGenius combines resume analysis and interview practice so you
-              can prepare with a clearer plan.
+              PrepGenius combines resume analysis, optimization, resume
+              building, and interview practice so you can prepare with a
+              clearer plan.
             </p>
           </div>
 
@@ -305,7 +323,11 @@ function Home() {
               ],
               [
                 "Resume Optimizer",
-                "Enhance your resume with targeted job description & improvements.",
+                "Enhance your resume with targeted job description improvements.",
+              ],
+              [
+                "Resume Builder",
+                "Create a professional resume from scratch.",
               ],
               [
                 "Mock Interview",
@@ -333,6 +355,7 @@ function Home() {
         </div>
       </section>
 
+      {/* CTA */}
       <section className="bg-slate-100 text-slate-900 py-20">
         <div className="max-w-5xl mx-auto px-6 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -340,11 +363,12 @@ function Home() {
           </h2>
 
           <p className="text-slate-600 leading-7 max-w-2xl mx-auto mb-8">
-            Start by checking your resume against a real job description, enhance it accordingly and then
-            practice interview questions based on your target role.
+            Start by checking your resume against a real job description,
+            optimize or build your resume, and then practice interview
+            questions based on your target role.
           </p>
 
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-center gap-4 flex-wrap">
             <Link
               to="/resume-analyzer"
               className="bg-blue-600 hover:bg-blue-700 px-7 py-3 rounded-xl font-semibold text-white text-center"
@@ -353,23 +377,30 @@ function Home() {
             </Link>
 
             <Link
-              to="/mock-interview"
+              to="/resume-optimizer"
               className="bg-slate-900 hover:bg-slate-800 px-7 py-3 rounded-xl font-semibold text-white text-center"
             >
               Optimize Resume
             </Link>
 
             <Link
-              to="/resume-analyzer"
+              to="/resume-builder"
+              className="bg-blue-600 hover:bg-blue-700 px-7 py-3 rounded-xl font-semibold text-white text-center"
+            >
+              Build Resume
+            </Link>
+
+            <Link
+              to="/mock-interview"
               className="bg-blue-600 hover:bg-blue-700 px-7 py-3 rounded-xl font-semibold text-white text-center"
             >
               Practice Interview
             </Link>
-
           </div>
         </div>
       </section>
 
+      {/* FOOTER */}
       <footer className="bg-slate-950 text-slate-300 py-12 border-t border-white/10">
         <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-8">
           <div>
@@ -382,8 +413,8 @@ function Home() {
             </div>
 
             <p className="text-sm leading-7 text-slate-400">
-              Helping students build ATS-friendly resumes,
-              optimize resumes and prepare for interviews.
+              Helping students build ATS-friendly resumes, optimize resumes,
+              and prepare for interviews.
             </p>
           </div>
 
@@ -393,16 +424,38 @@ function Home() {
             </h4>
 
             <div className="space-y-3 text-sm">
-              <Link to="/resume-analyzer" className="block hover:text-white">
+              <Link
+                to="/resume-analyzer"
+                className="block hover:text-white"
+              >
                 Resume Analyzer
               </Link>
-              <Link to="/resume-builder" className="block hover:text-white transition">
+
+              <Link
+                to="/resume-optimizer"
+                className="block hover:text-white transition"
+              >
                 Resume Optimizer
               </Link>
-              <Link to="/mock-interview" className="block hover:text-white">
+
+              <Link
+                to="/resume-builder"
+                className="block hover:text-white transition"
+              >
+                Resume Builder
+              </Link>
+
+              <Link
+                to="/mock-interview"
+                className="block hover:text-white"
+              >
                 Mock Interview
               </Link>
-              <Link to="/dashboard" className="block hover:text-white">
+
+              <Link
+                to="/dashboard"
+                className="block hover:text-white"
+              >
                 Dashboard
               </Link>
             </div>
@@ -450,3 +503,4 @@ function Home() {
 }
 
 export default Home;
+

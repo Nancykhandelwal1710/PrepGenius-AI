@@ -386,38 +386,24 @@ Return exactly:
 
 
 # ============================================================
-# PDF HELPERS
+# PDF OPTIMIZER - UNIVERSAL
 # ============================================================
 
-def clean_text(value: str) -> str:
+import json
+from io import BytesIO
 
-    return " ".join(
-        str(value).split()
-    ).strip()
+import fitz
+from fastapi import HTTPException, UploadFile
+from fastapi.responses import StreamingResponse
 
-
-def normalize_heading(value: str) -> str:
-
-    normalized = clean_text(
-        value
-    ).upper()
-
-    normalized = normalized.rstrip(
-        ":|-–—"
-    ).strip()
-
-    normalized = normalized.replace(
-        " ",
-        ""
-    )
-
-    return normalized
+from app.services.gemini_service import generate_json
 
 
-def replace_unsupported_characters(
-    value: str
-) -> str:
+def clean_pdf_text(text: str) -> str:
+    return " ".join(str(text).split()).strip()
 
+
+def safe_pdf_text(text: str) -> str:
     replacements = {
         "•": "-",
         "●": "-",
@@ -433,124 +419,447 @@ def replace_unsupported_characters(
         "\u00a0": " ",
     }
 
-    for old_character, new_character in replacements.items():
+    text = str(text)
 
-        value = value.replace(
-            old_character,
-            new_character
-        )
+    for old, new in replacements.items():
+        text = text.replace(old, new)
 
-    return value
+    return clean_pdf_text(text)
 
 
-def safe_pdf_text(value: str) -> str:
+def extract_pdf_blocks(document):
+    """
+    Extract meaningful text blocks from any resume.
 
-    value = replace_unsupported_characters(
-        str(value)
-    )
+    No profession-specific section names are required.
+    """
 
-    return clean_text(value)
+    blocks = []
 
+    for page_number, page in enumerate(document):
 
-def format_skills_text(value: str) -> str:
+        page_dict = page.get_text("dict")
 
-    value = replace_unsupported_characters(
-        str(value)
-    )
+        for block_index, block in enumerate(
+            page_dict.get("blocks", [])
+        ):
 
-    value = clean_text(value)
+            lines = block.get("lines", [])
 
-    value = value.replace(
-        "EST APIs",
-        "REST APIs"
-    )
+            if not lines:
+                continue
 
-    skill_labels = [
-        "Languages:",
-        "Web Technologies:",
-        "Tools & Platforms:",
-        "Database:",
-        "AI/ML:",
-        "Cloud & APIs:",
-    ]
+            spans = []
+            line_texts = []
 
-    for label in skill_labels:
+            for line in lines:
 
-        value = value.replace(
-            label,
-            "\n" + label
-        )
+                line_spans = line.get("spans", [])
 
-    lines = []
+                if not line_spans:
+                    continue
 
-    for line in value.splitlines():
+                spans.extend(line_spans)
 
-        cleaned_line = clean_text(
-            line
-        )
+                text = clean_pdf_text(
+                    " ".join(
+                        span.get("text", "")
+                        for span in line_spans
+                        if span.get("text", "").strip()
+                    )
+                )
 
-        if cleaned_line:
-            lines.append(
-                cleaned_line
+                if text:
+                    line_texts.append(text)
+
+            if not line_texts or not spans:
+                continue
+
+            text = clean_pdf_text(
+                " ".join(line_texts)
             )
 
-    return "\n".join(lines).strip()
+            if not text:
+                continue
+
+            x0, y0, x1, y1 = block["bbox"]
+
+            font_sizes = [
+                float(span.get("size", 10))
+                for span in spans
+                if span.get("text", "").strip()
+            ]
+
+            font_size = (
+                max(font_sizes)
+                if font_sizes
+                else 10
+            )
+
+            blocks.append({
+                "block_id": (
+                    f"page:{page_number}:"
+                    f"block:{block_index}"
+                ),
+                "page_number": page_number,
+                "text": text,
+                "x0": float(x0),
+                "y0": float(y0),
+                "x1": float(x1),
+                "y1": float(y1),
+                "font_size": font_size,
+                "character_count": len(text),
+            })
+
+    return blocks
 
 
-def shorten_at_word(
-    value: str,
-    maximum_length: int
-) -> str:
+def classify_pdf_blocks(blocks):
+    """
+    Dynamically classify blocks.
 
-    if len(value) <= maximum_length:
-        return value
+    We do NOT depend on specific professions or
+    hard-coded resume section names.
+    """
 
-    shortened = value[
-        :maximum_length
+    classified = []
+
+    for block in blocks:
+
+        text = block["text"]
+
+        # Ignore tiny decorative fragments.
+        if len(text.strip()) < 15:
+            continue
+
+        # Ignore obvious page numbers.
+        if text.strip().isdigit():
+            continue
+
+        classified.append({
+            **block,
+            "editable": True,
+        })
+
+    return classified
+
+
+def build_pdf_optimization_prompt(
+    blocks,
+    job_description
+):
+    return f"""
+You are an expert resume optimization specialist.
+
+You are optimizing a resume for a target job.
+
+The resume can belong to ANY profession, including:
+
+Software Engineering
+Data Science
+AI/ML
+Finance
+Accounting
+Marketing
+Sales
+HR
+Healthcare
+Teaching
+Law
+Operations
+Design
+Consulting
+Government
+Hospitality
+Customer Support
+Business
+or any other profession.
+
+IMPORTANT:
+
+Do NOT assume the resume has sections called
+Summary, Projects, Skills, Experience, etc.
+
+Analyze the actual text blocks provided.
+
+JOB DESCRIPTION:
+
+{job_description[:8000]}
+
+RESUME TEXT BLOCKS:
+
+{json.dumps(blocks, ensure_ascii=False)}
+
+YOUR TASK:
+
+Identify text blocks where wording can genuinely be improved
+for the target job.
+
+You may improve:
+
+- professional wording
+- clarity
+- relevance
+- action verbs
+- ATS-friendly terminology
+- sentence structure
+- keyword alignment
+- concise presentation
+
+STRICT FACTUAL RULES:
+
+1. NEVER invent experience.
+
+2. NEVER invent skills.
+
+3. NEVER invent projects.
+
+4. NEVER invent certifications.
+
+5. NEVER invent qualifications.
+
+6. NEVER invent achievements.
+
+7. NEVER invent metrics.
+
+8. NEVER invent employers.
+
+9. NEVER invent job titles.
+
+10. NEVER invent dates.
+
+11. NEVER invent education.
+
+12. NEVER invent technologies.
+
+13. NEVER invent responsibilities.
+
+14. NEVER change names.
+
+15. NEVER change email addresses.
+
+16. NEVER change phone numbers.
+
+17. NEVER change URLs.
+
+18. NEVER change numerical values.
+
+19. NEVER change dates.
+
+20. NEVER change certification names.
+
+21. NEVER change degree names.
+
+22. Preserve the original meaning.
+
+23. Only rewrite text that already contains
+candidate information.
+
+24. Do not create new resume sections.
+
+25. Do not remove important factual information.
+
+26. Keep rewritten text approximately the same length
+as the original text.
+
+27. If a block is already good, return it unchanged
+or do not include it.
+
+28. Do not optimize contact information.
+
+29. Do not optimize page numbers.
+
+30. Do not optimize decorative text.
+
+31. Do not optimize section headings.
+
+32. Do not optimize isolated names.
+
+33. Do not optimize isolated dates.
+
+34. Do not optimize email addresses.
+
+35. Do not optimize URLs.
+
+36. Do not optimize phone numbers.
+
+37. Do not optimize degree names.
+
+38. Do not optimize certification names.
+
+39. Do not optimize company names.
+
+40. Do not optimize job titles.
+
+IMPORTANT:
+
+The block_id MUST remain exactly unchanged.
+
+Return ONLY valid JSON.
+
+Return:
+
+{{
+    "changes": [
+        {{
+            "block_id": "page:0:block:5",
+            "improved": "Improved version of the existing text"
+        }}
     ]
+}}
 
-    if " " in shortened:
+Only include blocks where an improvement is actually useful.
+"""
 
-        shortened = shortened.rsplit(
-            " ",
-            1
-        )[0]
 
-    return shortened.rstrip(
-        " ,;:-"
+def is_protected_pdf_block(text: str) -> bool:
+
+    value = text.strip()
+
+    if not value:
+        return True
+
+    # Email
+    if "@" in value and "." in value:
+        return True
+
+    # URLs
+    lowered = value.lower()
+
+    if (
+        "http://" in lowered
+        or "https://" in lowered
+        or "www." in lowered
+    ):
+        return True
+
+    # Phone-like blocks
+    digits = sum(
+        character.isdigit()
+        for character in value
     )
 
+    if digits >= 7 and digits / max(len(value), 1) > 0.35:
+        return True
 
-# ============================================================
-# PDF OPTIMIZER
-# ============================================================
+    # Date-like blocks
+    date_tokens = [
+        "jan",
+        "feb",
+        "mar",
+        "apr",
+        "may",
+        "jun",
+        "jul",
+        "aug",
+        "sep",
+        "oct",
+        "nov",
+        "dec",
+    ]
+
+    lowered_value = value.lower()
+
+    if any(
+        token in lowered_value
+        for token in date_tokens
+    ):
+
+        if any(
+            character.isdigit()
+            for character in value
+        ):
+            return True
+
+    return False
+
+
+def insert_replacement_text(
+    page,
+    block,
+    improved_text
+):
+
+    original_rect = fitz.Rect(
+        block["x0"],
+        block["y0"],
+        block["x1"],
+        block["y1"],
+    )
+
+    # Slightly enlarge the available width,
+    # but never outside the page.
+    page_width = page.rect.width
+
+    replacement_rect = fitz.Rect(
+        original_rect.x0,
+        original_rect.y0,
+        min(
+            original_rect.x1 + 20,
+            page_width - 10,
+        ),
+        original_rect.y1 + 5,
+    )
+
+    original_font_size = max(
+        float(block.get("font_size", 10)),
+        7,
+    )
+
+    font_sizes = [
+        original_font_size,
+        original_font_size - 0.5,
+        original_font_size - 1,
+        original_font_size - 1.5,
+        original_font_size - 2,
+    ]
+
+    for font_size in font_sizes:
+
+        font_size = max(
+            font_size,
+            7,
+        )
+
+        result = page.insert_textbox(
+            replacement_rect,
+            improved_text,
+            fontsize=font_size,
+            fontname="helv",
+            color=(0, 0, 0),
+            align=fitz.TEXT_ALIGN_LEFT,
+        )
+
+        if result >= 0:
+            return True
+
+    return False
+
 
 async def optimize_pdf(
     file: UploadFile,
-    job_description: str
+    job_description: str,
 ):
 
     if not file.filename:
 
         raise HTTPException(
             status_code=400,
-            detail="Please upload a PDF file."
+            detail="Please upload a PDF file.",
         )
 
-    if not file.filename.lower().endswith(
-        ".pdf"
-    ):
+    if not file.filename.lower().endswith(".pdf"):
 
         raise HTTPException(
             status_code=400,
-            detail="Please upload a PDF file."
+            detail="Please upload a PDF file.",
         )
 
     if not job_description.strip():
 
         raise HTTPException(
             status_code=400,
-            detail="Please provide a job description."
+            detail="Please provide a job description.",
         )
 
     pdf_bytes = await file.read()
@@ -559,7 +868,7 @@ async def optimize_pdf(
 
         raise HTTPException(
             status_code=400,
-            detail="The uploaded PDF is empty."
+            detail="The uploaded PDF is empty.",
         )
 
     document = None
@@ -568,390 +877,115 @@ async def optimize_pdf(
 
         document = fitz.open(
             stream=pdf_bytes,
-            filetype="pdf"
+            filetype="pdf",
         )
 
-        heading_aliases = {
+        # ----------------------------------------------------
+        # 1. Extract ALL meaningful blocks
+        # ----------------------------------------------------
 
-            "SUMMARY": "SUMMARY",
-            "PROFILE": "SUMMARY",
-            "PROFESSIONALSUMMARY": "SUMMARY",
-            "CAREERSUMMARY": "SUMMARY",
-            "OBJECTIVE": "SUMMARY",
-            "CAREEROBJECTIVE": "SUMMARY",
-            "ABOUTME": "SUMMARY",
+        blocks = extract_pdf_blocks(
+            document
+        )
 
-            "PROJECTS": "PROJECTS",
-            "PROJECT": "PROJECTS",
-            "PERSONALPROJECTS": "PROJECTS",
-            "ACADEMICPROJECTS": "PROJECTS",
-            "KEYPROJECTS": "PROJECTS",
-            "PROJECTEXPERIENCE": "PROJECTS",
+        blocks = classify_pdf_blocks(
+            blocks
+        )
 
-            "SKILLS": "SKILLS",
-            "TECHNICALSKILLS": "SKILLS",
-            "CORESKILLS": "SKILLS",
-            "KEYSKILLS": "SKILLS",
-            "SKILLSET": "SKILLS",
-            "TECHNOLOGIES": "SKILLS",
-            "TECHNOLOGYSTACK": "SKILLS",
-
-            "EDUCATION": "EDUCATION",
-            "ACADEMICBACKGROUND": "EDUCATION",
-            "ACADEMICQUALIFICATIONS":
-                "EDUCATION",
-
-            "EXPERIENCE": "EXPERIENCE",
-            "WORKEXPERIENCE":
-                "EXPERIENCE",
-            "PROFESSIONALEXPERIENCE":
-                "EXPERIENCE",
-            "INTERNSHIP": "EXPERIENCE",
-            "INTERNSHIPS": "EXPERIENCE",
-
-            "CERTIFICATIONS":
-                "CERTIFICATIONS",
-            "CERTIFICATES":
-                "CERTIFICATIONS",
-            "COURSES":
-                "CERTIFICATIONS",
-
-            "CODINGPROFILES":
-                "CODING PROFILES",
-            "CODINGPROFILE":
-                "CODING PROFILES",
-            "PROFILES":
-                "CODING PROFILES",
-
-            "ACHIEVEMENTS":
-                "ACHIEVEMENTS",
-            "AWARDS":
-                "ACHIEVEMENTS",
-
-            "POSITIONSOFRESPONSIBILITY":
-                "POSITIONS OF RESPONSIBILITY",
-
-            "CONTACT":
-                "CONTACT",
-
-            "CONTACTDETAILS":
-                "CONTACT",
-        }
-
-        allowed_sections = {
-            "SUMMARY",
-            "PROJECTS",
-            "SKILLS",
-        }
-
-        skill_labels = [
-            "Languages:",
-            "Web Technologies:",
-            "Tools & Platforms:",
-            "Database:",
-            "AI/ML:",
-            "Cloud & APIs:",
-        ]
-
-        def detect_heading(value):
-
-            normalized = normalize_heading(
-                value
-            )
-
-            return heading_aliases.get(
-                normalized
-            )
+        # ----------------------------------------------------
+        # 2. Remove protected blocks
+        # ----------------------------------------------------
 
         editable_blocks = []
 
-        detected_headings = []
+        for block in blocks:
 
-        current_section = ""
+            if not block["editable"]:
+                continue
 
-        for page_number, page in enumerate(
-            document
-        ):
-
-            page_dict = page.get_text(
-                "dict"
-            )
-
-            for block_index, block in enumerate(
-                page_dict.get(
-                    "blocks",
-                    []
-                )
+            if is_protected_pdf_block(
+                block["text"]
             ):
+                continue
 
-                lines = block.get(
-                    "lines",
-                    []
-                )
-
-                if not lines:
-                    continue
-
-                block_spans = []
-                block_lines = []
-
-                for line in lines:
-
-                    spans = line.get(
-                        "spans",
-                        []
-                    )
-
-                    if not spans:
-                        continue
-
-                    block_spans.extend(
-                        spans
-                    )
-
-                    line_text = clean_text(
-                        " ".join(
-                            span.get(
-                                "text",
-                                ""
-                            )
-
-                            for span in spans
-
-                            if span.get(
-                                "text",
-                                ""
-                            ).strip()
-                        )
-                    )
-
-                    if line_text:
-                        block_lines.append(
-                            line_text
-                        )
-
-                if (
-                    not block_lines
-                    or not block_spans
-                ):
-                    continue
-
-                block_text = clean_text(
-                    " ".join(
-                        block_lines
-                    )
-                )
-
-                if not block_text:
-                    continue
-
-                matched_section = detect_heading(
-                    block_text
-                )
-
-                if matched_section:
-
-                    current_section = (
-                        matched_section
-                    )
-
-                    if (
-                        matched_section
-                        not in detected_headings
-                    ):
-
-                        detected_headings.append(
-                            matched_section
-                        )
-
-                    continue
-
-                if current_section not in allowed_sections:
-                    continue
-
-                should_edit = False
-
-                if current_section == "SUMMARY":
-
-                    should_edit = True
-
-                elif current_section == "SKILLS":
-
-                    should_edit = True
-
-                elif current_section == "PROJECTS":
-
-                    first_character = (
-                        block_text.lstrip()[:1]
-                    )
-
-                    bullet_characters = {
-                        "•",
-                        "●",
-                        "▪",
-                        "◦",
-                        "-",
-                        "–",
-                        "—",
-                    }
-
-                    if (
-                        first_character
-                        in bullet_characters
-                    ):
-
-                        should_edit = True
-
-                if not should_edit:
-                    continue
-
-                x0, y0, x1, y1 = (
-                    block["bbox"]
-                )
-
-                first_span = block_spans[0]
-
-                editable_blocks.append({
-                    "block_id": (
-                        f"page:{page_number}:"
-                        f"block:{block_index}"
-                    ),
-
-                    "page_number":
-                        page_number,
-
-                    "section":
-                        current_section,
-
-                    "text":
-                        block_text,
-
-                    "x0":
-                        float(x0),
-
-                    "y0":
-                        float(y0),
-
-                    "x1":
-                        float(x1),
-
-                    "y1":
-                        float(y1),
-
-                    "font_size":
-                        float(
-                            first_span.get(
-                                "size",
-                                10
-                            )
-                        ),
-
-                    "max_characters":
-                        max(
-                            len(block_text),
-                            20
-                        ),
-                })
+            editable_blocks.append(
+                block
+            )
 
         if not editable_blocks:
-
-            detected_text = (
-                ", ".join(
-                    detected_headings
-                )
-                if detected_headings
-                else "None"
-            )
 
             raise HTTPException(
                 status_code=400,
                 detail=(
-                    "No editable resume sections "
-                    "were found. "
-                    f"Detected headings: "
-                    f"{detected_text}."
-                )
+                    "No editable resume content "
+                    "was found in this PDF."
+                ),
             )
 
-        prompt = f"""
-You are optimizing selected resume content
-for the supplied job description.
+        # ----------------------------------------------------
+        # 3. Limit AI input size
+        # ----------------------------------------------------
 
-JOB DESCRIPTION:
+        ai_blocks = []
 
-{job_description[:6000]}
+        total_characters = 0
 
-RESUME BLOCKS:
+        for block in editable_blocks:
 
-{json.dumps(
-    editable_blocks,
-    ensure_ascii=False
-)}
+            block_size = len(
+                block["text"]
+            )
 
-Rules:
+            if (
+                total_characters
+                + block_size
+                > 18000
+            ):
+                break
 
-1. Preserve every candidate fact.
-2. Do not invent experience, skills, tools,
-   technologies, responsibilities, metrics,
-   qualifications or achievements.
-3. Do not change project names.
-4. Do not change company names.
-5. Do not change job titles or project roles.
-6. Do not change dates, numbers, URLs or certifications.
-7. Do not add skills absent from the original resume block.
-8. Improve SUMMARY for job alignment.
-9. Improve PROJECT descriptions.
-10. Reorder SKILLS using only existing skills.
-11. Preserve skill category labels.
-12. Keep skill categories separate.
-13. Preserve original meaning.
-14. Do not exceed max_characters.
-15. Keep block_id unchanged.
-16. Return one result for every supplied block.
-17. Return valid JSON only.
-18. Do not use Markdown.
-19. Do not provide explanations.
-20. Use ASCII hyphens.
-21. Do not leave incomplete sentences.
-22. Project descriptions must have a leading hyphen.
-23. Do not rename Website.
+            ai_blocks.append({
+                "block_id":
+                    block["block_id"],
 
-Return exactly:
+                "text":
+                    block["text"],
 
-{{
-    "changes": [
-        {{
-            "block_id": "page:0:block:4",
-            "improved": "Improved text"
-        }}
-    ]
-}}
-"""
+                "page_number":
+                    block["page_number"],
 
-        result = generate_json(prompt)
+                "character_count":
+                    block["character_count"],
+            })
+
+            total_characters += block_size
+
+        # ----------------------------------------------------
+        # 4. Ask Gemini what to improve
+        # ----------------------------------------------------
+
+        prompt = build_pdf_optimization_prompt(
+            ai_blocks,
+            job_description,
+        )
+
+        result = generate_json(
+            prompt
+        )
 
         changes = result.get(
             "changes",
-            []
+            [],
         )
 
         if not isinstance(
             changes,
-            list
+            list,
         ):
+            changes = []
 
-            raise HTTPException(
-                status_code=500,
-                detail=(
-                    "Gemini returned an invalid "
-                    "changes format."
-                )
-            )
-
-        blocks_by_id = {
+        block_map = {
             block["block_id"]:
                 block
-
             for block in editable_blocks
         }
 
@@ -961,7 +995,7 @@ Return exactly:
 
             if not isinstance(
                 change,
-                dict
+                dict,
             ):
                 continue
 
@@ -969,8 +1003,13 @@ Return exactly:
                 "block_id"
             )
 
+            improved = change.get(
+                "improved",
+                "",
+            )
+
             original_block = (
-                blocks_by_id.get(
+                block_map.get(
                     block_id
                 )
             )
@@ -978,245 +1017,163 @@ Return exactly:
             if not original_block:
                 continue
 
-            raw_improved_text = change.get(
-                "improved",
-                ""
-            )
-
-            if (
-                original_block["section"]
-                == "SKILLS"
+            if not isinstance(
+                improved,
+                str,
             ):
-
-                improved_text = (
-                    format_skills_text(
-                        raw_improved_text
-                    )
-                )
-
-            else:
-
-                improved_text = (
-                    safe_pdf_text(
-                        raw_improved_text
-                    )
-                )
-
-            if not improved_text:
                 continue
 
-            max_characters = (
-                original_block[
-                    "max_characters"
-                ]
+            improved = safe_pdf_text(
+                improved
             )
 
-            if (
-                original_block["section"]
-                != "SKILLS"
+            if not improved:
+                continue
+
+            # Never allow Gemini to alter protected
+            # factual information blocks.
+            if is_protected_pdf_block(
+                improved
             ):
+                continue
 
-                improved_text = (
-                    shorten_at_word(
-                        improved_text,
-                        max_characters
-                    )
+            # Don't allow huge expansion.
+            original_length = len(
+                original_block["text"]
+            )
+
+            maximum_length = max(
+                int(original_length * 1.30),
+                original_length + 20,
+            )
+
+            if len(improved) > maximum_length:
+
+                improved = improved[
+                    :maximum_length
+                ]
+
+                if " " in improved:
+                    improved = improved.rsplit(
+                        " ",
+                        1
+                    )[0]
+
+                improved = improved.rstrip(
+                    " ,;:-"
                 )
 
-            if (
-                original_block["section"]
-                == "PROJECTS"
-            ):
-
-                improved_text = (
-                    improved_text.lstrip(
-                        "- "
-                    )
-                )
-
-                improved_text = (
-                    "- "
-                    + improved_text
-                )
-
-                improved_text = (
-                    shorten_at_word(
-                        improved_text,
-                        max_characters
-                    )
-                )
+            # Don't replace with identical text.
+            if improved == original_block["text"]:
+                continue
 
             valid_changes.append({
                 "block_id":
                     block_id,
 
                 "improved":
-                    improved_text,
+                    improved,
             })
+
+        # ----------------------------------------------------
+        # 5. If Gemini has nothing useful to change
+        # ----------------------------------------------------
 
         if not valid_changes:
 
-            raise HTTPException(
-                status_code=500,
-                detail=(
-                    "Gemini did not return any "
-                    "valid resume changes."
-                )
+            output = BytesIO()
+
+            document.save(
+                output,
+                garbage=4,
+                deflate=True,
             )
 
-        # Remove original text
+            output.seek(0)
+
+            document.close()
+            document = None
+
+            return StreamingResponse(
+                output,
+                media_type="application/pdf",
+                headers={
+                    "Content-Disposition":
+                        'attachment; filename="optimized_resume.pdf"',
+                },
+            )
+
+        # ----------------------------------------------------
+        # 6. Redact original text
+        # ----------------------------------------------------
 
         for change in valid_changes:
 
-            original_block = (
-                blocks_by_id[
-                    change["block_id"]
-                ]
-            )
-
-            page = document[
-                original_block["page_number"]
+            block = block_map[
+                change["block_id"]
             ]
 
-            original_rect = fitz.Rect(
-                original_block["x0"] - 1,
-                original_block["y0"] - 1,
-                original_block["x1"] + 2,
-                original_block["y1"] + 2,
+            page = document[
+                block["page_number"]
+            ]
+
+            rect = fitz.Rect(
+                block["x0"] - 1,
+                block["y0"] - 1,
+                block["x1"] + 2,
+                block["y1"] + 2,
             )
 
             page.add_redact_annot(
-                original_rect,
-                fill=(1, 1, 1)
+                rect,
+                fill=(1, 1, 1),
             )
 
         for page in document:
 
             page.apply_redactions()
 
-        # Insert optimized text
+        # ----------------------------------------------------
+        # 7. Insert improved text
+        # ----------------------------------------------------
+
+        applied_changes = 0
 
         for change in valid_changes:
 
-            original_block = (
-                blocks_by_id[
-                    change["block_id"]
-                ]
-            )
-
-            improved_text = (
-                change["improved"]
-            )
+            block = block_map[
+                change["block_id"]
+            ]
 
             page = document[
-                original_block["page_number"]
+                block["page_number"]
             ]
 
-            original_font_size = (
-                original_block[
-                    "font_size"
-                ]
+            success = insert_replacement_text(
+                page,
+                block,
+                change["improved"],
             )
 
-            page_width = page.rect.width
+            if success:
 
-            if (
-                original_block["section"]
-                == "SUMMARY"
-            ):
+                applied_changes += 1
 
-                extra_height = 14
-                extra_width = 80
-
-            elif (
-                original_block["section"]
-                == "SKILLS"
-            ):
-
-                extra_height = 8
-                extra_width = 40
-
-            else:
-
-                extra_height = 8
-                extra_width = 40
-
-            replacement_rect = fitz.Rect(
-                original_block["x0"],
-                original_block["y0"] - 1,
-                min(
-                    original_block["x1"]
-                    + extra_width,
-                    page_width - 20
-                ),
-                original_block["y1"]
-                + extra_height,
-            )
-
-            font_sizes = [
-                original_font_size,
-                original_font_size - 0.5,
-                original_font_size - 1,
-                original_font_size - 1.5,
-                original_font_size - 2,
-            ]
-
-            inserted = False
-
-            for font_size in font_sizes:
-
-                safe_font_size = max(
-                    float(font_size),
-                    7.0
-                )
-
-                insert_result = (
-                    page.insert_textbox(
-                        replacement_rect,
-                        improved_text,
-                        fontsize=safe_font_size,
-                        fontname="helv",
-                        color=(0, 0, 0),
-                        align=fitz.TEXT_ALIGN_LEFT,
-                    )
-                )
-
-                if insert_result >= 0:
-
-                    inserted = True
-
-                    break
-
-            if not inserted:
-
-                larger_rect = fitz.Rect(
-                    replacement_rect.x0,
-                    replacement_rect.y0,
-                    replacement_rect.x1,
-                    replacement_rect.y1 + 15,
-                )
-
-                page.insert_textbox(
-                    larger_rect,
-                    improved_text,
-                    fontsize=7.0,
-                    fontname="helv",
-                    color=(0, 0, 0),
-                    align=fitz.TEXT_ALIGN_LEFT,
-                )
+        # ----------------------------------------------------
+        # 8. Save optimized PDF
+        # ----------------------------------------------------
 
         output = BytesIO()
 
         document.save(
             output,
             garbage=4,
-            deflate=True
+            deflate=True,
         )
 
         output.seek(0)
 
         document.close()
-
         document = None
 
         return StreamingResponse(
@@ -1224,8 +1181,11 @@ Return exactly:
             media_type="application/pdf",
             headers={
                 "Content-Disposition":
-                    'attachment; filename="optimized_resume.pdf"'
-            }
+                    'attachment; filename="optimized_resume.pdf"',
+
+                "X-Applied-Changes":
+                    str(applied_changes),
+            },
         )
 
     except HTTPException:
@@ -1242,7 +1202,7 @@ Return exactly:
 
         print(
             "PDF optimization error:",
-            error
+            error,
         )
 
         raise HTTPException(
@@ -1250,6 +1210,6 @@ Return exactly:
             detail=(
                 f"Could not optimize PDF: "
                 f"{str(error)}"
-            )
+            ),
         )
     

@@ -9,6 +9,7 @@ import ResumeAnalyzer from "./pages/ResumeAnalyzer";
 import MockInterview from "./pages/MockInterview";
 import Login from "./pages/Login";
 import ResumeBuilder from "./pages/ResumeBuilder";
+import ResumeOptimizer from "./pages/ResumeOptimizer";
 import ResumePreview from "./pages/ResumePreview";
 
 function App() {
@@ -54,6 +55,14 @@ function App() {
               <ResumeBuilder />
             </ProtectedRoute>
           } 
+        />
+        <Route
+          path="/resume-optimizer"
+          element={
+            <ProtectedRoute>
+              <ResumeOptimizer />
+            </ProtectedRoute>
+          }
         />
         <Route 
           path="/resume-preview" 
