@@ -9,7 +9,8 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-const API_URL = "https://prepgenius-backend-3841.onrender.com";
+const API_URL = import.meta.env.VITE_API_URL;
+
 
 function ResumeBuilder() {
   const [file, setFile] = useState(null);
