@@ -469,37 +469,37 @@ function MockInterview() {
                     <div className="bg-slate-100 rounded-xl p-4">
                       <p className="text-sm text-slate-500">Technical Accuracy</p>
                       <p className="text-2xl font-bold">
-                        {feedback?.technical_accuracy}/40
+                        {Math.round((feedback?.technical_accuracy / 4) * 40)}/40
                       </p>
                     </div>
                     <div className="bg-slate-100 rounded-xl p-4">
                       <p className="text-sm text-slate-500">Completeness</p>
                       <p className="text-2xl font-bold">
-                        {feedback?.completeness}/20
+                        {Math.round((feedback?.completeness / 2) * 20)}/20
                       </p>
                     </div>
                     <div className="bg-slate-100 rounded-xl p-4">
                       <p className="text-sm text-slate-500">Communication</p>
                       <p className="text-2xl font-bold">
-                        {feedback?.communication}/15
+                        {Math.round((feedback?.communication / 2) * 15)}/15
                       </p>
                     </div>
                     <div className="bg-slate-100 rounded-xl p-4">
                       <p className="text-sm text-slate-500">Confidence</p>
                       <p className="text-2xl font-bold">
-                        {feedback?.confidence}/10
+                        {Math.round(feedback?.confidence * 10)}/10
                       </p>
                     </div>
                     <div className="bg-slate-100 rounded-xl p-4">
                       <p className="text-sm text-slate-500">Practical Example</p>
                       <p className="text-2xl font-bold">
-                        {feedback?.practical_example}/10
+                        {Math.round(feedback?.practical_example * 10)}/10
                       </p>
                     </div>
                     <div className="bg-slate-100 rounded-xl p-4">
                       <p className="text-sm text-slate-500">Conciseness</p>
                       <p className="text-2xl font-bold">
-                        {feedback?.conciseness}/5
+                        {Math.round(feedback?.conciseness * 5)}/5
                       </p>
                     </div>
                   </div>

@@ -1,5 +1,4 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { BriefcaseBusiness } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 
@@ -23,18 +22,30 @@ function Navbar() {
     <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-xl border-b border-slate-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl gradient-btn flex items-center justify-center text-white shadow-md">
-            <BriefcaseBusiness size={23} />
+  
+          {/* Logo symbol only */}
+          <div className="relative w-12 h-12 overflow-hidden flex-shrink-0">
+            <img
+              src="/prepgenius_logo.jpg"
+              alt="PrepGenius Logo"
+              className="absolute w-[90px] max-w-none left-[-22px] top-[-7px]"
+            />
           </div>
 
+          {/* Website name */}
           <div>
             <h1 className="text-xl md:text-2xl font-black leading-none">
-              PrepGenius
+              <span className="text-slate-900">Prep</span>
+              <span className="text-blue-600">Genius</span>
             </h1>
-            <p className="text-xs text-slate-500 mt-1">
-              Career Platform
+
+            <p className="text-xs text-black-1200 mt-1">
+              <span className="text-slate-2000">Prep • </span>
+              <span className="text-blue-700">Learn • </span>
+              <span className="text-slate-2000">Grow</span>
             </p>
           </div>
+
         </Link>
 
         <div className="hidden lg:flex items-center gap-8 text-[15px] font-medium text-slate-600">
