@@ -1,501 +1,471 @@
-
 import { Link } from "react-router-dom";
+
+const tools = [
+  {
+    icon: "🎤",
+    title: "Practice Interview",
+    text: "Get real interview questions and useful feedback on every answer.",
+    to: "/mock-interview",
+    accent: "bg-[#EEF0FF]",
+    iconBg: "bg-[#2457D6]",
+    action: "Start practicing",
+  },
+  {
+    icon: "📄",
+    title: "Analyze Resume",
+    text: "Compare your resume with a job description and find what's missing.",
+    to: "/resume-analyzer",
+    accent: "bg-[#FFF1EC]",
+    iconBg: "bg-[#FF6B57]",
+    action: "Analyze now",
+  },
+  {
+    icon: "✦",
+    title: "Optimize Resume",
+    text: "Improve your existing resume with targeted, job-focused suggestions.",
+    to: "/resume-optimizer",
+    accent: "bg-[#F5F8DD]",
+    iconBg: "bg-[#B7D52B]",
+    action: "Optimize now",
+  },
+  {
+    icon: "✎",
+    title: "Build Resume",
+    text: "Create a professional resume from scratch without starting from zero.",
+    to: "/resume-builder",
+    accent: "bg-[#EDF5FF]",
+    iconBg: "bg-[#2457D6]",
+    action: "Build now",
+  },
+];
+
+const steps = [
+  {
+    number: "01",
+    title: "Know where you stand",
+    text: "Analyze your resume against the role you actually want.",
+  },
+  {
+    number: "02",
+    title: "Fix the gaps",
+    text: "Improve your resume and focus on the skills that matter.",
+  },
+  {
+    number: "03",
+    title: "Practice for real",
+    text: "Take mock interviews and learn from every answer.",
+  },
+];
+
+const features = [
+  ["🎯", "Job-focused", "Prepare around a real target role instead of studying randomly."],
+  ["🧠", "Useful feedback", "Understand what worked, what didn't, and what to do next."],
+  ["🔥", "Keep your momentum", "Small practice sessions add up to real improvement."],
+  ["🏆", "See your growth", "Track scores and progress as you become more confident."],
+  ["⚡", "Everything together", "Resume analysis, optimization and interview practice in one place."],
+  ["💬", "Made for people", "Clear language and helpful actions without a complicated interface."],
+];
 
 function Home() {
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      {/* HERO */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-slate-950 to-slate-950" />
+    <div className="min-h-screen bg-[#FBFAF6] text-[#14213D]">
+      {/* Hero */}
+      <main>
+        <section className="relative overflow-hidden border-b border-[#14213D]/10 pt-4">
+          <div className="absolute -top-20 -right-20 h-72 w-72 rounded-full bg-[#B8E34B]/30" />
+          <div className="absolute top-40 -left-28 h-72 w-72 rounded-full bg-[#BFD5FF]/35" />
 
-        <div className="relative max-w-7xl mx-auto px-6 py-24 grid lg:grid-cols-2 gap-14 items-center">
-          <div>
-            <span className="inline-block bg-blue-500/10 border border-blue-400/30 text-blue-300 px-4 py-2 rounded-full text-sm mb-6">
-              Built for students preparing for internships and placements
-            </span>
-
-            <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
-              Prepare your resume and interviews with one focused platform
-            </h1>
-
-            <p className="text-slate-300 text-lg leading-8 mb-8 max-w-xl">
-              PrepGenius helps you compare your resume with a job description,
-              find missing skills, optimize your resume, build a new resume,
-              and practice interview questions before applying.
-            </p>
-
-            {/* MAIN ACTIONS */}
-            <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
-              <Link
-                to="/resume-analyzer"
-                className="bg-blue-600 hover:bg-blue-700 px-7 py-3 rounded-xl font-semibold text-center"
-              >
-                Analyze Resume
-              </Link>
-
-              <Link
-                to="/resume-optimizer"
-                className="border border-slate-500 hover:bg-white hover:text-slate-950 px-7 py-3 rounded-xl font-semibold text-center"
-              >
-                Optimize Resume
-              </Link>
-
-              <Link
-                to="/resume-builder"
-                className="bg-blue-600 hover:bg-blue-700 px-7 py-3 rounded-xl font-semibold text-center"
-              >
-                Build Resume
-              </Link>
-
-              <Link
-                to="/mock-interview"
-                className="border border-slate-500 hover:bg-white hover:text-slate-950 px-7 py-3 rounded-xl font-semibold text-center"
-              >
-                Practice Interview
-              </Link>
-            </div>
-
-            {/* QUICK STATS */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-13 max-w-xxxl">
+          <div className="relative max-w-7xl mx-auto px-5 sm:px-8 py-16 md:py-20 lg:py-24">
+            <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-12 items-center">
               <div>
-                <h3 className="text-xl font-bold text-blue-300">
-                  Resume
-                </h3>
-                <p className="text-sm text-slate-400">
-                  Analysis
-                </p>
+                <div className="inline-flex items-center gap-2 text-sm font-semibold mb-7">
+                  <span className="inline-block h-2.5 w-2.5 rounded-full bg-[#FF6B57]" />
+                  Career preparation, without the boring dashboard
+                </div>
+
+                <h1 className="text-[clamp(3.2rem,7vw,6.8rem)] leading-[0.9] tracking-[-0.065em] font-black max-w-3xl">
+                  Your career prep,
+                  <br />
+                  <span className="font-serif italic font-normal text-[#2457D6]">
+                    but actually fun.
+                  </span>
+                </h1>
+
+                <div className="relative mt-7 max-w-xl">
+                  <p className="text-lg md:text-xl leading-8 text-[#14213D]/70">
+                    PrepGenius helps you analyze, improve and build resumes,
+                    practice interviews and walk into opportunities with more confidence.
+                  </p>
+                  <div className="absolute -bottom-3 left-24 w-28 h-2 bg-[#B8E34B] -rotate-2 rounded-full" />
+                </div>
+
+                <div className="mt-10 flex flex-wrap gap-3">
+                  <Link
+                    to="/resume-analyzer"
+                    className="inline-flex items-center gap-3 bg-[#2457D6] text-white px-6 py-3.5 rounded-xl font-bold shadow-[4px_4px_0_#14213D] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0_#14213D] transition-all"
+                  >
+                    Analyze Resume
+                    <span>→</span>
+                  </Link>
+
+                  <Link
+                    to="/resume-optimizer"
+                    className="inline-flex items-center gap-3 bg-white border-2 border-[#14213D] px-6 py-3.5 rounded-xl font-bold hover:bg-[#14213D] hover:text-white transition-colors"
+                  >
+                    Optimize Resume
+                    <span>✦</span>
+                  </Link>
+
+                  <Link
+                    to="/resume-builder"
+                    className="inline-flex items-center gap-3 bg-[#B8E34B] text-[#14213D] px-6 py-3.5 rounded-xl font-bold border-2 border-[#14213D] hover:bg-white transition-colors"
+                  >
+                    Build Resume
+                    <span>↗</span>
+                  </Link>
+
+                  <Link
+                    to="/mock-interview"
+                    className="inline-flex items-center gap-3 bg-[#14213D] text-white px-6 py-3.5 rounded-xl font-bold hover:bg-[#2457D6] transition-colors"
+                  >
+                    Practice Interview
+                    <span>🎤</span>
+                  </Link>
+                </div>
+
+                <div className="mt-9 flex flex-wrap items-center gap-4 text-sm">
+                  <div className="flex -space-x-2">
+                    {["👩🏻", "👨🏽", "👩🏾", "👨🏻"].map((person, index) => (
+                      <span
+                        key={index}
+                        className="h-9 w-9 rounded-full bg-white border-2 border-[#FBFAF6] flex items-center justify-center text-lg shadow-sm"
+                      >
+                        {person}
+                      </span>
+                    ))}
+                  </div>
+                  <p>
+                    <strong>Built for students & job seekers</strong>
+                    <span className="text-[#14213D]/55"> who want to prepare smarter.</span>
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <h3 className="text-xl font-bold text-blue-300">
-                  Skills
-                </h3>
-                <p className="text-sm text-slate-400">
-                  Gap check
-                </p>
-              </div>
+              {/* Hand-built visual instead of a generic dashboard screenshot */}
+              <div className="relative min-h-[480px]">
+                <div className="absolute top-2 right-5 rotate-3 bg-[#B8E34B] px-5 py-4 shadow-[4px_4px_0_#14213D] max-w-[190px] z-20">
+                  <p className="font-serif italic text-lg leading-5">
+                    Small steps today,
+                    <br />
+                    big results tomorrow.
+                  </p>
+                  <span className="block text-right mt-2 text-xl">☺</span>
+                </div>
 
-              <div>
-                <h3 className="text-xl font-bold text-blue-300">
-                  Resume
-                </h3>
-                <p className="text-sm text-slate-400">
-                  Optimization
-                </p>
-              </div>
+                <div className="absolute top-28 right-0 md:right-6 w-44 bg-white border-2 border-[#14213D] px-5 py-5 rotate-2 shadow-[5px_5px_0_#14213D] z-10">
+                  <p className="text-5xl font-black text-[#2457D6] tracking-tight">82%</p>
+                  <p className="font-bold mt-1">Interview confidence</p>
+                  <div className="mt-3 flex items-end gap-1 h-8">
+                    {[35, 45, 42, 62, 58, 76, 90].map((height, i) => (
+                      <span
+                        key={i}
+                        className={`flex-1 rounded-t-sm ${i === 6 ? "bg-[#FF6B57]" : "bg-[#2457D6]/20"}`}
+                        style={{ height: `${height}%` }}
+                      />
+                    ))}
+                  </div>
+                </div>
 
-              <div>
-                <h3 className="text-xl font-bold text-blue-300">
-                  Interview
-                </h3>
-                <p className="text-sm text-slate-400">
-                  Practice
-                </p>
+                <div className="absolute top-36 left-2 md:left-8 w-[78%] max-w-[430px] bg-[#2457D6] border-2 border-[#14213D] p-6 pt-8 shadow-[8px_8px_0_#14213D] rotate-[-2deg]">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 h-7 w-24 bg-[#FF6B57] rotate-[-2deg]" />
+
+                  <div className="text-white/70 text-sm font-bold">TODAY'S PRACTICE</div>
+                  <h2 className="mt-2 text-3xl md:text-4xl font-black tracking-tight text-white">
+                    Tell me about a technical challenge you solved.
+                  </h2>
+
+                  <div className="mt-7 flex items-center justify-between">
+                    <span className="text-white/70 text-sm">Question 2 of 5</span>
+                    <span className="bg-[#B8E34B] text-[#14213D] px-3 py-1 rounded-full text-xs font-black">
+                      MEDIUM
+                    </span>
+                  </div>
+
+                  <div className="mt-4 h-2 bg-white/20 rounded-full overflow-hidden">
+                    <div className="h-full w-2/5 bg-[#B8E34B] rounded-full" />
+                  </div>
+
+                  <Link
+                    to="/mock-interview"
+                    className="mt-7 inline-flex items-center gap-2 bg-white text-[#14213D] px-5 py-3 rounded-lg font-black hover:bg-[#B8E34B] transition-colors"
+                  >
+                    Continue <span>→</span>
+                  </Link>
+                </div>
+
+                <div className="absolute bottom-8 right-3 md:right-8 bg-white border-2 border-[#14213D] px-5 py-4 -rotate-3 shadow-[5px_5px_0_#14213D]">
+                  <p className="text-xs font-bold uppercase tracking-wider text-[#14213D]/50">Streak</p>
+                  <p className="text-2xl font-black">🔥 7 days</p>
+                </div>
+
+                <div className="absolute bottom-0 left-10 text-5xl rotate-12">↗</div>
+                <div className="absolute top-24 left-0 text-4xl text-[#FF6B57] rotate-[-15deg]">✦</div>
+                <div className="absolute bottom-20 right-0 text-3xl text-[#2457D6]">〰</div>
               </div>
             </div>
           </div>
+        </section>
 
-          {/* DASHBOARD PREVIEW */}
-          <div className="bg-white/10 border border-white/10 rounded-3xl p-6 shadow-2xl">
-            <div className="bg-slate-900 rounded-2xl p-6 border border-slate-700">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <p className="text-sm text-slate-400">
-                    Resume Match
-                  </p>
-
-                  <h2 className="text-4xl font-bold text-green-400">
-                    82%
-                  </h2>
-                </div>
-
-                <div className="bg-blue-600/20 text-blue-300 px-4 py-2 rounded-xl text-sm">
-                  Good match
-                </div>
+        {/* Tools */}
+        <section id="tools" className="py-20 md:py-24 bg-white border-b border-[#14213D]/10">
+          <div className="max-w-7xl mx-auto px-5 sm:px-8">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5">
+              <div>
+                <p className="font-serif italic text-xl text-[#2457D6]">Pick your next move</p>
+                <h2 className="mt-2 text-4xl md:text-5xl font-black tracking-[-0.04em]">
+                  What do you want to work on today?
+                </h2>
               </div>
+              <p className="max-w-sm text-[#14213D]/60 leading-7">
+                One goal. One useful action. No wandering around a complicated dashboard.
+              </p>
+            </div>
 
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span>Matched skills</span>
-                    <span>8 found</span>
+            <div className="mt-12 grid md:grid-cols-2 xl:grid-cols-4 gap-5">
+              {tools.map((tool, index) => (
+                <Link
+                  key={tool.title}
+                  to={tool.to}
+                  className={`${tool.accent} group min-h-[270px] border-2 border-[#14213D]/10 p-6 flex flex-col justify-between hover:-translate-y-1 transition-transform ${
+                    index % 2 === 0 ? "rounded-[22px]" : "rounded-[8px]"
+                  }`}
+                >
+                  <div>
+                    <div className={`h-12 w-12 ${tool.iconBg} text-white flex items-center justify-center text-2xl rounded-xl shadow-[3px_3px_0_#14213D]`}>
+                      {tool.icon}
+                    </div>
+                    <h3 className="mt-7 text-2xl font-black tracking-tight">{tool.title}</h3>
+                    <p className="mt-3 text-[#14213D]/65 leading-7">{tool.text}</p>
                   </div>
 
-                  <div className="h-3 bg-slate-700 rounded-full">
-                    <div className="h-3 w-4/5 bg-blue-500 rounded-full" />
+                  <div className="mt-7 font-black text-[#2457D6] group-hover:translate-x-1 transition-transform">
+                    {tool.action} →
                   </div>
-                </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
 
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span>Skills to improve</span>
-                    <span>4 missing</span>
-                  </div>
-
-                  <div className="h-3 bg-slate-700 rounded-full">
-                    <div className="h-3 w-2/5 bg-orange-400 rounded-full" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <p className="text-sm text-slate-400 mb-3">
-                  Skills found
+        {/* How it works */}
+        <section id="how-it-works" className="py-20 md:py-28 bg-[#FBFAF6]">
+          <div className="max-w-7xl mx-auto px-5 sm:px-8">
+            <div className="grid lg:grid-cols-[0.8fr_1.2fr] gap-14 items-start">
+              <div className="lg:sticky lg:top-10">
+                <p className="font-serif italic text-2xl text-[#FF6B57]">No secret formula.</p>
+                <h2 className="mt-3 text-5xl md:text-6xl font-black leading-[0.95] tracking-[-0.05em]">
+                  Just a better way to prepare.
+                </h2>
+                <p className="mt-6 text-[#14213D]/65 text-lg leading-8 max-w-md">
+                  PrepGenius turns career preparation into a simple loop:
+                  understand, improve, practice, repeat.
                 </p>
+              </div>
 
-                <div className="flex flex-wrap gap-2">
-                  {["Python", "React", "AWS", "SQL"].map((skill) => (
-                    <span
-                      key={skill}
-                      className="bg-green-500/10 text-green-300 px-3 py-1 rounded-full text-xs"
-                    >
-                      {skill}
-                    </span>
+              <div className="space-y-5">
+                {steps.map((step, index) => (
+                  <div
+                    key={step.number}
+                    className={`grid sm:grid-cols-[90px_1fr] gap-5 items-start p-7 border-2 border-[#14213D]/10 bg-white ${
+                      index === 1 ? "rotate-[0.5deg]" : index === 2 ? "rotate-[-0.5deg]" : ""
+                    }`}
+                  >
+                    <div className="font-mono text-sm font-bold text-[#FF6B57]">
+                      {step.number}
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-black">{step.title}</h3>
+                      <p className="mt-2 text-[#14213D]/60 leading-7 max-w-xl">{step.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Progress */}
+        <section className="py-20 md:py-24 bg-[#EEF3FF] border-y border-[#14213D]/10">
+          <div className="max-w-7xl mx-auto px-5 sm:px-8">
+            <div className="grid lg:grid-cols-[0.7fr_1.3fr] gap-10 items-center">
+              <div>
+                <p className="font-serif italic text-2xl text-[#2457D6]">Track progress.</p>
+                <h2 className="mt-2 text-5xl md:text-6xl font-black leading-[0.95] tracking-[-0.05em]">
+                  See yourself get better.
+                </h2>
+                <p className="mt-6 text-[#14213D]/65 text-lg leading-8">
+                  Consistency today. Better answers tomorrow.
+                </p>
+                <Link
+                  to="/dashboard"
+                  className="inline-flex mt-7 bg-[#14213D] text-white px-6 py-3.5 rounded-xl font-bold hover:bg-[#2457D6] transition-colors"
+                >
+                  Go to dashboard →
+                </Link>
+              </div>
+
+              <div className="bg-white border-2 border-[#14213D] p-6 md:p-8 shadow-[8px_8px_0_#2457D6]">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-bold text-[#14213D]/50">YOUR PROGRESS</p>
+                    <h3 className="mt-1 text-2xl font-black">Interview confidence</h3>
+                  </div>
+                  <span className="font-black text-[#2457D6] text-2xl">82%</span>
+                </div>
+
+                <div className="mt-10 h-44 flex items-end gap-3 border-b-2 border-[#14213D]/10">
+                  {[35, 48, 43, 58, 63, 76, 82].map((height, index) => (
+                    <div key={index} className="flex-1 h-full flex items-end">
+                      <div
+                        className={`w-full ${index === 6 ? "bg-[#FF6B57]" : "bg-[#2457D6]/20"} hover:bg-[#2457D6] transition-colors`}
+                        style={{ height: `${height}%` }}
+                      />
+                    </div>
                   ))}
                 </div>
-              </div>
 
-              <div className="mt-6">
-                <p className="text-sm text-slate-400 mb-3">
-                  Next focus
-                </p>
-
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-slate-800 p-4 rounded-xl">
-                    <p className="text-sm text-slate-400">
-                      Resume Analyzer
-                    </p>
-                    <p className="font-semibold mt-1">
-                      Add project impact
-                    </p>
+                <div className="grid grid-cols-3 gap-4 mt-7">
+                  <div>
+                    <p className="text-2xl font-black">24</p>
+                    <p className="text-xs text-[#14213D]/50 mt-1">Interviews</p>
                   </div>
-
-                  <div className="bg-slate-800 p-4 rounded-xl">
-                    <p className="text-sm text-slate-400">
-                      Resume Optimizer
-                    </p>
-                    <p className="font-semibold mt-1">
-                      Optimize with Job description
-                    </p>
+                  <div>
+                    <p className="text-2xl font-black">12</p>
+                    <p className="text-xs text-[#14213D]/50 mt-1">Resumes analyzed</p>
                   </div>
-
-                  <div className="bg-slate-800 p-4 rounded-xl">
-                    <p className="text-sm text-slate-400">
-                      Mock Interview
-                    </p>
-                    <p className="font-semibold mt-1">
-                      Practice 5 questions
-                    </p>
+                  <div>
+                    <p className="text-2xl font-black text-[#2457D6]">+14%</p>
+                    <p className="text-xs text-[#14213D]/50 mt-1">Score improvement</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* TECHNOLOGIES */}
-      <section className="bg-slate-950 border-y border-white/10 py-10">
-        <div className="max-w-7xl mx-auto px-6">
-          <p className="text-center text-sm text-slate-400 mb-6">
-            Built using modern tools
-          </p>
-
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
-            {["React", "FastAPI", "Gemini AI", "Firebase", "Tailwind"].map(
-              (tech) => (
-                <div
-                  key={tech}
-                  className="bg-white/5 border border-white/10 rounded-2xl py-4 text-slate-300 font-medium"
-                >
-                  {tech}
-                </div>
-              )
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* HOW IT WORKS */}
-      <section className="bg-slate-50 text-slate-900 py-20">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center max-w-3xl mx-auto mb-14">
-            <p className="text-blue-600 font-semibold mb-3">
-              How it works
-            </p>
-
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              A simple flow for placement preparation
-            </h2>
-
-            <p className="text-slate-600 leading-7">
-              The process is built around what students actually need before
-              applying: resume matching, skill clarity, resume optimization,
-              resume building, and interview practice.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-5 gap-6">
-            {[
-              [
-                "1",
-                "Analyze resume",
-                "Upload your resume and compare it with a real job description.",
-              ],
-              [
-                "2",
-                "Review score",
-                "Check matched skills, missing skills, and resume suggestions.",
-              ],
-              [
-                "3",
-                "Optimize resume",
-                "Enhance your existing resume based on the target job description.",
-              ],
-              [
-                "4",
-                "Build resume",
-                "Create a professional resume from scratch using your own information.",
-              ],
-              [
-                "5",
-                "Practice interview",
-                "Generate role-based questions and practice your answers.",
-              ],
-            ].map((item) => (
-              <div
-                key={item[0]}
-                className="bg-white p-7 rounded-2xl shadow-sm border hover:shadow-lg transition"
-              >
-                <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold mb-5">
-                  {item[0]}
-                </div>
-
-                <h3 className="text-xl font-bold mb-3">
-                  {item[1]}
-                </h3>
-
-                <p className="text-slate-600 leading-7 text-sm">
-                  {item[2]}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FEATURES */}
-      <section className="bg-white text-slate-900 py-20">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="max-w-3xl mb-12">
-            <p className="text-blue-600 font-semibold mb-3">
-              Features
-            </p>
-
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Everything needed for focused career preparation
-            </h2>
-
-            <p className="text-slate-600 leading-7">
-              PrepGenius combines resume analysis, optimization, resume
-              building, and interview practice so you can prepare with a
-              clearer plan.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              [
-                "Resume Analyzer",
-                "Upload your resume and extract useful content from it.",
-              ],
-              [
-                "ATS Score",
-                "Compare your resume with a job description and check the match.",
-              ],
-              [
-                "Skill Gap Detection",
-                "See which required skills are missing from your resume.",
-              ],
-              [
-                "Resume Suggestions",
-                "Get simple suggestions to improve your resume content.",
-              ],
-              [
-                "Resume Optimizer",
-                "Enhance your resume with targeted job description improvements.",
-              ],
-              [
-                "Resume Builder",
-                "Create a professional resume from scratch.",
-              ],
-              [
-                "Mock Interview",
-                "Generate questions for your target role and practice answers.",
-              ],
-              [
-                "Progress Dashboard",
-                "Track your latest score, matched skills, and preparation status.",
-              ],
-            ].map((item, index) => (
-              <div
-                key={index}
-                className="bg-slate-50 p-7 rounded-2xl shadow-sm border hover:shadow-lg hover:-translate-y-1 transition"
-              >
-                <h3 className="text-xl font-bold mb-3">
-                  {item[0]}
-                </h3>
-
-                <p className="text-slate-600 leading-7 text-sm">
-                  {item[1]}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="bg-slate-100 text-slate-900 py-20">
-        <div className="max-w-5xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready to improve your preparation?
-          </h2>
-
-          <p className="text-slate-600 leading-7 max-w-2xl mx-auto mb-8">
-            Start by checking your resume against a real job description,
-            optimize or build your resume, and then practice interview
-            questions based on your target role.
-          </p>
-
-          <div className="flex flex-col sm:flex-row justify-center gap-4 flex-wrap">
-            <Link
-              to="/resume-analyzer"
-              className="bg-blue-600 hover:bg-blue-700 px-7 py-3 rounded-xl font-semibold text-white text-center"
-            >
-              Analyze Resume
-            </Link>
-
-            <Link
-              to="/resume-optimizer"
-              className="bg-slate-900 hover:bg-slate-800 px-7 py-3 rounded-xl font-semibold text-white text-center"
-            >
-              Optimize Resume
-            </Link>
-
-            <Link
-              to="/resume-builder"
-              className="bg-blue-600 hover:bg-blue-700 px-7 py-3 rounded-xl font-semibold text-white text-center"
-            >
-              Build Resume
-            </Link>
-
-            <Link
-              to="/mock-interview"
-              className="bg-blue-600 hover:bg-blue-700 px-7 py-3 rounded-xl font-semibold text-white text-center"
-            >
-              Practice Interview
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="bg-slate-950 text-slate-300 py-12 border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-8">
-          <div>
-            <h3 className="text-white text-2xl font-bold mb-3">
-              PrepGenius AI
-            </h3>
-
-            <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full text-xs text-blue-300 mb-4">
-              AI Career Assistant
+        {/* Features */}
+        <section className="py-20 md:py-24 bg-white">
+          <div className="max-w-7xl mx-auto px-5 sm:px-8">
+            <div className="max-w-2xl">
+              <p className="font-serif italic text-2xl text-[#B7A000]">Why PrepGenius?</p>
+              <h2 className="mt-2 text-4xl md:text-5xl font-black tracking-[-0.04em]">
+                Built to make preparation feel like progress.
+              </h2>
             </div>
 
-            <p className="text-sm leading-7 text-slate-400">
-              Helping students build ATS-friendly resumes, optimize resumes,
-              and prepare for interviews.
+            <div className="mt-12 grid md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-12">
+              {features.map(([emoji, title, text]) => (
+                <div key={title} className="border-t-2 border-[#14213D]/10 pt-5">
+                  <div className="text-2xl">{emoji}</div>
+                  <h3 className="mt-4 text-xl font-black">{title}</h3>
+                  <p className="mt-2 text-[#14213D]/60 leading-7">{text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section className="px-5 sm:px-8 pb-20 md:pb-24 bg-white">
+          <div className="max-w-7xl mx-auto">
+            <div className="relative overflow-hidden bg-[#2457D6] text-white border-2 border-[#14213D] p-8 md:p-12 shadow-[10px_10px_0_#14213D]">
+              <div className="absolute right-8 top-6 text-5xl rotate-12 text-[#B8E34B]">✦</div>
+              <div className="absolute right-20 bottom-8 text-3xl text-[#FF6B57]">〰</div>
+
+              <div className="relative max-w-3xl">
+                <p className="font-serif italic text-2xl text-[#B8E34B]">One more thing...</p>
+                <h2 className="mt-3 text-4xl md:text-6xl font-black tracking-[-0.05em] leading-[0.95]">
+                  You don't need to be ready.
+                  <br />
+                  You just need to start.
+                </h2>
+                <p className="mt-6 text-white/75 text-lg leading-8 max-w-2xl">
+                  Pick one thing to improve today. PrepGenius will help you take it from there.
+                </p>
+
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Link
+                    to="/mock-interview"
+                    className="bg-[#B8E34B] text-[#14213D] px-6 py-3.5 rounded-xl font-black hover:bg-white transition-colors"
+                  >
+                    Start practicing →
+                  </Link>
+                  <Link
+                    to="/resume-analyzer"
+                    className="border-2 border-white/70 px-6 py-3.5 rounded-xl font-bold hover:bg-white hover:text-[#2457D6] transition-colors"
+                  >
+                    Analyze my resume
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-[#14213D] text-white py-12">
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 grid md:grid-cols-3 gap-10">
+          <div>
+            <Link to="/" className="flex items-center gap-3">
+              <img src="/prepgenius_logo_new.jpg" alt="PrepGenius" className="h-10 w-10 object-contain" />
+              <div>
+                <div className="text-xl font-bold">
+                  Prep<span className="text-[#B8E34B]">Genius</span>
+                </div>
+                <div className="text-[9px] tracking-[0.16em] text-white/45 mt-1">
+                  PREPARE • LEARN • SUCCEED
+                </div>
+              </div>
+            </Link>
+            <p className="mt-5 text-sm leading-7 text-white/55 max-w-sm">
+              Helping students and job seekers prepare smarter for resumes and interviews.
             </p>
           </div>
 
           <div>
-            <h4 className="text-white font-semibold mb-4">
-              Quick Links
-            </h4>
-
-            <div className="space-y-3 text-sm">
-              <Link
-                to="/resume-analyzer"
-                className="block hover:text-white"
-              >
-                Resume Analyzer
-              </Link>
-
-              <Link
-                to="/resume-optimizer"
-                className="block hover:text-white transition"
-              >
-                Resume Optimizer
-              </Link>
-
-              <Link
-                to="/resume-builder"
-                className="block hover:text-white transition"
-              >
-                Resume Builder
-              </Link>
-
-              <Link
-                to="/mock-interview"
-                className="block hover:text-white"
-              >
-                Mock Interview
-              </Link>
-
-              <Link
-                to="/dashboard"
-                className="block hover:text-white"
-              >
-                Dashboard
-              </Link>
+            <h4 className="font-bold">Quick links</h4>
+            <div className="mt-4 grid grid-cols-2 gap-3 text-sm text-white/60">
+              <Link to="/resume-analyzer" className="hover:text-white transition">Resume Analyzer</Link>
+              <Link to="/resume-optimizer" className="hover:text-white transition">Resume Optimizer</Link>
+              <Link to="/resume-builder" className="hover:text-white transition">Resume Builder</Link>
+              <Link to="/mock-interview" className="hover:text-white transition">Mock Interview</Link>
+              <Link to="/dashboard" className="hover:text-white transition">Dashboard</Link>
             </div>
           </div>
 
           <div>
-            <h4 className="text-white font-semibold mb-4">
-              Meet the Creator
-            </h4>
-
-            <p className="text-sm text-white font-medium">
-              Nancy Khandelwal
-            </p>
-
-            <p className="text-sm text-slate-400 mt-1">
-              AI/ML Developer
-            </p>
-
-            <div className="mt-5 space-y-3 text-sm">
-              <a
-                href="mailto:khandelwalnancy27@gmail.com"
-                className="block hover:text-white transition"
-              >
-                📧 khandelwalnancy27@gmail.com
+            <h4 className="font-bold">Meet the creator</h4>
+            <p className="mt-4 text-sm font-semibold">Nancy Khandelwal</p>
+            <p className="text-sm text-white/50 mt-1">AI/ML Developer</p>
+            <div className="mt-4 space-y-2 text-sm text-white/60">
+              <a href="mailto:khandelwalnancy27@gmail.com" className="block hover:text-white transition">
+                khandelwalnancy27@gmail.com
               </a>
-
               <a
                 href="https://www.linkedin.com/in/nancyk-ai-dev/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block hover:text-white transition"
               >
-                💼 LinkedIn
+                LinkedIn →
               </a>
             </div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 mt-10 pt-6 border-t border-white/10 text-sm text-slate-500">
-          © 2026 PrepGenius AI. Built as a career preparation project.
+        <div className="max-w-7xl mx-auto px-5 sm:px-8 mt-10 pt-6 border-t border-white/10 text-xs text-white/35">
+          © 2026 PrepGenius. Built for better career preparation.
         </div>
       </footer>
     </div>
@@ -503,4 +473,3 @@ function Home() {
 }
 
 export default Home;
-

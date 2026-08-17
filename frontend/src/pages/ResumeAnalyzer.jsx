@@ -17,6 +17,8 @@ function ResumeAnalyzer() {
   const [experienceLevel, setExperienceLevel] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [health, setHealth] = useState(null);
+  const [error, setError] = useState("");
+  const [optimizing, setOptimizing] = useState(false);
 
   const handleUpload = async (e) => {
     const selectedFile = e.target.files[0];
@@ -205,76 +207,104 @@ function ResumeAnalyzer() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 py-10 px-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="bg-slate-950 text-white rounded-3xl shadow-lg p-8 mb-8">
-          <p className="text-sm uppercase tracking-widest text-blue-300 mb-3">
-            Resume Check
-          </p>
+    <div className="min-h-screen bg-[#FBFAF6] text-[#14213D] px-4 sm:px-6 py-8 md:py-10">
+      <div className="max-w-7xl mx-auto">
 
-          <h1 className="text-4xl md:text-5xl font-bold">
-            Check how well your resume fits a target role
-          </h1>
+        {/* Hero */}
+        <section className="relative overflow-hidden bg-[#2457D6] text-white border-2 border-[#14213D] p-7 md:p-10 shadow-[8px_8px_0_#14213D]">
+          <div className="absolute -right-8 -top-12 text-[10rem] font-black text-white/5 leading-none">✦</div>
+          <div className="absolute right-8 bottom-5 text-5xl text-[#B8E34B] rotate-12">↗</div>
 
-          <p className="text-slate-300 mt-4 max-w-3xl leading-7">
-            Upload your resume, paste the job description, and see what matches,
-            what is missing, and what you can improve before applying.
-          </p>
-        </div>
+          <div className="relative max-w-4xl">
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#B8E34B]">
+              Resume Analyzer
+            </p>
+            <h1 className="mt-3 text-4xl md:text-6xl font-black tracking-[-0.055em] leading-[0.95]">
+              Find out where your resume stands.
+            </h1>
+            <p className="mt-5 text-white/75 text-base md:text-lg leading-7 max-w-3xl">
+              Match your resume against a real role, spot the gaps, and get practical
+              suggestions before you hit Apply.
+            </p>
+          </div>
+        </section>
 
-        <div className="grid lg:grid-cols-2 gap-8 mb-8">
-          <div className="bg-white rounded-3xl shadow p-8">
-            <p className="text-sm text-blue-600 font-semibold mb-2">
-              Step 1
+        {/* Error */}
+        {error && (
+          <div className="mt-6 bg-[#FFF0EC] border-2 border-[#FF6B57] p-4 text-[#14213D] font-semibold">
+            {error}
+          </div>
+        )}
+
+        {/* Input flow */}
+        <section className="grid lg:grid-cols-2 gap-6 mt-8">
+          <div className="bg-white border-2 border-[#14213D] p-7 md:p-8 shadow-[6px_6px_0_#B8E34B]">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-serif italic text-[#2457D6]">01 / Your resume</p>
+                <h2 className="mt-1 text-3xl font-black tracking-[-0.04em]">
+                  Drop it here.
+                </h2>
+              </div>
+              <span className="text-4xl">📄</span>
+            </div>
+
+            <p className="mt-4 text-sm leading-6 text-[#14213D]/55">
+              Upload a text-based PDF. Scanned image PDFs may not extract correctly.
             </p>
 
-            <h2 className="text-2xl font-bold mb-3">
-              Upload your resume
-            </h2>
-
-            <p className="text-slate-600 text-sm mb-5">
-              Use a PDF resume that contains selectable text. Scanned image PDFs
-              may not extract properly.
-            </p>
-
-            <input
-              type="file"
-              accept=".pdf"
-              onChange={handleUpload}
-              className="block w-full text-sm border border-dashed border-slate-300 rounded-xl p-4"
-            />
+            <label className="mt-6 block cursor-pointer border-2 border-dashed border-[#2457D6]/35 bg-[#EDF3FF] p-7 hover:bg-[#E4EDFF] transition-colors">
+              <input
+                type="file"
+                accept=".pdf"
+                onChange={handleUpload}
+                className="hidden"
+              />
+              <div className="text-center">
+                <div className="text-4xl">↑</div>
+                <p className="mt-3 font-black text-lg">
+                  {file ? "Choose another PDF" : "Choose your resume PDF"}
+                </p>
+                <p className="mt-1 text-xs text-[#14213D]/50">
+                  PDF only
+                </p>
+              </div>
+            </label>
 
             {file && (
-              <div className="mt-5 bg-slate-50 border rounded-xl p-4">
-                <p className="text-sm text-slate-500">Selected file</p>
-                <p className="font-medium text-slate-800">{file.name}</p>
+              <div className="mt-5 flex items-center justify-between gap-4 bg-[#F7F9F0] border border-[#B8E34B] p-4">
+                <div className="min-w-0">
+                  <p className="text-xs uppercase tracking-wider font-black text-[#14213D]/45">
+                    Selected file
+                  </p>
+                  <p className="mt-1 font-bold truncate">{file.name}</p>
+                </div>
+                <span className="text-xl">✓</span>
               </div>
             )}
 
             {loading && (
-              <p className="mt-5 text-blue-600 font-medium">
+              <div className="mt-5 flex items-center gap-3 text-[#2457D6] font-bold">
+                <span className="animate-pulse">●</span>
                 Reading your resume...
-              </p>
+              </div>
             )}
           </div>
 
-          <div className="bg-white rounded-3xl shadow p-8">
-            <p className="text-sm text-blue-600 font-semibold mb-2">
-              Step 2
-            </p>
-
-            <h2 className="text-2xl font-bold mb-3">
-              Paste the job description
-            </h2>
-
-            <p className="text-slate-600 text-sm mb-5">
-              Add the role requirements here so the tool can compare them with
-              your resume.
-            </p>
+          <div className="bg-[#14213D] text-white border-2 border-[#14213D] p-7 md:p-8 shadow-[6px_6px_0_#FF6B57]">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-serif italic text-[#B8E34B]">02 / Target role</p>
+                <h2 className="mt-1 text-3xl font-black tracking-[-0.04em]">
+                  Tell us what you're applying for.
+                </h2>
+              </div>
+              <span className="text-4xl">🎯</span>
+            </div>
 
             <textarea
               rows="9"
-              className="w-full border border-slate-300 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="mt-6 w-full bg-white text-[#14213D] border-2 border-white/20 p-4 focus:outline-none focus:border-[#B8E34B] resize-y"
               placeholder="Paste the job description here..."
               value={jobDescription}
               onChange={(e) => setJobDescription(e.target.value)}
@@ -283,81 +313,152 @@ function ResumeAnalyzer() {
             <button
               onClick={analyzeResume}
               disabled={!text || analyzing}
-              className="mt-5 w-full bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 disabled:bg-slate-400"
+              className="mt-5 w-full bg-[#B8E34B] text-[#14213D] px-6 py-4 font-black text-base hover:bg-white transition-colors disabled:bg-white/20 disabled:text-white/40 disabled:cursor-not-allowed"
             >
-              {analyzing ? "Checking resume..." : "Check Resume Fit"}
+              {analyzing ? "Checking your fit..." : "Check my resume fit →"}
             </button>
           </div>
-        </div>
+        </section>
 
+        {/* Extracted text */}
         {text && (
-          <div className="bg-white rounded-3xl shadow p-8 mb-8">
-            <h2 className="text-2xl font-bold mb-3">
-              Extracted resume text
-            </h2>
-
-            <p className="text-sm text-slate-600 mb-4">
-              This is the text read from your PDF. It may look slightly different
-              from the original layout, but it is used for analysis.
+          <section className="mt-8 bg-white border-2 border-[#14213D]/10 p-7 md:p-8">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-serif italic text-[#2457D6]">Under the hood</p>
+                <h2 className="mt-1 text-2xl md:text-3xl font-black">
+                  What we read from your PDF
+                </h2>
+              </div>
+              <span className="hidden sm:block text-3xl">⌁</span>
+            </div>
+            <p className="mt-3 text-sm leading-6 text-[#14213D]/50">
+              This extracted text is what the analyzer uses. It may look different from
+              your original PDF layout.
             </p>
-
             <textarea
               rows="10"
-              className="w-full border border-slate-300 rounded-xl p-4 bg-slate-50 text-sm"
+              className="mt-5 w-full border border-[#14213D]/10 p-4 bg-[#F7F8FA] text-sm text-[#14213D]/70"
               value={text}
               readOnly
             />
-          </div>
+          </section>
         )}
 
+        {/* Results */}
         {atsScore !== null && (
-          <div className="bg-white rounded-3xl shadow p-8">
+          <section className="mt-8 space-y-6">
+
+            {/* Score */}
+            <div className="bg-white border-2 border-[#14213D] p-7 md:p-9 shadow-[7px_7px_0_#2457D6]">
+              <div className="grid md:grid-cols-[260px_1fr] gap-8 items-center">
+                <div className="bg-[#EDF3FF] border-2 border-[#2457D6]/15 p-7 text-center">
+                  <p className="text-xs font-black uppercase tracking-wider text-[#2457D6]">
+                    Resume fit
+                  </p>
+                  <div className="mt-2 text-7xl font-black tracking-[-0.07em] text-[#2457D6]">
+                    {atsScore}
+                  </div>
+                  <p className="text-sm font-bold text-[#14213D]/40">out of 100</p>
+                </div>
+
+                <div>
+                  <p className="text-sm font-serif italic text-[#2457D6]">
+                    Your first read
+                  </p>
+                  <h2 className="mt-1 text-3xl md:text-4xl font-black tracking-[-0.045em]">
+                    {atsScore >= 80
+                      ? "You're looking like a strong match."
+                      : atsScore >= 60
+                      ? "You're on the way. A few gaps stand out."
+                      : "There's work to do before you apply."}
+                  </h2>
+
+                  <div className="mt-6 h-4 bg-[#E6EAF1] overflow-hidden">
+                    <div
+                      className="h-full bg-[#2457D6] transition-all"
+                      style={{ width: `${atsScore}%` }}
+                    />
+                  </div>
+
+                  {(jobDomain || experienceLevel) && (
+                    <div className="flex flex-wrap gap-3 mt-5">
+                      {jobDomain && (
+                        <span className="bg-[#F1F7D9] border border-[#B8E34B] px-4 py-2 text-sm font-bold">
+                          {jobDomain}
+                        </span>
+                      )}
+                      {experienceLevel && (
+                        <span className="bg-[#FFF0EC] border border-[#FF6B57]/30 px-4 py-2 text-sm font-bold">
+                          {experienceLevel}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <button
+                      onClick={optimizePDF}
+                      disabled={!file || !jobDescription.trim() || optimizing}
+                      className="bg-[#14213D] text-white px-5 py-3 rounded-xl font-black hover:bg-[#2457D6] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {optimizing ? "Optimizing..." : "Optimize PDF ↗"}
+                    </button>
+                    <p className="self-center text-xs text-[#14213D]/45">
+                      Downloads an optimized copy of your original PDF.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Health */}
             {health && (
-              <div className="bg-slate-50 rounded-2xl p-6 mb-8">
-
-                <p className="text-sm text-blue-600 font-semibold">
-                  Resume Health
-                </p>
-
-                <h2 className="text-3xl font-bold mt-2">
-                  {health.overall}/100
-                </h2>
-
-                <div className="w-full bg-slate-200 rounded-full h-5 mt-5 overflow-hidden">
-                  <div
-                    className="h-5 bg-green-500 rounded-full"
-                    style={{ width: `${health.overall}%` }}
-                  />
+              <div className="bg-[#EEF3FF] border-2 border-[#14213D]/10 p-7 md:p-8">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm font-serif italic text-[#2457D6]">Resume health</p>
+                    <h2 className="mt-1 text-3xl font-black">The details behind the score.</h2>
+                  </div>
+                  <div className="text-4xl font-black text-[#2457D6]">{health.overall}/100</div>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6 mt-8">
-                  <HealthBar title="ATS Compatibility" value={health.ats} />
-                  <HealthBar title="Summary" value={health.summary} />
-                  <HealthBar title="Experience / Projects" value={health.experience} />
-                  <HealthBar title="Skills" value={health.skills} />
-                  <HealthBar title="Grammar" value={health.grammar} />
-                  <HealthBar title="Action Verbs" value={health.action_verbs} />
-                  <HealthBar title="Achievements" value={health.achievements} />
+                <div className="mt-7 grid md:grid-cols-2 gap-x-8 gap-y-6">
+                  {[
+                    ["ATS Compatibility", health.ats],
+                    ["Summary", health.summary],
+                    ["Experience / Projects", health.experience],
+                    ["Skills", health.skills],
+                    ["Grammar", health.grammar],
+                    ["Action Verbs", health.action_verbs],
+                    ["Achievements", health.achievements],
+                  ].map(([title, value]) => (
+                    <div key={title}>
+                      <div className="flex justify-between gap-4 text-sm font-bold">
+                        <span>{title}</span>
+                        <span className="text-[#2457D6]">{value ?? 0}%</span>
+                      </div>
+                      <div className="mt-2 h-3 bg-white overflow-hidden">
+                        <div
+                          className="h-full bg-[#2457D6]"
+                          style={{ width: `${value || 0}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
+
                 {health.feedback?.length > 0 && (
                   <div className="mt-8">
-                    <h3 className="text-xl font-bold text-slate-800 mb-4">
-                      AI Recommendations
-                    </h3>
-
-                    <div className="space-y-3">
+                    <h3 className="text-xl font-black">Quick fixes worth making</h3>
+                    <div className="mt-4 grid md:grid-cols-2 gap-3">
                       {health.feedback.map((item, index) => (
                         <div
                           key={index}
-                          className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4"
+                          className="bg-white border-l-4 border-[#FF6B57] p-4 text-sm leading-6"
                         >
-                          <div className="mt-1 text-amber-600 text-xl">
-                            💡
-                          </div>
-
-                          <p className="text-slate-700">
-                            {item}
-                          </p>
+                          <span className="font-black text-[#FF6B57] mr-2">0{index + 1}</span>
+                          {item}
                         </div>
                       ))}
                     </div>
@@ -366,138 +467,82 @@ function ResumeAnalyzer() {
               </div>
             )}
 
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-              <div>
-                <p className="text-sm text-blue-600 font-semibold">
-                  Result
-                </p>
-
-                <h2 className="text-3xl font-bold">
-                  Resume Fit Score: {atsScore}%
-                </h2>
-              </div>
-
-              <div className="bg-slate-100 px-5 py-3 rounded-xl text-sm text-slate-700">
-                Based on skills found in the job description
-              </div>
-            </div>
-
-            <div className="w-full bg-slate-200 rounded-full h-5 mb-8 overflow-hidden">
-              <div
-                className="h-5 bg-green-500 rounded-full"
-                style={{ width: `${atsScore}%` }}
-              />
-            </div>
-
-            {jobDomain && (
-              <div className="grid md:grid-cols-2 gap-4 mb-8">
-                <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-5">
-                  <p className="text-sm text-indigo-500">Detected domain</p>
-                  <p className="font-semibold text-indigo-900">{jobDomain}</p>
-                </div>
-
-                <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-5">
-                  <p className="text-sm text-indigo-500">Experience level</p>
-                  <p className="font-semibold text-indigo-900">
-                    {experienceLevel}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <div className="grid lg:grid-cols-3 gap-6">
-              <div>
-                <h3 className="text-xl font-semibold mb-4 text-indigo-700">
-                  Required skills
-                </h3>
-
-                <div className="flex flex-wrap gap-3">
-                  {requiredSkills.length > 0 ? (
-                    requiredSkills.map((skill, index) => (
-                      <span
-                        key={index}
-                        className="bg-indigo-100 text-indigo-800 px-4 py-2 rounded-lg text-sm font-medium"
-                      >
-                        {skill}
-                      </span>
-                    ))
-                  ) : (
-                    <p className="text-sm text-slate-500">
-                      No required skills detected.
-                    </p>
-                  )}
+            {/* Skills */}
+            <div className="grid lg:grid-cols-3 gap-5">
+              <div className="bg-white border-2 border-[#14213D]/10 p-7">
+                <p className="text-sm font-serif italic text-[#2457D6]">The target asks for</p>
+                <h3 className="mt-1 text-2xl font-black">Required skills</h3>
+                <div className="flex flex-wrap gap-2 mt-6">
+                  {requiredSkills.length > 0 ? requiredSkills.map((skill, index) => (
+                    <span key={index} className="bg-[#EDF3FF] text-[#2457D6] border border-[#2457D6]/15 px-3 py-2 rounded-full text-sm font-bold">
+                      {skill}
+                    </span>
+                  )) : <p className="text-sm text-[#14213D]/45">No required skills detected.</p>}
                 </div>
               </div>
 
-              <div>
-                <h3 className="text-xl font-semibold mb-4 text-green-700">
-                  Skills already present
-                </h3>
-
-                <div className="flex flex-wrap gap-3">
-                  {matchedSkills.length > 0 ? (
-                    matchedSkills.map((skill, index) => (
-                      <span
-                        key={index}
-                        className="bg-green-100 text-green-800 px-4 py-2 rounded-lg text-sm font-medium"
-                      >
-                        {skill}
-                      </span>
-                    ))
-                  ) : (
-                    <p className="text-sm text-slate-500">
-                      No matching skills found.
-                    </p>
-                  )}
+              <div className="bg-[#F1F7D9] border-2 border-[#B8E34B] p-7">
+                <p className="text-sm font-serif italic text-[#648400]">Already covered</p>
+                <h3 className="mt-1 text-2xl font-black">Your matches</h3>
+                <div className="flex flex-wrap gap-2 mt-6">
+                  {matchedSkills.length > 0 ? matchedSkills.map((skill, index) => (
+                    <span key={index} className="bg-white text-[#526B00] border border-[#B8E34B]/60 px-3 py-2 rounded-full text-sm font-bold">
+                      ✓ {skill}
+                    </span>
+                  )) : <p className="text-sm text-[#14213D]/45">No matching skills found.</p>}
                 </div>
               </div>
 
-              <div>
-                <h3 className="text-xl font-semibold mb-4 text-red-700">
-                  Skills to improve
-                </h3>
-
-                <div className="flex flex-wrap gap-3">
-                  {missingSkills.length > 0 ? (
-                    missingSkills.map((skill, index) => (
-                      <span
-                        key={index}
-                        className="bg-red-100 text-red-800 px-4 py-2 rounded-lg text-sm font-medium"
-                      >
-                        {skill}
-                      </span>
-                    ))
-                  ) : (
-                    <p className="text-sm text-slate-500">
-                      No missing skills found for this job description.
-                    </p>
-                  )}
+              <div className="bg-[#FFF0EC] border-2 border-[#FF6B57]/40 p-7">
+                <p className="text-sm font-serif italic text-[#D94A39]">Your next opportunity</p>
+                <h3 className="mt-1 text-2xl font-black">Skills to improve</h3>
+                <div className="flex flex-wrap gap-2 mt-6">
+                  {missingSkills.length > 0 ? missingSkills.map((skill, index) => (
+                    <span key={index} className="bg-white text-[#C83E2F] border border-[#FF6B57]/30 px-3 py-2 rounded-full text-sm font-bold">
+                      + {skill}
+                    </span>
+                  )) : <p className="text-sm text-[#14213D]/45">No missing skills found.</p>}
                 </div>
               </div>
             </div>
 
-            <div className="mt-10">
-              <h3 className="text-xl font-semibold mb-4 text-blue-700">
-                What to improve in your resume
-              </h3>
+            {/* Suggestions */}
+            <div className="bg-[#14213D] text-white border-2 border-[#14213D] p-7 md:p-8 shadow-[6px_6px_0_#B8E34B]">
+              <div className="flex items-start justify-between gap-5">
+                <div>
+                  <p className="text-sm font-serif italic text-[#B8E34B]">Make the next edit count</p>
+                  <h2 className="mt-1 text-3xl font-black">What to improve in your resume</h2>
+                </div>
+                <span className="text-3xl">✎</span>
+              </div>
 
-              <div className="space-y-3">
-                {suggestions.length > 0 ? (
-                  suggestions.map((item, index) => (
-                    <div
-                      key={index}
-                      className="bg-blue-50 border border-blue-100 text-blue-900 p-4 rounded-xl text-sm leading-6"
-                    >
-                      {item}
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-slate-500">
-                    No suggestions available yet.
-                  </p>
+              <div className="mt-6 grid md:grid-cols-2 gap-3">
+                {suggestions.length > 0 ? suggestions.map((item, index) => (
+                  <div key={index} className="bg-white/10 border border-white/10 p-4 text-sm leading-6">
+                    <span className="text-[#B8E34B] font-black mr-2">→</span>
+                    {item}
+                  </div>
+                )) : (
+                  <p className="text-white/50 text-sm">No suggestions available yet.</p>
                 )}
               </div>
             </div>
+          </section>
+        )}
+
+        {!atsScore && !file && (
+          <div className="mt-10 grid md:grid-cols-3 gap-4">
+            {[
+              ["Upload", "Give PrepGenius your latest resume.", "📄"],
+              ["Compare", "Add the job you're targeting.", "🎯"],
+              ["Improve", "Use the gaps to make your next version stronger.", "✦"],
+            ].map(([title, desc, icon]) => (
+              <div key={title} className="bg-white border border-[#14213D]/10 p-6">
+                <span className="text-3xl">{icon}</span>
+                <h3 className="mt-5 text-xl font-black">{title}</h3>
+                <p className="mt-2 text-sm leading-6 text-[#14213D]/55">{desc}</p>
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -506,36 +551,20 @@ function ResumeAnalyzer() {
 }
 
 function HealthBar({ title, value }) {
-
   return (
     <div>
-
       <div className="flex justify-between mb-2">
-
-        <span className="font-medium">
-          {title}
-        </span>
-
-        <span className="font-semibold">
-          {value ?? 0}%
-        </span>
-
+        <span className="font-medium">{title}</span>
+        <span className="font-semibold">{value ?? 0}%</span>
       </div>
-
       <div className="w-full bg-slate-200 rounded-full h-3">
-
         <div
           className="bg-blue-600 h-3 rounded-full"
-          style={{
-            width: `${value || 0}%`,
-          }}
+          style={{ width: `${value || 0}%` }}
         />
-
       </div>
-
     </div>
   );
 }
-
 
 export default ResumeAnalyzer;

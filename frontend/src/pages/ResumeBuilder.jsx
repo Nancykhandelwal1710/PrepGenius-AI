@@ -2,6 +2,19 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+
+function SectionHeader({ number, title, description }) {
+  return (
+    <div className="flex items-start gap-4 mb-6">
+      <span className="text-[#2457D6] font-serif italic text-lg">{number}</span>
+      <div>
+        <h2 className="text-3xl font-black tracking-[-0.04em]">{title}</h2>
+        <p className="mt-1 text-[#14213D]/50">{description}</p>
+      </div>
+    </div>
+  );
+}
+
 const createEmptyResume = () => ({
   personal: {
     name: "",
@@ -253,826 +266,421 @@ function ResumeBuilder() {
 
 
   return (
-    <div className="min-h-screen bg-slate-100 py-10 px-4">
+    <div className="min-h-screen bg-[#FBFAF6] text-[#14213D]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-10">
 
-      <div className="max-w-6xl mx-auto">
+        {/* HERO */}
+        <section className="relative overflow-hidden bg-[#2457D6] text-white border-2 border-[#14213D] shadow-[8px_8px_0_#14213D] p-7 md:p-10">
+          <div className="absolute -right-8 -top-16 text-[13rem] font-black leading-none text-white/5">✦</div>
+          <div className="absolute right-10 bottom-5 text-5xl text-[#B8E34B] rotate-12">↗</div>
 
-        {/* ========================================= */}
-        {/* HEADER */}
-        {/* ========================================= */}
-
-        <div className="bg-slate-950 text-white rounded-3xl p-8 mb-8">
-
-          <p className="text-blue-300 text-sm uppercase tracking-widest mb-3">
-            Resume Builder
-          </p>
-
-          <h1 className="text-4xl md:text-5xl font-bold">
-            Build Your Professional Resume
-          </h1>
-
-          <p className="text-slate-300 mt-4 max-w-2xl">
-            Create a professional,
-            ATS-friendly resume from
-            scratch using your own
-            information.
-          </p>
-
-        </div>
-
-
-        {/* ========================================= */}
-        {/* SAVE MESSAGE */}
-        {/* ========================================= */}
+          <div className="relative max-w-4xl">
+            <p className="text-sm uppercase tracking-[0.18em] font-bold text-[#B8E34B]">
+              Resume Builder
+            </p>
+            <h1 className="mt-3 text-4xl md:text-6xl font-black tracking-[-0.055em] leading-[0.92]">
+              Build a resume
+              <br />
+              <span className="font-serif italic font-normal text-[#B8E34B]">
+                that sounds like you.
+              </span>
+            </h1>
+            <p className="mt-6 max-w-3xl text-white/75 text-base md:text-lg leading-8">
+              Add your story section by section. Save your draft whenever you want,
+              then preview the finished resume when you're ready.
+            </p>
+          </div>
+        </section>
 
         {savedMessage && (
-          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-5 py-4 rounded-xl font-medium">
+          <div className="mt-7 bg-[#F1F7D9] border-2 border-[#B8E34B]/80 px-5 py-4 text-[#526B00] font-bold">
             {savedMessage}
           </div>
         )}
 
+        {/* WORKSPACE */}
+        <div className="grid lg:grid-cols-[230px_1fr] gap-7 mt-8 items-start">
 
-        {/* ========================================= */}
-        {/* PERSONAL INFORMATION */}
-        {/* ========================================= */}
+          {/* PROGRESS RAIL */}
+          <aside className="lg:sticky lg:top-24">
+            <div className="bg-[#14213D] text-white p-5 shadow-[5px_5px_0_#B8E34B]">
+              <p className="text-xs uppercase tracking-[0.16em] text-[#B8E34B] font-bold">
+                Your build
+              </p>
+              <h2 className="mt-2 text-2xl font-black">One step at a time.</h2>
 
-        <section className="bg-white rounded-3xl shadow-sm p-8 mb-6">
-
-          <h2 className="text-2xl font-bold mb-6">
-            Personal Information
-          </h2>
-
-          <div className="grid md:grid-cols-2 gap-5">
-
-            <input
-              type="text"
-              placeholder="Full Name"
-              value={
-                resume.personal.name
-              }
-              onChange={(event) =>
-                updatePersonal(
-                  "name",
-                  event.target.value
-                )
-              }
-              className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-            />
-
-            <input
-              type="email"
-              placeholder="Email"
-              value={
-                resume.personal.email
-              }
-              onChange={(event) =>
-                updatePersonal(
-                  "email",
-                  event.target.value
-                )
-              }
-              className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-            />
-
-            <input
-              type="text"
-              placeholder="Phone"
-              value={
-                resume.personal.phone
-              }
-              onChange={(event) =>
-                updatePersonal(
-                  "phone",
-                  event.target.value
-                )
-              }
-              className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-            />
-
-            <input
-              type="text"
-              placeholder="Location"
-              value={
-                resume.personal.location
-              }
-              onChange={(event) =>
-                updatePersonal(
-                  "location",
-                  event.target.value
-                )
-              }
-              className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-            />
-
-            <input
-              type="url"
-              placeholder="LinkedIn URL"
-              value={
-                resume.personal.linkedin
-              }
-              onChange={(event) =>
-                updatePersonal(
-                  "linkedin",
-                  event.target.value
-                )
-              }
-              className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-            />
-
-            <input
-              type="url"
-              placeholder="GitHub URL"
-              value={
-                resume.personal.github
-              }
-              onChange={(event) =>
-                updatePersonal(
-                  "github",
-                  event.target.value
-                )
-              }
-              className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-            />
-
-          </div>
-
-        </section>
-
-
-        {/* ========================================= */}
-        {/* SUMMARY */}
-        {/* ========================================= */}
-
-        <section className="bg-white rounded-3xl shadow-sm p-8 mb-6">
-
-          <h2 className="text-2xl font-bold mb-2">
-            Professional Summary
-          </h2>
-
-          <p className="text-sm text-slate-500 mb-5">
-            Write 2–4 sentences describing
-            your professional profile.
-          </p>
-
-          <textarea
-            rows={6}
-            placeholder="Write your professional summary..."
-            value={
-              resume.summary
-            }
-            onChange={(event) =>
-              updateField(
-                "summary",
-                event.target.value
-              )
-            }
-            className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 resize-y"
-          />
-
-        </section>
-
-
-        {/* ========================================= */}
-        {/* SKILLS */}
-        {/* ========================================= */}
-
-        <section className="bg-white rounded-3xl shadow-sm p-8 mb-6">
-
-          <h2 className="text-2xl font-bold mb-2">
-            Skills
-          </h2>
-
-          <p className="text-sm text-slate-500 mb-5">
-            Separate each skill with a comma.
-          </p>
-
-          <input
-            type="text"
-            placeholder="Python, React, SQL, FastAPI, Git"
-            value={
-              resume.skills.join(", ")
-            }
-            onChange={(event) =>
-              handleSkills(
-                event.target.value
-              )
-            }
-            className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-          />
-
-          {resume.skills.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-4">
-
-              {resume.skills.map(
-                (skill, index) => (
-                  <span
-                    key={index}
-                    className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm"
+              <nav className="mt-6 space-y-1 text-sm">
+                {[
+                  ["01", "Personal"],
+                  ["02", "Summary"],
+                  ["03", "Skills"],
+                  ["04", "Experience"],
+                  ["05", "Education"],
+                  ["06", "Projects"],
+                  ["07", "Certifications"],
+                ].map(([number, label]) => (
+                  <a
+                    key={number}
+                    href={`#builder-${label.toLowerCase()}`}
+                    className="flex items-center gap-3 px-3 py-2.5 text-white/70 hover:text-white hover:bg-white/10 transition-colors"
                   >
-                    {skill}
-                  </span>
-                )
-              )}
+                    <span className="text-[#B8E34B] font-black text-xs">{number}</span>
+                    <span>{label}</span>
+                  </a>
+                ))}
+              </nav>
 
+              <div className="mt-7 pt-5 border-t border-white/10">
+                <p className="text-xs text-white/45 leading-5">
+                  Your draft is stored locally in your browser when you save it.
+                </p>
+              </div>
             </div>
-          )}
+          </aside>
 
-        </section>
+          {/* FORM */}
+          <main className="min-w-0 space-y-6">
 
+            {/* PERSONAL */}
+            <section id="builder-personal" className="bg-white border-2 border-[#14213D]/10 p-6 md:p-8">
+              <div className="flex items-start gap-4 mb-7">
+                <span className="text-[#2457D6] font-serif italic text-lg">01</span>
+                <div>
+                  <h2 className="text-3xl font-black tracking-[-0.04em]">Personal information</h2>
+                  <p className="mt-1 text-[#14213D]/50">Make it easy for a recruiter to reach you.</p>
+                </div>
+              </div>
 
-        {/* ========================================= */}
-        {/* EXPERIENCE */}
-        {/* ========================================= */}
+              <div className="grid md:grid-cols-2 gap-5">
+                {[
+                  ["name", "Full Name", "text"],
+                  ["email", "Email", "email"],
+                  ["phone", "Phone", "text"],
+                  ["location", "Location", "text"],
+                  ["linkedin", "LinkedIn URL", "url"],
+                  ["github", "GitHub URL", "url"],
+                ].map(([field, placeholder, type]) => (
+                  <input
+                    key={field}
+                    type={type}
+                    placeholder={placeholder}
+                    value={resume.personal[field]}
+                    onChange={(event) => updatePersonal(field, event.target.value)}
+                    className="w-full border-2 border-[#14213D]/10 bg-[#FBFAF6] px-4 py-3.5 outline-none focus:border-[#2457D6] transition-colors"
+                  />
+                ))}
+              </div>
+            </section>
 
-        <section className="bg-white rounded-3xl shadow-sm p-8 mb-6">
+            {/* SUMMARY */}
+            <section id="builder-summary" className="bg-[#EDF3FF] border-2 border-[#2457D6]/10 p-6 md:p-8">
+              <div className="flex items-start gap-4 mb-6">
+                <span className="text-[#2457D6] font-serif italic text-lg">02</span>
+                <div>
+                  <h2 className="text-3xl font-black tracking-[-0.04em]">Professional summary</h2>
+                  <p className="mt-1 text-[#14213D]/55">A short introduction that tells the reader what you bring.</p>
+                </div>
+              </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+              <textarea
+                rows={7}
+                placeholder="Write 2–4 sentences about your experience, strengths, domain and the kind of role you're targeting..."
+                value={resume.summary}
+                onChange={(event) => updateField("summary", event.target.value)}
+                className="w-full border-2 border-[#14213D]/10 bg-white px-4 py-4 outline-none focus:border-[#2457D6] resize-y"
+              />
+            </section>
 
-            <h2 className="text-2xl font-bold">
-              Experience
-            </h2>
+            {/* SKILLS */}
+            <section id="builder-skills" className="bg-white border-2 border-[#14213D]/10 p-6 md:p-8">
+              <div className="flex items-start gap-4 mb-6">
+                <span className="text-[#2457D6] font-serif italic text-lg">03</span>
+                <div>
+                  <h2 className="text-3xl font-black tracking-[-0.04em]">Skills</h2>
+                  <p className="mt-1 text-[#14213D]/50">Add the technologies and strengths you want recruiters to notice.</p>
+                </div>
+              </div>
 
-            <button
-              type="button"
-              onClick={() =>
-                addItem(
-                  "experience",
-                  {
+              <input
+                type="text"
+                placeholder="Python, React, SQL, FastAPI, Git"
+                value={resume.skills.join(", ")}
+                onChange={(event) => handleSkills(event.target.value)}
+                className="w-full border-2 border-[#14213D]/10 bg-[#FBFAF6] px-4 py-3.5 outline-none focus:border-[#2457D6]"
+              />
+
+              {resume.skills.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {resume.skills.map((skill, index) => (
+                    <span
+                      key={index}
+                      className="bg-[#F1F7D9] border border-[#B8E34B] text-[#526B00] px-3 py-1.5 text-sm font-bold"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {/* EXPERIENCE */}
+            <section id="builder-experience" className="bg-white border-2 border-[#14213D]/10 p-6 md:p-8">
+              <SectionHeader number="04" title="Experience" description="Show what you did, how you did it, and what changed because of your work." />
+
+              {resume.experience.map((item, index) => (
+                <div key={index} className="mt-6 border-l-4 border-[#2457D6] bg-[#FBFAF6] p-5 md:p-6">
+                  <div className="flex items-center justify-between gap-4 mb-5">
+                    <p className="font-black text-[#2457D6]">Experience {index + 1}</p>
+                    {resume.experience.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeItem("experience", index)}
+                        className="text-sm font-bold text-[#FF6B57] hover:underline"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-5">
+                    {[
+                      ["jobTitle", "Job Title"],
+                      ["company", "Company"],
+                      ["location", "Location"],
+                      ["startDate", "Start Date (e.g. Jan 2023)"],
+                      ["endDate", "End Date (e.g. Present)"],
+                    ].map(([field, placeholder]) => (
+                      <input
+                        key={field}
+                        type="text"
+                        placeholder={placeholder}
+                        value={item[field]}
+                        onChange={(event) => updateArrayItem("experience", index, field, event.target.value)}
+                        className="w-full border-2 border-[#14213D]/10 bg-white px-4 py-3.5 outline-none focus:border-[#2457D6]"
+                      />
+                    ))}
+                  </div>
+
+                  <textarea
+                    rows={5}
+                    placeholder="Describe your responsibilities, achievements and measurable impact..."
+                    value={item.description}
+                    onChange={(event) => updateArrayItem("experience", index, "description", event.target.value)}
+                    className="w-full border-2 border-[#14213D]/10 bg-white px-4 py-4 mt-5 outline-none focus:border-[#2457D6] resize-y"
+                  />
+                </div>
+              ))}
+
+              <button
+                type="button"
+                onClick={() =>
+                  addItem("experience", {
                     jobTitle: "",
                     company: "",
                     location: "",
                     startDate: "",
                     endDate: "",
                     description: "",
-                  }
-                )
-              }
-              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold"
-            >
-              + Add Experience
-            </button>
-
-          </div>
-
-
-          {resume.experience.map(
-            (item, index) => (
-              <div
-                key={index}
-                className="border border-slate-200 rounded-2xl p-6 mb-5"
+                  })
+                }
+                className="mt-5 border-2 border-[#14213D] bg-[#14213D] text-white px-5 py-3 font-black hover:bg-[#2457D6] hover:border-[#2457D6] transition-colors"
               >
+                + Add Experience
+              </button>
+            </section>
 
-                <div className="grid md:grid-cols-2 gap-5">
+            {/* EDUCATION */}
+            <section id="builder-education" className="bg-white border-2 border-[#14213D]/10 p-6 md:p-8">
+              <SectionHeader number="05" title="Education" description="Keep the essentials clear and easy to scan." />
 
-                  <input
-                    type="text"
-                    placeholder="Job Title"
-                    value={
-                      item.jobTitle
-                    }
-                    onChange={(event) =>
-                      updateArrayItem(
-                        "experience",
-                        index,
-                        "jobTitle",
-                        event.target.value
-                      )
-                    }
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+              {resume.education.map((item, index) => (
+                <div key={index} className="mt-6 border-l-4 border-[#B8E34B] bg-[#FBFAF6] p-5 md:p-6">
+                  <div className="flex items-center justify-between gap-4 mb-5">
+                    <p className="font-black text-[#526B00]">Education {index + 1}</p>
+                    {resume.education.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeItem("education", index)}
+                        className="text-sm font-bold text-[#FF6B57] hover:underline"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
 
-                  <input
-                    type="text"
-                    placeholder="Company"
-                    value={
-                      item.company
-                    }
-                    onChange={(event) =>
-                      updateArrayItem(
-                        "experience",
-                        index,
-                        "company",
-                        event.target.value
-                      )
-                    }
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="Location"
-                    value={
-                      item.location
-                    }
-                    onChange={(event) =>
-                      updateArrayItem(
-                        "experience",
-                        index,
-                        "location",
-                        event.target.value
-                      )
-                    }
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="Start Date (e.g. Jan 2023)"
-                    value={
-                      item.startDate
-                    }
-                    onChange={(event) =>
-                      updateArrayItem(
-                        "experience",
-                        index,
-                        "startDate",
-                        event.target.value
-                      )
-                    }
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="End Date (e.g. Present)"
-                    value={
-                      item.endDate
-                    }
-                    onChange={(event) =>
-                      updateArrayItem(
-                        "experience",
-                        index,
-                        "endDate",
-                        event.target.value
-                      )
-                    }
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-
+                  <div className="grid md:grid-cols-2 gap-5">
+                    {[
+                      ["degree", "Degree"],
+                      ["institution", "Institution"],
+                      ["location", "Location"],
+                      ["year", "Graduation Year"],
+                    ].map(([field, placeholder]) => (
+                      <input
+                        key={field}
+                        type="text"
+                        placeholder={placeholder}
+                        value={item[field]}
+                        onChange={(event) => updateArrayItem("education", index, field, event.target.value)}
+                        className="w-full border-2 border-[#14213D]/10 bg-white px-4 py-3.5 outline-none focus:border-[#2457D6]"
+                      />
+                    ))}
+                  </div>
                 </div>
+              ))}
 
-
-                <textarea
-                  rows={5}
-                  placeholder="Describe your responsibilities, achievements and impact..."
-                  value={
-                    item.description
-                  }
-                  onChange={(event) =>
-                    updateArrayItem(
-                      "experience",
-                      index,
-                      "description",
-                      event.target.value
-                    )
-                  }
-                  className="w-full border border-slate-300 rounded-xl px-4 py-3 mt-5 outline-none focus:ring-2 focus:ring-blue-500 resize-y"
-                />
-
-
-                {resume.experience.length >
-                  1 && (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      removeItem(
-                        "experience",
-                        index
-                      )
-                    }
-                    className="text-red-600 hover:text-red-700 font-medium mt-4"
-                  >
-                    Remove Experience
-                  </button>
-                )}
-
-              </div>
-            )
-          )}
-
-        </section>
-
-
-        {/* ========================================= */}
-        {/* EDUCATION */}
-        {/* ========================================= */}
-
-        <section className="bg-white rounded-3xl shadow-sm p-8 mb-6">
-
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-
-            <h2 className="text-2xl font-bold">
-              Education
-            </h2>
-
-            <button
-              type="button"
-              onClick={() =>
-                addItem(
-                  "education",
-                  {
-                    degree: "",
-                    institution: "",
-                    location: "",
-                    year: "",
-                  }
-                )
-              }
-              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold"
-            >
-              + Add Education
-            </button>
-
-          </div>
-
-
-          {resume.education.map(
-            (item, index) => (
-              <div
-                key={index}
-                className="border border-slate-200 rounded-2xl p-6 mb-5"
+              <button
+                type="button"
+                onClick={() => addItem("education", { degree: "", institution: "", location: "", year: "" })}
+                className="mt-5 border-2 border-[#14213D] bg-[#14213D] text-white px-5 py-3 font-black hover:bg-[#2457D6] hover:border-[#2457D6] transition-colors"
               >
+                + Add Education
+              </button>
+            </section>
 
-                <div className="grid md:grid-cols-2 gap-5">
+            {/* PROJECTS */}
+            <section id="builder-projects" className="bg-white border-2 border-[#14213D]/10 p-6 md:p-8">
+              <SectionHeader number="06" title="Projects" description="Especially useful for students and early-career candidates: show what you actually built." />
 
-                  <input
-                    type="text"
-                    placeholder="Degree"
-                    value={
-                      item.degree
-                    }
-                    onChange={(event) =>
-                      updateArrayItem(
-                        "education",
-                        index,
-                        "degree",
-                        event.target.value
-                      )
-                    }
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+              {resume.projects.map((item, index) => (
+                <div key={index} className="mt-6 border-l-4 border-[#2457D6] bg-[#EDF3FF] p-5 md:p-6">
+                  <div className="flex items-center justify-between gap-4 mb-5">
+                    <p className="font-black text-[#2457D6]">Project {index + 1}</p>
+                    {resume.projects.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeItem("projects", index)}
+                        className="text-sm font-bold text-[#FF6B57] hover:underline"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-5">
+                    <input
+                      type="text"
+                      placeholder="Project Name"
+                      value={item.name}
+                      onChange={(event) => updateArrayItem("projects", index, "name", event.target.value)}
+                      className="w-full border-2 border-[#14213D]/10 bg-white px-4 py-3.5 outline-none focus:border-[#2457D6]"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Technologies"
+                      value={item.technologies}
+                      onChange={(event) => updateArrayItem("projects", index, "technologies", event.target.value)}
+                      className="w-full border-2 border-[#14213D]/10 bg-white px-4 py-3.5 outline-none focus:border-[#2457D6]"
+                    />
+                    <input
+                      type="url"
+                      placeholder="Project Link"
+                      value={item.link}
+                      onChange={(event) => updateArrayItem("projects", index, "link", event.target.value)}
+                      className="w-full md:col-span-2 border-2 border-[#14213D]/10 bg-white px-4 py-3.5 outline-none focus:border-[#2457D6]"
+                    />
+                  </div>
+
+                  <textarea
+                    rows={5}
+                    placeholder="Describe the project, your contribution and results..."
+                    value={item.description}
+                    onChange={(event) => updateArrayItem("projects", index, "description", event.target.value)}
+                    className="w-full border-2 border-[#14213D]/10 bg-white px-4 py-4 mt-5 outline-none focus:border-[#2457D6] resize-y"
                   />
-
-                  <input
-                    type="text"
-                    placeholder="Institution"
-                    value={
-                      item.institution
-                    }
-                    onChange={(event) =>
-                      updateArrayItem(
-                        "education",
-                        index,
-                        "institution",
-                        event.target.value
-                      )
-                    }
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="Location"
-                    value={
-                      item.location
-                    }
-                    onChange={(event) =>
-                      updateArrayItem(
-                        "education",
-                        index,
-                        "location",
-                        event.target.value
-                      )
-                    }
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="Graduation Year"
-                    value={
-                      item.year
-                    }
-                    onChange={(event) =>
-                      updateArrayItem(
-                        "education",
-                        index,
-                        "year",
-                        event.target.value
-                      )
-                    }
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-
                 </div>
+              ))}
 
-
-                {resume.education.length >
-                  1 && (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      removeItem(
-                        "education",
-                        index
-                      )
-                    }
-                    className="text-red-600 hover:text-red-700 font-medium mt-4"
-                  >
-                    Remove Education
-                  </button>
-                )}
-
-              </div>
-            )
-          )}
-
-        </section>
-
-
-        {/* ========================================= */}
-        {/* PROJECTS */}
-        {/* ========================================= */}
-
-        <section className="bg-white rounded-3xl shadow-sm p-8 mb-6">
-
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-
-            <h2 className="text-2xl font-bold">
-              Projects
-            </h2>
-
-            <button
-              type="button"
-              onClick={() =>
-                addItem(
-                  "projects",
-                  {
-                    name: "",
-                    technologies: "",
-                    description: "",
-                    link: "",
-                  }
-                )
-              }
-              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold"
-            >
-              + Add Project
-            </button>
-
-          </div>
-
-
-          {resume.projects.map(
-            (item, index) => (
-              <div
-                key={index}
-                className="border border-slate-200 rounded-2xl p-6 mb-5"
+              <button
+                type="button"
+                onClick={() => addItem("projects", { name: "", technologies: "", description: "", link: "" })}
+                className="mt-5 border-2 border-[#14213D] bg-[#14213D] text-white px-5 py-3 font-black hover:bg-[#2457D6] hover:border-[#2457D6] transition-colors"
               >
+                + Add Project
+              </button>
+            </section>
 
-                <div className="grid md:grid-cols-2 gap-5">
+            {/* CERTIFICATIONS */}
+            <section id="builder-certifications" className="bg-white border-2 border-[#14213D]/10 p-6 md:p-8">
+              <SectionHeader number="07" title="Certifications" description="Add credentials that strengthen your target role." />
 
-                  <input
-                    type="text"
-                    placeholder="Project Name"
-                    value={
-                      item.name
-                    }
-                    onChange={(event) =>
-                      updateArrayItem(
-                        "projects",
-                        index,
-                        "name",
-                        event.target.value
-                      )
-                    }
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+              {resume.certifications.map((item, index) => (
+                <div key={index} className="mt-6 border-l-4 border-[#FF6B57] bg-[#FFF0EC] p-5 md:p-6">
+                  <div className="flex items-center justify-between gap-4 mb-5">
+                    <p className="font-black text-[#9F3326]">Certification {index + 1}</p>
+                    {resume.certifications.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeItem("certifications", index)}
+                        className="text-sm font-bold text-[#FF6B57] hover:underline"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
 
-                  <input
-                    type="text"
-                    placeholder="Technologies"
-                    value={
-                      item.technologies
-                    }
-                    onChange={(event) =>
-                      updateArrayItem(
-                        "projects",
-                        index,
-                        "technologies",
-                        event.target.value
-                      )
-                    }
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-
-                  <input
-                    type="url"
-                    placeholder="Project Link"
-                    value={
-                      item.link
-                    }
-                    onChange={(event) =>
-                      updateArrayItem(
-                        "projects",
-                        index,
-                        "link",
-                        event.target.value
-                      )
-                    }
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-
+                  <div className="grid md:grid-cols-3 gap-5">
+                    {[
+                      ["name", "Certification Name"],
+                      ["issuer", "Issuing Organization"],
+                      ["year", "Year"],
+                    ].map(([field, placeholder]) => (
+                      <input
+                        key={field}
+                        type="text"
+                        placeholder={placeholder}
+                        value={item[field]}
+                        onChange={(event) => updateArrayItem("certifications", index, field, event.target.value)}
+                        className="w-full border-2 border-[#14213D]/10 bg-white px-4 py-3.5 outline-none focus:border-[#2457D6]"
+                      />
+                    ))}
+                  </div>
                 </div>
+              ))}
 
-
-                <textarea
-                  rows={5}
-                  placeholder="Describe the project, your contribution and results..."
-                  value={
-                    item.description
-                  }
-                  onChange={(event) =>
-                    updateArrayItem(
-                      "projects",
-                      index,
-                      "description",
-                      event.target.value
-                    )
-                  }
-                  className="w-full border border-slate-300 rounded-xl px-4 py-3 mt-5 outline-none focus:ring-2 focus:ring-blue-500 resize-y"
-                />
-
-
-                {resume.projects.length >
-                  1 && (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      removeItem(
-                        "projects",
-                        index
-                      )
-                    }
-                    className="text-red-600 hover:text-red-700 font-medium mt-4"
-                  >
-                    Remove Project
-                  </button>
-                )}
-
-              </div>
-            )
-          )}
-
-        </section>
-
-
-        {/* ========================================= */}
-        {/* CERTIFICATIONS */}
-        {/* ========================================= */}
-
-        <section className="bg-white rounded-3xl shadow-sm p-8 mb-8">
-
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-
-            <h2 className="text-2xl font-bold">
-              Certifications
-            </h2>
-
-            <button
-              type="button"
-              onClick={() =>
-                addItem(
-                  "certifications",
-                  {
-                    name: "",
-                    issuer: "",
-                    year: "",
-                  }
-                )
-              }
-              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold"
-            >
-              + Add Certification
-            </button>
-
-          </div>
-
-
-          {resume.certifications.map(
-            (item, index) => (
-              <div
-                key={index}
-                className="border border-slate-200 rounded-2xl p-6 mb-5"
+              <button
+                type="button"
+                onClick={() => addItem("certifications", { name: "", issuer: "", year: "" })}
+                className="mt-5 border-2 border-[#14213D] bg-[#14213D] text-white px-5 py-3 font-black hover:bg-[#2457D6] hover:border-[#2457D6] transition-colors"
               >
+                + Add Certification
+              </button>
+            </section>
 
-                <div className="grid md:grid-cols-3 gap-5">
-
-                  <input
-                    type="text"
-                    placeholder="Certification Name"
-                    value={
-                      item.name
-                    }
-                    onChange={(event) =>
-                      updateArrayItem(
-                        "certifications",
-                        index,
-                        "name",
-                        event.target.value
-                      )
-                    }
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="Issuing Organization"
-                    value={
-                      item.issuer
-                    }
-                    onChange={(event) =>
-                      updateArrayItem(
-                        "certifications",
-                        index,
-                        "issuer",
-                        event.target.value
-                      )
-                    }
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="Year"
-                    value={
-                      item.year
-                    }
-                    onChange={(event) =>
-                      updateArrayItem(
-                        "certifications",
-                        index,
-                        "year",
-                        event.target.value
-                      )
-                    }
-                    className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-
-                </div>
-
-
-                {resume.certifications.length >
-                  1 && (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      removeItem(
-                        "certifications",
-                        index
-                      )
-                    }
-                    className="text-red-600 hover:text-red-700 font-medium mt-4"
-                  >
-                    Remove Certification
-                  </button>
-                )}
-
+            {/* FINISH */}
+            <section className="bg-[#14213D] text-white p-7 md:p-9 shadow-[7px_7px_0_#2457D6]">
+              <div className="max-w-3xl">
+                <p className="text-[#B8E34B] font-serif italic text-xl">Almost there.</p>
+                <h2 className="mt-1 text-3xl md:text-4xl font-black tracking-[-0.04em]">
+                  Your resume is ready for a look.
+                </h2>
+                <p className="mt-3 text-white/60 leading-7">
+                  Save your work, then open the preview to see the finished resume.
+                </p>
               </div>
-            )
-          )}
 
-        </section>
+              <div className="flex flex-col sm:flex-row gap-3 mt-7">
+                <button
+                  type="button"
+                  onClick={saveDraft}
+                  className="border-2 border-white/20 bg-white/10 hover:bg-white/15 text-white px-7 py-3.5 font-black transition-colors"
+                >
+                  Save Draft
+                </button>
 
-
-        {/* ========================================= */}
-        {/* ACTION BUTTONS */}
-        {/* ========================================= */}
-
-        <div className="flex flex-col sm:flex-row justify-end gap-4 pb-10">
-
-          <button
-            type="button"
-            onClick={saveDraft}
-            className="border border-slate-300 bg-white hover:bg-slate-50 px-7 py-3 rounded-xl font-semibold"
-          >
-            Save Draft
-          </button>
-
-
-          <button
-            type="button"
-            onClick={saveAndPreview}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-7 py-3 rounded-xl font-semibold"
-          >
-            Preview Resume
-          </button>
-
+                <button
+                  type="button"
+                  onClick={saveAndPreview}
+                  className="bg-[#B8E34B] hover:bg-white text-[#14213D] px-7 py-3.5 font-black transition-colors"
+                >
+                  Preview Resume →
+                </button>
+              </div>
+            </section>
+          </main>
         </div>
-
       </div>
     </div>
   );
 }
 
 export default ResumeBuilder;
-

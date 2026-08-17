@@ -236,416 +236,375 @@ function MockInterview() {
     currentIndex === questions.length - 1;
 
   return (
-    <div className="min-h-screen bg-slate-100 px-4 py-10">
+    <div className="min-h-screen bg-[#FBFAF6] text-[#14213D] px-4 sm:px-6 py-8 md:py-10">
       <div className="max-w-7xl mx-auto">
-        <div className="bg-slate-950 text-white rounded-3xl shadow-xl p-8 mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+
+        {/* Intro */}
+        <section className="relative overflow-hidden bg-[#2457D6] text-white border-2 border-[#14213D] p-7 md:p-10 shadow-[8px_8px_0_#14213D]">
+          <div className="absolute -right-8 -top-16 text-[11rem] font-black leading-none text-white/5">?</div>
+          <div className="absolute right-8 bottom-6 text-5xl text-[#B8E34B] rotate-12">✦</div>
+
+          <div className="relative grid lg:grid-cols-[1fr_280px] gap-8 items-center">
             <div>
-              <p className="text-sm uppercase tracking-widest text-blue-300 mb-3">
-                AI Voice Mock Interview
+              <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#B8E34B]">
+                Mock Interview Studio
               </p>
-
-              <h1 className="text-4xl md:text-5xl font-bold">
-                Practice interviews by speaking your answers
+              <h1 className="mt-3 text-4xl md:text-6xl font-black tracking-[-0.056em] leading-[0.98]">
+                Practice like it's
+                <br />
+                <span className="font-serif italic font-normal">the real thing.</span>
               </h1>
-
-              <p className="text-slate-300 mt-4 max-w-3xl leading-7">
-                Generate role-based questions, listen to them aloud, answer by
-                voice, and get quick feedback on clarity, detail, and confidence.
+              <p className="mt-5 max-w-2xl text-white/75 text-base md:text-lg leading-7">
+                Speak your answer, hear the question, and get honest recruiter-style
+                feedback. No pressure. Just practice.
               </p>
             </div>
 
-            <div className="bg-white/10 border border-white/10 rounded-2xl p-5 min-w-[220px]">
-              <p className="text-sm text-slate-300">Voice mode</p>
-              <h2 className="text-3xl font-bold mt-2">
-                {listening ? "Listening..." : "Ready"}
+            <div className="bg-white text-[#14213D] border-2 border-[#14213D] p-6 shadow-[5px_5px_0_#14213D] rotate-1">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-black uppercase tracking-wider text-[#14213D]/50">Voice mode</p>
+                <Radio size={20} className={listening ? "text-[#FF6B57] animate-pulse" : "text-[#2457D6]"} />
+              </div>
+              <p className="mt-3 text-3xl font-black">{listening ? "Listening…" : "Ready"}</p>
+              <p className="mt-2 text-sm text-[#14213D]/55">Best in Chrome</p>
+              <div className="mt-5 flex items-end gap-1 h-8">
+                {[35,55,75,45,85,62,40,70].map((h,i)=>(
+                  <span key={i} className={`flex-1 rounded-t-sm ${listening ? "bg-[#FF6B57]" : "bg-[#2457D6]/20"}`} style={{height:`${h}%`}} />
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Setup */}
+        {questions.length === 0 && (
+          <section className="grid lg:grid-cols-[0.72fr_1.28fr] gap-6 mt-8">
+            <div className="bg-[#EEF3FF] border-2 border-[#14213D]/10 p-7 md:p-8">
+              <p className="font-serif italic text-2xl text-[#2457D6]">Before you start</p>
+              <h2 className="mt-2 text-3xl font-black tracking-tight">
+                Make it feel like your interview.
               </h2>
-              <p className="text-sm text-slate-400 mt-1">
-                Works best in Chrome
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid lg:grid-cols-3 gap-8 mb-8">
-          <div className="bg-white rounded-3xl shadow p-8">
-            <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-5">
-              <Target />
-            </div>
-
-            <h2 className="text-2xl font-bold mb-4">Voice Interview Guide</h2>
-
-            <div className="space-y-4">
-              {[
-                "Listen to the question first.",
-                "Answer naturally like a real interview.",
-                "Use one real project example.",
-                "Mention tools and impact.",
-                "Avoid too many filler words.",
-              ].map((tip, index) => (
-                <div key={index} className="flex gap-3">
-                  <CheckCircle className="text-green-600 mt-1" size={18} />
-                  <p className="text-sm text-slate-700 leading-6">{tip}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="lg:col-span-2 bg-white rounded-3xl shadow p-8">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                <Sparkles />
+              <div className="mt-7 space-y-5">
+                {[
+                  "Listen to the question first.",
+                  "Answer naturally, like you're talking to a recruiter.",
+                  "Use one real project or experience.",
+                  "Mention tools, decisions and impact.",
+                  "Don't chase a perfect answer. Be clear."
+                ].map((tip,index)=>(
+                  <div key={index} className="flex gap-3">
+                    <span className="shrink-0 w-7 h-7 rounded-full bg-white border border-[#2457D6]/20 text-[#2457D6] flex items-center justify-center font-black text-xs">
+                      {index+1}
+                    </span>
+                    <p className="text-sm leading-6 text-[#14213D]/70">{tip}</p>
+                  </div>
+                ))}
               </div>
 
-              <div>
-                <p className="text-sm text-blue-600 font-semibold">
-                  Interview Setup
+              <div className="mt-8 pt-6 border-t border-[#14213D]/10">
+                <p className="text-sm font-bold">💡 Tip</p>
+                <p className="mt-2 text-sm leading-6 text-[#14213D]/55">
+                  Your resume is already loaded from Resume Analyzer when available,
+                  so your questions can be more relevant to your experience.
                 </p>
-                <h2 className="text-2xl font-bold">
-                  Set your interview target
-                </h2>
               </div>
             </div>
 
-            <label className="block text-sm font-semibold mb-2">
-              Target role
-            </label>
+            <div className="bg-white border-2 border-[#14213D] p-7 md:p-8 shadow-[7px_7px_0_#B8E34B]">
+              <div className="flex items-start justify-between gap-5">
+                <div>
+                  <p className="font-serif italic text-xl text-[#FF6B57]">Let's set the scene</p>
+                  <h2 className="mt-1 text-3xl md:text-4xl font-black tracking-[-0.04em]">
+                    Who are you interviewing for?
+                  </h2>
+                </div>
+                <span className="hidden sm:block text-4xl">🎤</span>
+              </div>
 
-            <input
-              type="text"
-              placeholder="Example: AI/ML Engineer, Python Developer Intern"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="w-full border border-slate-300 rounded-xl p-4 mb-5"
-            />
+              <label className="block text-sm font-bold mt-8 mb-2">Target role</label>
+              <input
+                type="text"
+                placeholder="e.g. AI/ML Engineer, Python Developer Intern"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="w-full border-2 border-[#14213D]/15 rounded-xl p-4 outline-none focus:border-[#2457D6] focus:ring-4 focus:ring-[#2457D6]/10 transition"
+              />
 
-            <label className="block text-sm font-semibold mb-2">
-              Resume text
-            </label>
+              <label className="block text-sm font-bold mt-6 mb-2">Resume text</label>
+              <textarea
+                rows="5"
+                placeholder="Resume text appears here if you used Resume Analyzer first."
+                value={resumeText}
+                onChange={(e) => setResumeText(e.target.value)}
+                className="w-full border-2 border-[#14213D]/15 rounded-xl p-4 text-sm outline-none focus:border-[#2457D6] focus:ring-4 focus:ring-[#2457D6]/10 transition"
+              />
 
-            <textarea
-              rows="5"
-              placeholder="Resume text appears here if you used Resume Analyzer first."
-              value={resumeText}
-              onChange={(e) => setResumeText(e.target.value)}
-              className="w-full border border-slate-300 rounded-xl p-4 mb-5 text-sm"
-            />
+              <label className="block text-sm font-bold mt-6 mb-2">Job description</label>
+              <textarea
+                rows="5"
+                placeholder="Paste the job description here..."
+                value={jobDescription}
+                onChange={(e) => setJobDescription(e.target.value)}
+                className="w-full border-2 border-[#14213D]/15 rounded-xl p-4 text-sm outline-none focus:border-[#2457D6] focus:ring-4 focus:ring-[#2457D6]/10 transition"
+              />
 
-            <label className="block text-sm font-semibold mb-2">
-              Job description
-            </label>
+              <button
+                onClick={generateQuestions}
+                disabled={loading}
+                className="mt-6 w-full bg-[#14213D] text-white px-8 py-4 rounded-xl font-black hover:bg-[#2457D6] disabled:bg-slate-400 transition-colors inline-flex items-center justify-center gap-3"
+              >
+                {loading ? "Preparing your questions…" : "Start Mock Interview"}
+                {!loading && <ArrowRight size={19} />}
+              </button>
+            </div>
+          </section>
+        )}
 
-            <textarea
-              rows="5"
-              placeholder="Paste the job description here..."
-              value={jobDescription}
-              onChange={(e) => setJobDescription(e.target.value)}
-              className="w-full border border-slate-300 rounded-xl p-4 mb-6 text-sm"
-            />
-
-            <button
-              onClick={generateQuestions}
-              disabled={loading}
-              className="w-full bg-blue-600 text-white px-8 py-4 rounded-xl font-semibold hover:bg-blue-700 disabled:bg-slate-400"
-            >
-              {loading ? "Preparing questions..." : "Generate Voice Interview"}
-            </button>
-          </div>
-        </div>
-
+        {/* Interview */}
         {questions.length > 0 && (
-          <div className="bg-white rounded-3xl shadow p-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+          <section className="mt-8">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-5">
               <div>
-                <p className="text-sm text-blue-600 font-semibold">
+                <p className="font-serif italic text-xl text-[#2457D6]">
                   Question {currentIndex + 1} of {questions.length}
                 </p>
-
-                <h2 className="text-3xl font-bold">Verbal Answer Practice</h2>
+                <h2 className="mt-1 text-3xl md:text-4xl font-black tracking-[-0.04em]">
+                  Tell your story.
+                </h2>
               </div>
-
-              <div className="flex items-center gap-2 text-sm text-slate-500">
-                <Clock size={18} />
+              <div className="text-sm text-[#14213D]/50 flex items-center gap-2">
+                <Clock size={17} />
                 Speak clearly and naturally
               </div>
             </div>
 
-            <div className="w-full bg-slate-200 rounded-full h-3 mb-8 overflow-hidden">
-              <div
-                className="h-3 bg-blue-600 rounded-full transition-all"
-                style={{ width: `${progress}%` }}
-              />
+            <div className="h-3 bg-[#E5E9F1] overflow-hidden mb-7">
+              <div className="h-full bg-[#2457D6] transition-all" style={{width:`${progress}%`}} />
             </div>
 
-            <div className="bg-slate-950 text-white rounded-3xl p-7 mb-6">
-              <p className="text-sm text-blue-300 mb-3">
-                Interview question
-              </p>
-
-              <p className="text-xl leading-9">
-                {questions[currentIndex]}
-              </p>
-
-              <button
-                onClick={speakQuestion}
-                className="mt-6 bg-white text-slate-950 px-5 py-3 rounded-xl font-semibold inline-flex items-center gap-2"
-              >
-                <Volume2 size={18} />
-                Speak Question
-              </button>
-            </div>
-
-            <label className="block text-sm font-semibold mb-2">
-              Your spoken answer
-            </label>
-
-            <textarea
-              rows="8"
-              placeholder="Your spoken answer will appear here. You can also type or edit it manually."
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              className="w-full border border-slate-300 rounded-xl p-4 text-sm"
-            />
-
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-4">
+            <div className="grid lg:grid-cols-[1.2fr_0.8fr] gap-6">
               <div>
-                <p className="text-sm text-slate-500">
-                  Characters: {answer.length}
-                </p>
-                <p className="text-sm text-slate-500">
-                  Status: {listening ? "Listening to your answer..." : "Not recording"}
-                </p>
-              </div>
+                <div className="relative bg-[#14213D] text-white border-2 border-[#14213D] p-7 md:p-9 shadow-[7px_7px_0_#2457D6]">
+                  <div className="absolute -top-3 left-8 bg-[#FF6B57] text-white px-4 py-1 text-xs font-black rotate-[-2deg]">
+                    INTERVIEW QUESTION
+                  </div>
+                  <p className="mt-4 text-2xl md:text-3xl leading-[1.35] font-bold tracking-[-0.02em]">
+                    {questions[currentIndex]}
+                  </p>
 
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  onClick={startVoiceAnswer}
-                  className="bg-indigo-600 text-white px-7 py-3 rounded-xl font-semibold hover:bg-indigo-700 inline-flex items-center justify-center gap-2"
-                >
-                  <Radio size={18} />
-                  Start Speaking
-                </button>
-
-                <button
-                  onClick={submitAnswer}
-                  disabled={loading}
-                  className="bg-green-600 text-white px-7 py-3 rounded-xl font-semibold hover:bg-green-700"
-                >
-                  {loading ? "Evaluating..." : "Submit Answer"}
-                </button>
-
-                {feedback && currentIndex < questions.length - 1 && (
                   <button
-                    onClick={nextQuestion}
-                    className="bg-slate-900 text-white px-7 py-3 rounded-xl font-semibold hover:bg-slate-800 inline-flex items-center justify-center gap-2"
+                    onClick={speakQuestion}
+                    className="mt-8 bg-white text-[#14213D] px-5 py-3 rounded-xl font-black inline-flex items-center gap-2 hover:bg-[#B8E34B] transition-colors"
                   >
-                    Next Question <ArrowRight size={18} />
+                    <Volume2 size={18} />
+                    Hear question
                   </button>
-                )}
+                </div>
+
+                <div className="mt-6 bg-white border-2 border-[#14213D]/10 p-6">
+                  <div className="flex items-center justify-between gap-4 mb-3">
+                    <label className="text-sm font-black">Your answer</label>
+                    <span className="text-xs text-[#14213D]/45">{answer.length} characters</span>
+                  </div>
+
+                  <textarea
+                    rows="9"
+                    placeholder="Speak your answer or type/edit it here…"
+                    value={answer}
+                    onChange={(e) => setAnswer(e.target.value)}
+                    className="w-full border-2 border-[#14213D]/10 rounded-xl p-4 text-sm leading-7 outline-none focus:border-[#2457D6] focus:ring-4 focus:ring-[#2457D6]/10 transition"
+                  />
+
+                  <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className={`text-sm font-bold flex items-center gap-2 ${listening ? "text-[#FF6B57]" : "text-[#14213D]/45"}`}>
+                      <span className={`h-2.5 w-2.5 rounded-full ${listening ? "bg-[#FF6B57] animate-pulse" : "bg-[#14213D]/20"}`} />
+                      {listening ? "Listening to you…" : "Ready to listen"}
+                    </div>
+
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        onClick={startVoiceAnswer}
+                        className="bg-[#2457D6] text-white px-5 py-3 rounded-xl font-black hover:bg-[#14213D] transition-colors inline-flex items-center gap-2"
+                      >
+                        <Radio size={18} />
+                        {listening ? "Listening…" : "Start Speaking"}
+                      </button>
+
+                      <button
+                        onClick={submitAnswer}
+                        disabled={loading}
+                        className="bg-[#B8E34B] text-[#14213D] px-5 py-3 rounded-xl font-black border-2 border-[#14213D] hover:bg-white disabled:opacity-60 transition-colors"
+                      >
+                        {loading ? "Evaluating…" : "Submit Answer"}
+                      </button>
+
+                      {feedback && currentIndex < questions.length - 1 && (
+                        <button
+                          onClick={nextQuestion}
+                          className="bg-[#14213D] text-white px-5 py-3 rounded-xl font-black inline-flex items-center gap-2 hover:bg-[#2457D6] transition-colors"
+                        >
+                          Next <ArrowRight size={18} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
+
+              <aside className="space-y-5">
+                <div className="bg-[#F1F7D9] border-2 border-[#14213D]/10 p-6">
+                  <p className="font-serif italic text-xl text-[#648400]">Quick reminder</p>
+                  <h3 className="mt-1 text-2xl font-black">Don't sound rehearsed.</h3>
+                  <p className="mt-3 text-sm leading-6 text-[#14213D]/60">
+                    Explain your thinking. A clear, genuine answer is more useful than a memorized paragraph.
+                  </p>
+                </div>
+
+                <div className="bg-white border-2 border-[#14213D]/10 p-6">
+                  <div className="flex items-center gap-3">
+                    <Target className="text-[#2457D6]" />
+                    <h3 className="text-xl font-black">Your goal</h3>
+                  </div>
+                  <div className="mt-5 space-y-3 text-sm">
+                    {["Answer the question", "Give evidence", "Explain your impact"].map((x,i)=>(
+                      <div key={i} className="flex items-center gap-3">
+                        <CheckCircle size={18} className="text-[#2457D6]" />
+                        <span className="text-[#14213D]/65">{x}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </aside>
             </div>
 
             {feedback !== null && (
-              <div className="mt-8 grid lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 bg-white border rounded-2xl p-6 shadow">
-                  <h3 className="text-2xl font-bold mb-5">
-                    Recruiter Evaluation
-                  </h3>
-
-                  {feedback?.feedback && (
-                    <div className="mb-6 bg-blue-50 border border-blue-100 rounded-xl p-4">
-                      <h4 className="font-bold text-blue-900 mb-2">
-                        Recruiter's Feedback
-                      </h4>
-
-                      <p className="text-blue-900 whitespace-pre-wrap leading-7">
-                        {feedback?.feedback}
-                      </p>
-                    </div>
-                  )}
-                  
-
-                  <div className="grid md:grid-cols-2 gap-4 mb-6">
-                    <div className="bg-slate-100 rounded-xl p-4">
-                      <p className="text-sm text-slate-500">Technical Accuracy</p>
-                      <p className="text-2xl font-bold">
-                        {Math.round((feedback?.technical_accuracy / 4) * 40)}/40
-                      </p>
-                    </div>
-                    <div className="bg-slate-100 rounded-xl p-4">
-                      <p className="text-sm text-slate-500">Completeness</p>
-                      <p className="text-2xl font-bold">
-                        {Math.round((feedback?.completeness / 2) * 20)}/20
-                      </p>
-                    </div>
-                    <div className="bg-slate-100 rounded-xl p-4">
-                      <p className="text-sm text-slate-500">Communication</p>
-                      <p className="text-2xl font-bold">
-                        {Math.round((feedback?.communication / 2) * 15)}/15
-                      </p>
-                    </div>
-                    <div className="bg-slate-100 rounded-xl p-4">
-                      <p className="text-sm text-slate-500">Confidence</p>
-                      <p className="text-2xl font-bold">
-                        {Math.round(feedback?.confidence * 10)}/10
-                      </p>
-                    </div>
-                    <div className="bg-slate-100 rounded-xl p-4">
-                      <p className="text-sm text-slate-500">Practical Example</p>
-                      <p className="text-2xl font-bold">
-                        {Math.round(feedback?.practical_example * 10)}/10
-                      </p>
-                    </div>
-                    <div className="bg-slate-100 rounded-xl p-4">
-                      <p className="text-sm text-slate-500">Conciseness</p>
-                      <p className="text-2xl font-bold">
-                        {Math.round(feedback?.conciseness * 5)}/5
-                      </p>
-                    </div>
+              <div className="mt-10">
+                <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-5">
+                  <div>
+                    <p className="font-serif italic text-xl text-[#FF6B57]">You finished the answer.</p>
+                    <h2 className="mt-1 text-3xl md:text-4xl font-black tracking-[-0.04em]">
+                      Here's what the recruiter saw.
+                    </h2>
                   </div>
 
-                  <hr className="my-6"/>
-                  <h4 className="font-bold text-lg">
-                    Strengths
-                  </h4>
-
-                  <ul className="list-disc pl-6 mt-2">
-                    {feedback?.strengths?.map((item,index)=>(
-                      <li key={index}>{item}</li>
-                    ))}
-                  </ul>
-                  
-
-                  <h4 className="font-bold text-lg mt-6">
-                    Weaknesses
-                  </h4>
-
-                  <ul className="list-disc pl-6 mt-2">
-
-                    {feedback?.weaknesses?.map((item,index)=>(
-
-                      <li key={index}>{item}</li>
-
-                    ))}
-
-                  </ul>
-
-                  <div className="mt-6">
-
-                    <h4 className="font-bold text-lg">
-                      Recruiter Verdict
-                    </h4>
-
-                    <p className="mt-2">
-                      {feedback?.verdict || "No verdict available."}
-                    </p>
-
+                  <div className="bg-[#2457D6] text-white px-7 py-5 border-2 border-[#14213D] shadow-[5px_5px_0_#B8E34B] text-center rotate-1">
+                    <p className="text-xs font-black uppercase tracking-wider text-white/65">Overall score</p>
+                    <p className="text-5xl font-black leading-none mt-1">{score}<span className="text-lg text-white/60">/100</span></p>
                   </div>
-
-                  <div className="mt-6">
-
-                    <h4 className="font-bold text-lg">
-                      Ideal Answer
-                    </h4>
-
-                    <p className="mt-2 whitespace-pre-wrap">
-                      {feedback?.ideal_answer || "Not available."}
-                    </p>
-
-                  </div>
-
-                  <div className="mt-6">
-
-                    <h4 className="font-bold text-lg">
-                      Follow-up Question
-                    </h4>
-
-                    <p className="mt-2">
-                      {feedback?.followup_question || "No follow-up question available."}
-                    </p>
-
-                  </div>
-
                 </div>
 
-                <div className="bg-blue-600 text-white rounded-2xl p-8 flex flex-col justify-center items-center">
+                <div className="grid lg:grid-cols-[1.35fr_0.65fr] gap-6">
+                  <div className="bg-white border-2 border-[#14213D]/10 p-7 md:p-8">
+                    {feedback?.feedback && (
+                      <div className="bg-[#EEF3FF] border-l-4 border-[#2457D6] p-5 mb-7">
+                        <p className="text-xs font-black uppercase tracking-wider text-[#2457D6]">Recruiter's feedback</p>
+                        <p className="mt-2 leading-7 text-[#14213D]/75 whitespace-pre-wrap">{feedback.feedback}</p>
+                      </div>
+                    )}
 
-                  <p className="text-lg">
-                    Overall Score
-                  </p>
+                    <h3 className="text-2xl font-black">Your scorecard</h3>
+                    <div className="grid sm:grid-cols-2 gap-3 mt-5">
+                      {[
+                        ["Technical Accuracy", Math.round((feedback?.technical_accuracy / 4) * 40), 40],
+                        ["Completeness", Math.round((feedback?.completeness / 2) * 20), 20],
+                        ["Communication", Math.round((feedback?.communication / 2) * 15), 15],
+                        ["Confidence", Math.round(feedback?.confidence * 10), 10],
+                        ["Practical Example", Math.round(feedback?.practical_example * 10), 10],
+                        ["Conciseness", Math.round(feedback?.conciseness * 5), 5],
+                      ].map(([label,value,max])=>(
+                        <div key={label} className="border border-[#14213D]/10 p-4">
+                          <div className="flex justify-between gap-3">
+                            <span className="text-sm font-bold">{label}</span>
+                            <span className="font-black text-[#2457D6]">{value}/{max}</span>
+                          </div>
+                          <div className="mt-3 h-2 bg-[#E7EAF0]">
+                            <div className="h-full bg-[#2457D6]" style={{width:`${max ? (value/max)*100 : 0}%`}} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
 
-                  <p className="text-6xl font-bold mt-4">
-                    {score}
-                  </p>
+                    <div className="grid md:grid-cols-2 gap-7 mt-8 pt-7 border-t border-[#14213D]/10">
+                      <div>
+                        <h4 className="text-lg font-black flex items-center gap-2">
+                          <span className="text-[#648400]">✓</span> Strengths
+                        </h4>
+                        <ul className="mt-3 space-y-2 text-sm leading-6 text-[#14213D]/65">
+                          {feedback?.strengths?.map((item,index)=><li key={index}>• {item}</li>)}
+                        </ul>
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-black flex items-center gap-2">
+                          <span className="text-[#FF6B57]">!</span> Weaknesses
+                        </h4>
+                        <ul className="mt-3 space-y-2 text-sm leading-6 text-[#14213D]/65">
+                          {feedback?.weaknesses?.map((item,index)=><li key={index}>• {item}</li>)}
+                        </ul>
+                      </div>
+                    </div>
 
-                  <p className="mt-2">
-                    /100
-                  </p>
+                    <div className="mt-8 grid md:grid-cols-2 gap-5">
+                      <div className="bg-[#FFF0EC] p-5 border border-[#FF6B57]/20">
+                        <p className="text-xs font-black uppercase tracking-wider text-[#D94A39]">Recruiter verdict</p>
+                        <p className="mt-2 text-xl font-black">{feedback?.verdict || "No verdict available."}</p>
+                      </div>
+                      <div className="bg-[#F1F7D9] p-5 border border-[#B8E34B]/50">
+                        <p className="text-xs font-black uppercase tracking-wider text-[#648400]">Next improvement</p>
+                        <p className="mt-2 text-sm leading-6 text-[#14213D]/70">
+                          {improvements?.[0] || "Keep your answer specific and evidence-based."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
+                  <div className="space-y-5">
+                    {feedback?.ideal_answer && (
+                      <div className="bg-[#14213D] text-white p-7 border-2 border-[#14213D] shadow-[5px_5px_0_#2457D6]">
+                        <p className="text-xs font-black uppercase tracking-wider text-[#B8E34B]">Ideal answer</p>
+                        <p className="mt-4 leading-7 text-white/75 whitespace-pre-wrap">{feedback.ideal_answer}</p>
+                      </div>
+                    )}
+
+                    {feedback?.followup_question && (
+                      <div className="bg-[#EEF3FF] border-2 border-[#14213D]/10 p-7">
+                        <p className="font-serif italic text-xl text-[#2457D6]">Recruiter follow-up</p>
+                        <p className="mt-3 text-lg font-bold leading-7">{feedback.followup_question}</p>
+                      </div>
+                    )}
+
+                    {improvements.length > 0 && (
+                      <div className="bg-white border-2 border-[#14213D]/10 p-7">
+                        <p className="text-xl font-black">Suggested improvements</p>
+                        <ul className="mt-4 space-y-3 text-sm leading-6 text-[#14213D]/65">
+                          {improvements.map((item,index)=><li key={index}>→ {item}</li>)}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
                 </div>
-
-              </div>
-
-            )}
-
-            {feedback?.followup_question && (
-              <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-xl p-5">
-                 <h3 className="font-bold text-lg">
-                  Recruiter's Follow-up Question
-                 </h3>
-                 <p className="mt-2">
-                  {feedback?.followup_question || "No follow-up question available."}
-                 </p>
               </div>
             )}
-
-            {feedback?.ideal_answer && (
-              <div className="mt-6 bg-green-50 border border-green-200 rounded-xl p-5">
-                <h3 className="font-bold text-lg">
-                  Ideal Answer
-                </h3>
-                <p className="mt-2 whitespace-pre-wrap">
-                  {feedback?.ideal_answer || "Not available."}
-                </p>
-              </div>
-            )}
-            
-
-            {improvements.length > 0 && (
-              <div className="mt-5">
-                <p className="font-semibold text-blue-900 mb-2">
-                  Suggested Improvements
-                </p>
-                <ul className="list-disc ml-5 space-y-2 text-sm text-blue-900">
-                  {improvements.map((item, index) => (
-                    <li key={index}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          
 
             {completed && (
-              <div className="mt-8 bg-slate-950 text-white rounded-3xl p-8">
-                <h3 className="text-3xl font-bold">
-                  Voice interview completed
+              <div className="mt-8 bg-[#B8E34B] border-2 border-[#14213D] p-7 md:p-9 shadow-[7px_7px_0_#14213D]">
+                <p className="font-serif italic text-xl">You did it.</p>
+                <h3 className="mt-1 text-4xl font-black tracking-[-0.04em]">
+                  Interview complete 🎉
                 </h3>
-
-                <p className="text-slate-300 mt-3 max-w-2xl leading-7">
-                  You completed all generated questions. Try again with a
-                  different role or job description to practice another interview.
+                <p className="mt-3 max-w-2xl text-[#14213D]/65 leading-7">
+                  You completed all generated questions. Try another role or job description
+                  and see how your answers improve.
                 </p>
-
                 <button
                   onClick={restartInterview}
-                  className="mt-6 bg-white text-slate-950 px-6 py-3 rounded-xl font-semibold inline-flex items-center gap-2"
+                  className="mt-6 bg-[#14213D] text-white px-6 py-3 rounded-xl font-black inline-flex items-center gap-2 hover:bg-[#2457D6] transition-colors"
                 >
                   <RotateCcw size={18} />
                   Practice Again
                 </button>
               </div>
             )}
-          </div>
+          </section>
         )}
       </div>
     </div>

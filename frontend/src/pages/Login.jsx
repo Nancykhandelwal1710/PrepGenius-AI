@@ -59,141 +59,172 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 px-4 py-10">
-      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-8 items-stretch">
-        <div className="bg-slate-950 text-white rounded-3xl shadow-xl p-8 md:p-10 relative overflow-hidden">
-          <div className="absolute -top-24 -right-24 w-72 h-72 bg-blue-600/30 rounded-full blur-3xl" />
-          <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-indigo-600/30 rounded-full blur-3xl" />
+    <div className="min-h-screen bg-[#FBFAF6] text-[#14213D] px-4 py-8 md:py-10">
+      <div className="max-w-6xl mx-auto grid lg:grid-cols-[1.05fr_0.95fr] gap-6 items-stretch">
+
+        {/* Brand side */}
+        <section className="relative overflow-hidden bg-[#2457D6] text-white border-2 border-[#14213D] shadow-[8px_8px_0_#14213D] p-7 md:p-10 min-h-[620px] flex flex-col">
+          <div className="absolute -right-10 -top-16 text-[16rem] leading-none font-black text-white/8">
+            ✦
+          </div>
+          <div className="absolute -bottom-10 -left-10 text-[10rem] leading-none font-black text-[#B8E34B]/15">
+            +
+          </div>
 
           <div className="relative">
-            <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center mb-8">
-              <BriefcaseBusiness size={28} />
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-12 bg-white flex items-center justify-center overflow-hidden border-2 border-[#14213D]">
+                <img
+                  src="/prepgenius_logo_new.jpg"
+                  alt="PrepGenius"
+                  className="w-[60px] max-w-none"
+                />
+              </div>
+
+              <div>
+                <p className="font-black text-xl leading-none">
+                  <span className="text-white">Prep</span>
+                  <span className="text-[#B8E34B]">Genius</span>
+                </p>
+                <p className="text-xs text-white/55 mt-1">
+                  Prep • Learn • Grow
+                </p>
+              </div>
             </div>
 
-            <p className="text-sm uppercase tracking-widest text-blue-300 mb-3">
-              PrepGenius AI
+            <p className="mt-12 text-sm uppercase tracking-[0.18em] font-black text-[#B8E34B]">
+              {isRegister ? "Start your journey" : "Welcome back"}
             </p>
 
-            <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-5">
-              Prepare smarter before you apply
+            <h1 className="mt-3 text-4xl md:text-6xl font-black tracking-[-0.055em] leading-[0.92] max-w-xl">
+              Prepare smarter.
+              <br />
+              <span className="font-serif italic font-normal text-[#B8E34B]">
+                Feel ready.
+              </span>
             </h1>
 
-            <p className="text-slate-300 leading-8 max-w-xl mb-10">
-              Sign in to continue your resume analysis, interview practice, and
-              preparation dashboard from one place.
+            <p className="mt-6 max-w-xl text-white/70 text-base md:text-lg leading-8">
+              Your resume, skills and interview practice — all in one place,
+              built to help you feel more prepared before you apply.
             </p>
+          </div>
 
-            <div className="grid sm:grid-cols-2 gap-4 mb-10">
-              {[
-                [FileText, "Resume analysis", "Check resume fit with job descriptions."],
-                [CheckCircle, "Skill gap view", "Find what is missing before applying."],
-                [Mic, "Interview practice", "Practice role-based questions."],
-                [BarChart3, "Progress dashboard", "Track your latest preparation score."],
-              ].map(([Icon, title, desc]) => (
-                <div
-                  key={title}
-                  className="bg-white/10 border border-white/10 rounded-2xl p-5"
-                >
-                  <Icon className="text-blue-300 mb-4" size={24} />
-                  <h3 className="font-semibold mb-2">{title}</h3>
-                  <p className="text-sm text-slate-400 leading-6">{desc}</p>
-                </div>
-              ))}
-            </div>
+          <div className="relative mt-auto pt-10 grid sm:grid-cols-2 gap-3">
+            {[
+              [FileText, "Resume fit", "See what your resume is missing."],
+              [CheckCircle, "Skill gaps", "Know what to work on next."],
+              [Mic, "Interview practice", "Practice before the real thing."],
+              [BarChart3, "Your progress", "Keep an eye on your preparation."],
+            ].map(([Icon, title, desc]) => (
+              <div
+                key={title}
+                className="bg-white/10 border border-white/10 p-4 hover:bg-white/15 transition-colors"
+              >
+                <Icon size={21} className="text-[#B8E34B] mb-3" />
+                <h3 className="font-black">{title}</h3>
+                <p className="text-xs text-white/50 leading-5 mt-1">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
 
-            <div className="bg-white/10 border border-white/10 rounded-2xl p-5">
-              <p className="text-sm text-slate-300 leading-7">
-                “Use PrepGenius as a practice space before sending your resume
-                or attending interviews.”
+        {/* Auth side */}
+        <section className="bg-white border-2 border-[#14213D]/10 p-7 md:p-10 flex items-center">
+          <div className="w-full max-w-md mx-auto">
+
+            <div className="mb-8">
+              <p className="text-sm font-serif italic text-[#2457D6]">
+                {isRegister ? "Create your account" : "Good to see you"}
+              </p>
+
+              <h2 className="mt-2 text-3xl md:text-4xl font-black tracking-[-0.04em]">
+                {isRegister ? "Let's get you started." : "Continue your preparation."}
+              </h2>
+
+              <p className="mt-3 text-sm leading-6 text-[#14213D]/50">
+                {isRegister
+                  ? "Create an account and start building your preparation workspace."
+                  : "Sign in to pick up where you left off."}
               </p>
             </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-3xl shadow-xl p-8 md:p-10 flex items-center">
-          <div className="w-full max-w-md mx-auto">
-            <p className="text-sm text-blue-600 font-semibold mb-2">
-              {isRegister ? "Create your account" : "Welcome back"}
-            </p>
-
-            <h2 className="text-3xl md:text-4xl font-bold mb-3">
-              {isRegister ? "Start your preparation" : "Continue preparation"}
-            </h2>
-
-            <p className="text-slate-600 text-sm leading-6 mb-8">
-              {isRegister
-                ? "Create an account to access resume analysis and mock interview practice."
-                : "Login to access your dashboard, resume score, and interview practice."}
-            </p>
 
             {error && (
-              <div className="mb-5 bg-red-50 border border-red-100 text-red-700 p-4 rounded-xl text-sm">
+              <div className="mb-6 bg-[#FFF0EC] border-2 border-[#FF6B57]/30 text-[#9F3326] p-4 text-sm leading-6">
                 {error}
               </div>
             )}
 
             <form className="space-y-5">
               <div>
-                <label className="block text-sm font-semibold mb-2">
+                <label className="block text-sm font-black mb-2">
                   Email address
                 </label>
-
                 <input
                   type="email"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full border border-slate-300 rounded-xl p-4 outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border-2 border-[#14213D]/10 bg-[#FBFAF6] px-4 py-3.5 outline-none focus:border-[#2457D6] transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold mb-2">
+                <label className="block text-sm font-black mb-2">
                   Password
                 </label>
-
                 <input
                   type="password"
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full border border-slate-300 rounded-xl p-4 outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border-2 border-[#14213D]/10 bg-[#FBFAF6] px-4 py-3.5 outline-none focus:border-[#2457D6] transition-colors"
                 />
               </div>
 
               <button
                 type="button"
                 onClick={handleEmailAuth}
-                className="w-full bg-blue-600 text-white py-4 rounded-xl font-semibold hover:bg-blue-700"
+                className="w-full bg-[#14213D] text-white py-4 px-5 font-black hover:bg-[#2457D6] transition-colors shadow-[4px_4px_0_#B8E34B]"
               >
-                {isRegister ? "Create Account" : "Sign In"}
+                {isRegister ? "Create Account →" : "Sign In →"}
               </button>
+
+              <div className="flex items-center gap-3 py-1">
+                <div className="h-px bg-[#14213D]/10 flex-1" />
+                <span className="text-xs uppercase tracking-widest text-[#14213D]/30 font-bold">
+                  or
+                </span>
+                <div className="h-px bg-[#14213D]/10 flex-1" />
+              </div>
 
               <button
                 type="button"
                 onClick={handleGoogleLogin}
-                className="w-full bg-white border border-slate-300 text-slate-700 py-4 rounded-xl font-semibold hover:bg-slate-50"
+                className="w-full bg-white border-2 border-[#14213D]/15 text-[#14213D] py-3.5 px-5 font-black hover:border-[#2457D6] hover:text-[#2457D6] transition-colors"
               >
-                Sign in with Google
+                Continue with Google
               </button>
             </form>
 
-            <p className="text-center text-slate-600 mt-7 text-sm">
-              {isRegister ? "Already have an account?" : "New to PrepGenius?"}{" "}
-              <button
-                type="button"
-                onClick={() => setIsRegister(!isRegister)}
-                className="text-blue-600 font-bold"
-              >
-                {isRegister ? "Sign in" : "Create account"}
-              </button>
-            </p>
+            <div className="mt-8 pt-6 border-t border-[#14213D]/10 text-center">
+              <p className="text-sm text-[#14213D]/55">
+                {isRegister ? "Already have an account?" : "New to PrepGenius?"}{" "}
+                <button
+                  type="button"
+                  onClick={() => setIsRegister(!isRegister)}
+                  className="text-[#2457D6] font-black hover:underline"
+                >
+                  {isRegister ? "Sign in" : "Create account"}
+                </button>
+              </p>
 
-            <p className="text-center text-xs text-slate-400 mt-6">
-              Authentication powered by Firebase.
-            </p>
+              <p className="text-xs text-[#14213D]/30 mt-5">
+                Authentication powered by Firebase.
+              </p>
+            </div>
           </div>
-        </div>
+        </section>
       </div>
     </div>
   );

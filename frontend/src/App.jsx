@@ -1,7 +1,9 @@
+import { useCallback, useState } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
+import SplashScreen from "./components/SplashScreen";
 
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
@@ -13,6 +15,16 @@ import ResumeOptimizer from "./pages/ResumeOptimizer";
 import ResumePreview from "./pages/ResumePreview";
 
 function App() {
+  const [showSplash, setShowSplash] = useState(true);
+
+  const finishSplash = useCallback(() => {
+    setShowSplash(false);
+  }, []);
+
+  if (showSplash) {
+    return <SplashScreen onFinish={finishSplash} />;
+  }
+
   return (
     <>
       <Navbar />

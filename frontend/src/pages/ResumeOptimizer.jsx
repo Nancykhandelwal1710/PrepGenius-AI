@@ -187,154 +187,157 @@ function ResumeBuilder() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 px-4 py-10">
+    <div className="min-h-screen bg-[#FBFAF6] text-[#14213D] px-4 sm:px-6 py-8 md:py-10">
       <div className="max-w-7xl mx-auto">
-        <section className="bg-slate-950 text-white rounded-3xl p-8 md:p-10 shadow-xl mb-8">
-          <p className="text-sm uppercase tracking-widest text-blue-300 mb-3">
-            AI Resume Optimizer
-          </p>
 
-          <h1 className="text-4xl md:text-5xl font-bold max-w-4xl">
-            Optimize your resume while preserving its original layout
-          </h1>
+        {/* Intro */}
+        <section className="relative overflow-hidden bg-[#2457D6] text-white border-2 border-[#14213D] p-7 md:p-10 shadow-[8px_8px_0_#14213D]">
+          <div className="absolute -right-10 -top-16 text-[12rem] leading-none font-black text-white/5">✦</div>
+          <div className="absolute right-10 bottom-4 text-5xl text-[#B8E34B] rotate-12">↗</div>
 
-          <p className="text-slate-300 mt-4 max-w-3xl leading-7">
-            Upload your original PDF or Docx resume and paste the target job
-            description. PrepGenius will improve relevant content and
-            return an optimized PDF using your existing resume design.
-          </p>
+          <div className="relative max-w-4xl">
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#B8E34B]">
+              Resume improvement studio
+            </p>
+            <h1 className="mt-3 text-4xl md:text-6xl font-black tracking-[-0.055em] leading-[0.92]">
+              Keep your resume.
+              <br />
+              <span className="font-serif italic font-normal text-[#B8E34B]">
+                Make it work harder.
+              </span>
+            </h1>
+            <p className="mt-6 text-white/75 text-base md:text-lg leading-8 max-w-3xl">
+              Upload the resume you already like, tell us what role you're targeting,
+              and PrepGenius will tailor the relevant content while keeping your original design.
+            </p>
+          </div>
         </section>
 
         {error && (
-          <div className="mb-8 bg-red-50 border border-red-200 text-red-800 rounded-2xl p-5 flex items-start gap-3">
-            <AlertCircle
-              size={22}
-              className="shrink-0 mt-0.5"
-            />
-
-            <p>{error}</p>
+          <div className="mt-7 bg-[#FFF0EC] border-2 border-[#FF6B57]/40 text-[#9F3326] p-5 flex items-start gap-3">
+            <AlertCircle size={22} className="shrink-0 mt-0.5" />
+            <p className="leading-6">{error}</p>
           </div>
         )}
 
         {success && (
-          <div className="mb-8 bg-green-50 border border-green-200 text-green-800 rounded-2xl p-5 flex items-start gap-3">
-            <CheckCircle
-              size={22}
-              className="shrink-0 mt-0.5"
-            />
-
-            <p>{success}</p>
+          <div className="mt-7 bg-[#F1F7D9] border-2 border-[#B8E34B]/70 text-[#526B00] p-5 flex items-start gap-3">
+            <CheckCircle size={22} className="shrink-0 mt-0.5" />
+            <div>
+              <p className="font-black">Ready to go.</p>
+              <p className="mt-1">{success}</p>
+            </div>
           </div>
         )}
 
-        <section className="grid lg:grid-cols-2 gap-8">
-          <div className="bg-white rounded-3xl shadow p-8">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                <Upload size={22} />
-              </div>
+        {/* Main workspace */}
+        <section className="grid lg:grid-cols-[0.9fr_1.1fr] gap-6 mt-8">
 
+          {/* Resume */}
+          <div className="bg-white border-2 border-[#14213D]/10 p-6 md:p-8">
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm text-blue-600 font-semibold">
-                  Step 1
-                </p>
-
-                <h2 className="text-2xl font-bold">
-                  Upload your current resume
+                <p className="text-sm font-serif italic text-[#2457D6]">01 / Start here</p>
+                <h2 className="mt-1 text-3xl font-black tracking-[-0.04em]">
+                  Your current resume
                 </h2>
+              </div>
+              <div className="w-12 h-12 bg-[#EDF3FF] text-[#2457D6] flex items-center justify-center rounded-xl">
+                <Upload size={22} />
               </div>
             </div>
 
-            <p className="text-sm text-slate-600 leading-6 mb-5">
-              Upload the original PDF or DOCX file that contains your complete
-              resume design and information.
+            <p className="mt-4 text-[#14213D]/60 leading-7">
+              Give us the original PDF or DOCX. We'll read the content first,
+              then use the target role to decide what deserves more attention.
             </p>
 
-            <input
-              type="file"
-              accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-              onChange={handleUpload}
-              className="w-full border border-dashed border-slate-300 rounded-xl p-4 text-sm"
-            />
+            <label className="mt-7 block cursor-pointer">
+              <div className="border-2 border-dashed border-[#2457D6]/35 bg-[#F7F9FF] p-7 text-center hover:border-[#2457D6] hover:bg-[#EDF3FF] transition-colors">
+                <div className="mx-auto w-14 h-14 bg-white border border-[#2457D6]/15 text-[#2457D6] flex items-center justify-center rounded-xl shadow-sm">
+                  <Upload size={24} />
+                </div>
+                <p className="mt-4 font-black">Choose your resume</p>
+                <p className="mt-1 text-sm text-[#14213D]/50">
+                  PDF or DOCX
+                </p>
+                <span className="mt-5 inline-block bg-[#14213D] text-white px-5 py-2.5 rounded-lg text-sm font-bold">
+                  Browse files
+                </span>
+              </div>
+              <input
+                type="file"
+                accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                onChange={handleUpload}
+                className="hidden"
+              />
+            </label>
 
             {file && (
-              <div className="mt-4 bg-slate-50 border border-slate-200 rounded-xl p-4">
-                <p className="text-xs text-slate-500">
-                  Selected resume
-                </p>
-
-                <p className="font-medium mt-1 break-all">
-                  {file.name}
-                </p>
+              <div className="mt-5 bg-[#EEF3FF] border border-[#2457D6]/15 p-4 flex items-start gap-3">
+                <FileText size={20} className="text-[#2457D6] shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <p className="text-xs font-bold uppercase tracking-wider text-[#14213D]/45">
+                    Selected resume
+                  </p>
+                  <p className="mt-1 font-bold break-all">{file.name}</p>
+                </div>
               </div>
             )}
 
             {extracting && (
-              <p className="mt-4 text-sm text-blue-600 font-medium">
+              <div className="mt-5 flex items-center gap-3 text-[#2457D6] font-bold text-sm">
+                <Sparkles size={18} className="animate-pulse" />
                 Reading your resume...
-              </p>
+              </div>
             )}
 
             {resumeText && !extracting && (
-              <div className="mt-5 bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3">
-                <CheckCircle
-                  size={20}
-                  className="text-green-600 shrink-0 mt-0.5"
-                />
-
+              <div className="mt-5 bg-[#F1F7D9] border border-[#B8E34B]/70 p-4 flex items-start gap-3">
+                <CheckCircle size={20} className="text-[#648400] shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-green-900">
-                    Resume uploaded successfully
-                  </p>
-
-                  <p className="text-sm text-green-700 mt-1">
-                    The text was extracted and the resume is ready
-                    for optimization.
+                  <p className="font-black text-[#526B00]">Resume is ready.</p>
+                  <p className="text-sm text-[#526B00]/80 mt-1">
+                    Your content has been extracted and is ready to optimize.
                   </p>
                 </div>
               </div>
             )}
 
             {resumeText && (
-              <>
-                <label className="block text-sm font-semibold mt-6 mb-2">
-                  Extracted resume text
-                </label>
-
+              <details className="mt-5 group">
+                <summary className="cursor-pointer text-sm font-bold text-[#2457D6]">
+                  View extracted text
+                </summary>
                 <textarea
-                  rows="12"
+                  rows="10"
                   value={resumeText}
                   readOnly
-                  className="w-full border border-slate-300 rounded-xl p-4 text-sm bg-slate-50 text-slate-700"
+                  className="mt-3 w-full border border-[#14213D]/10 p-4 text-sm bg-[#FBFAF6] text-[#14213D]/70 focus:outline-none"
                 />
-              </>
+              </details>
             )}
           </div>
 
-          <div className="bg-white rounded-3xl shadow p-8">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                <FileText size={22} />
-              </div>
-
+          {/* Target role */}
+          <div className="bg-[#14213D] text-white border-2 border-[#14213D] p-6 md:p-8 shadow-[6px_6px_0_#2457D6]">
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm text-blue-600 font-semibold">
-                  Step 2
-                </p>
-
-                <h2 className="text-2xl font-bold">
-                  Add the target job
+                <p className="text-sm font-serif italic text-[#B8E34B]">02 / Aim it</p>
+                <h2 className="mt-1 text-3xl font-black tracking-[-0.04em]">
+                  What role are you applying for?
                 </h2>
               </div>
+              <div className="text-4xl">🎯</div>
             </div>
 
-            <p className="text-sm text-slate-600 leading-6 mb-5">
-              Paste the complete job description so the optimizer
-              can tailor your summary, projects, and skills.
+            <p className="mt-4 text-white/60 leading-7">
+              Paste the complete job description. The more context you give us,
+              the more useful the optimization can be.
             </p>
 
             <textarea
-              rows="18"
+              rows="15"
               value={jobDescription}
               onChange={(event) => {
                 setJobDescription(event.target.value);
@@ -342,57 +345,100 @@ function ResumeBuilder() {
                 setSuccess("");
               }}
               placeholder="Paste the complete job description here..."
-              className="w-full border border-slate-300 rounded-xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="mt-7 w-full bg-white text-[#14213D] border-2 border-white/10 p-5 text-sm leading-6 placeholder:text-[#14213D]/35 focus:outline-none focus:border-[#B8E34B] resize-y"
             />
 
             <button
               type="button"
               onClick={optimizePDF}
-              disabled={
-                optimizing ||
-                extracting ||
-                !file ||
-                !jobDescription.trim()
-              }
-              className="mt-5 w-full bg-blue-600 text-white py-4 rounded-xl font-semibold hover:bg-blue-700 disabled:bg-slate-400 disabled:cursor-not-allowed inline-flex justify-center items-center gap-2"
+              disabled={optimizing || extracting || !file || !jobDescription.trim()}
+              className="mt-5 w-full bg-[#B8E34B] text-[#14213D] py-4 px-5 font-black inline-flex justify-center items-center gap-2 hover:bg-white disabled:bg-white/20 disabled:text-white/40 disabled:cursor-not-allowed transition-colors"
             >
               {optimizing ? (
                 <>
-                  <Sparkles
-                    size={20}
-                    className="animate-pulse"
-                  />
+                  <Sparkles size={20} className="animate-pulse" />
                   Optimizing your resume...
                 </>
               ) : (
                 <>
                   <Download size={20} />
-                  Optimize & Download Resume
+                  Optimize & download
                 </>
               )}
             </button>
 
-            <div className="mt-6 bg-blue-50 border border-blue-100 rounded-xl p-5">
-              <h3 className="font-semibold text-blue-900">
-                What will be preserved?
-              </h3>
-
-              <div className="mt-3 space-y-2 text-sm text-blue-800">
-                <p>✓ Your name and contact information</p>
-                <p>✓ Original PDF layout and design</p>
-                <p>✓ Project names and technologies</p>
-                <p>✓ Education and certifications</p>
-                <p>✓ Dates and coding-profile details</p>
+            <div className="mt-7 grid sm:grid-cols-2 gap-3">
+              <div className="border border-white/10 p-4">
+                <p className="text-[#B8E34B] font-black">01</p>
+                <p className="mt-1 text-sm text-white/65">Relevant content gets more attention.</p>
+              </div>
+              <div className="border border-white/10 p-4">
+                <p className="text-[#FF6B57] font-black">02</p>
+                <p className="mt-1 text-sm text-white/65">Your original design stays intact.</p>
               </div>
             </div>
+          </div>
+        </section>
 
-            <div className="mt-5 bg-amber-50 border border-amber-200 rounded-xl p-5">
-              <p className="text-sm text-amber-900 leading-6">
-                The first request may take longer because the Render
-                backend can require time to wake up. Keep the page open
-                until the download begins.
-              </p>
+        {/* Promise */}
+        <section className="mt-8 grid md:grid-cols-3 gap-4">
+          <div className="bg-[#EDF3FF] border-2 border-[#14213D]/10 p-6">
+            <p className="text-2xl">📄</p>
+            <h3 className="mt-4 font-black text-xl">Your resume stays yours</h3>
+            <p className="mt-2 text-sm leading-6 text-[#14213D]/60">
+              Name, contact details, projects, education and other important information remain in place.
+            </p>
+          </div>
+
+          <div className="bg-[#F1F7D9] border-2 border-[#14213D]/10 p-6">
+            <p className="text-2xl">✦</p>
+            <h3 className="mt-4 font-black text-xl">The content gets sharper</h3>
+            <p className="mt-2 text-sm leading-6 text-[#14213D]/60">
+              Relevant summary, projects and skills can be tailored toward the target job.
+            </p>
+          </div>
+
+          <div className="bg-[#FFF0EC] border-2 border-[#14213D]/10 p-6">
+            <p className="text-2xl">↗</p>
+            <h3 className="mt-4 font-black text-xl">You get a usable file</h3>
+            <p className="mt-2 text-sm leading-6 text-[#14213D]/60">
+              The optimized PDF or DOCX is downloaded directly when the process finishes.
+            </p>
+          </div>
+        </section>
+
+        {/* Preservation checklist */}
+        <section className="mt-8 mb-4 bg-white border-2 border-[#14213D] p-7 md:p-8 shadow-[6px_6px_0_#B8E34B]">
+          <div className="grid lg:grid-cols-[0.8fr_1.2fr] gap-8 items-start">
+            <div>
+              <p className="font-serif italic text-xl text-[#2457D6]">The promise</p>
+              <h2 className="mt-1 text-3xl md:text-4xl font-black tracking-[-0.04em]">
+                Improve the resume,
+                <br />
+                not its identity.
+              </h2>
             </div>
+
+            <div className="grid sm:grid-cols-2 gap-x-8 gap-y-4 text-sm">
+              {[
+                "Your name and contact information",
+                "Original PDF layout and design",
+                "Project names and technologies",
+                "Education and certifications",
+                "Dates and coding-profile details",
+                "Targeted job relevance",
+              ].map((item) => (
+                <div key={item} className="flex gap-3 items-start">
+                  <CheckCircle size={18} className="text-[#2457D6] shrink-0 mt-0.5" />
+                  <span className="text-[#14213D]/70 leading-6">{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-7 pt-5 border-t border-[#14213D]/10 text-sm text-[#14213D]/50">
+            Tip: the first request may take longer if the Render backend needs to wake up.
+            Keep this page open until your download begins.
           </div>
         </section>
       </div>

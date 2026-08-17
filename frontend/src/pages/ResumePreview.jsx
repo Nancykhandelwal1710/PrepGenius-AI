@@ -18,19 +18,19 @@ function ResumePreview() {
 
   if (!savedResume) {
     return (
-      <div className="min-h-screen bg-slate-100 px-4 py-10">
-        <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow p-8 text-center">
+      <div className="min-h-screen bg-[#FBFAF6] px-4 py-10">
+        <div className="max-w-3xl mx-auto bg-white  shadow p-8 text-center">
           <h1 className="text-3xl font-bold mb-3">
             No saved resume found
           </h1>
 
-          <p className="text-slate-600 mb-6">
+          <p className="text-[#14213D]/60 mb-6">
             Go back to Resume Builder and create your resume first.
           </p>
 
           <Link
             to="/resume-builder"
-            className="inline-flex bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold"
+            className="inline-flex bg-[#2457D6] text-white px-6 py-3 rounded-xl font-semibold"
           >
             Back to Resume Builder
           </Link>
@@ -42,7 +42,7 @@ function ResumePreview() {
   const personal = savedResume.personal || {};
 
   return (
-    <div className="min-h-screen bg-slate-100 px-4 py-10">
+    <div className="min-h-screen bg-[#FBFAF6] px-4 py-10">
       <style>
         {`
           @media print {
@@ -74,17 +74,17 @@ function ResumePreview() {
       <div className="max-w-6xl mx-auto">
 
         {/* HEADER */}
-        <div className="no-print bg-slate-950 text-white rounded-3xl p-8 mb-8">
-          <p className="text-sm uppercase tracking-widest text-blue-300 mb-3">
+        <div className="bg-[#14213D] text-white p-7 md:p-9 shadow-[7px_7px_0_#2457D6] gap-2 mb-4">
+          <p className="text-[#B8E34B] font-serif italic text-xl">
             Resume Preview
           </p>
 
-          <h1 className="text-4xl md:text-5xl font-bold">
-            Review Your Resume
+          <h1 className="mt-1 text-3xl md:text-4xl font-black tracking-[-0.04em]">
+            Give it one last look.
           </h1>
 
-          <p className="text-slate-300 mt-4 max-w-3xl leading-7">
-            Review your resume before downloading it as a PDF.
+          <p className="text-white/70 mt-4 max-w-3xl leading-7">
+            Check the details, spacing and content below before downloading your final resume.
           </p>
         </div>
 
@@ -92,7 +92,7 @@ function ResumePreview() {
         <div className="no-print flex flex-col sm:flex-row gap-4 mb-8">
           <Link
             to="/resume-builder"
-            className="bg-white border border-slate-300 text-slate-700 px-6 py-3 rounded-xl font-semibold inline-flex items-center justify-center gap-2"
+            className="bg-white border border-[#14213D]/20 text-[#14213D] px-6 py-3 rounded-xl font-semibold inline-flex items-center justify-center gap-2"
           >
             <ArrowLeft size={18} />
             Back to Editor
@@ -101,7 +101,7 @@ function ResumePreview() {
           <button
             type="button"
             onClick={downloadPDF}
-            className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold inline-flex items-center justify-center gap-2 hover:bg-blue-700"
+            className="bg-[#2457D6] text-white px-6 py-3 rounded-xl font-semibold inline-flex items-center justify-center gap-2 hover:bg-[#14213D]"
           >
             <Download size={18} />
             Download as PDF
@@ -109,7 +109,7 @@ function ResumePreview() {
         </div>
 
         {/* RESUME */}
-        <article className="resume-sheet max-w-[850px] mx-auto bg-white border border-slate-200 shadow-xl px-10 py-12 text-slate-900">
+        <article className="resume-sheet max-w-[850px] mx-auto bg-white border border-[#14213D]/10 shadow-[8px_8px_0_#DCE6FF] px-10 py-12 text-slate-900">
 
           {/* PERSONAL HEADER */}
           <header className="border-b-2 border-slate-900 pb-6">
@@ -118,7 +118,7 @@ function ResumePreview() {
               {personal.name || "Your Name"}
             </h1>
 
-            <div className="text-sm text-slate-600 mt-3 flex flex-wrap gap-x-4 gap-y-1">
+            <div className="text-sm text-[#14213D]/60 mt-3 flex flex-wrap gap-x-4 gap-y-1">
               {personal.email && (
                 <span>{personal.email}</span>
               )}
@@ -200,14 +200,14 @@ function ResumePreview() {
                             {item.jobTitle}
                           </h3>
 
-                          <p className="text-sm text-slate-600">
+                          <p className="text-sm text-[#14213D]/60">
                             {item.company}
                             {item.location &&
                               ` • ${item.location}`}
                           </p>
                         </div>
 
-                        <p className="text-sm text-slate-600">
+                        <p className="text-sm text-[#14213D]/60">
                           {item.startDate}
                           {item.startDate &&
                             item.endDate &&
@@ -259,7 +259,7 @@ function ResumePreview() {
                             {item.degree}
                           </h3>
 
-                          <p className="text-sm text-slate-600">
+                          <p className="text-sm text-[#14213D]/60">
                             {item.institution}
                             {item.location &&
                               ` • ${item.location}`}
@@ -267,7 +267,7 @@ function ResumePreview() {
                         </div>
 
                         {item.year && (
-                          <p className="text-sm text-slate-600">
+                          <p className="text-sm text-[#14213D]/60">
                             {item.year}
                           </p>
                         )}
@@ -318,7 +318,7 @@ function ResumePreview() {
                       </div>
 
                       {project.technologies && (
-                        <p className="text-sm text-slate-600 mt-1">
+                        <p className="text-sm text-[#14213D]/60 mt-1">
                           <strong>Technologies:</strong>{" "}
                           {project.technologies}
                         </p>
@@ -368,13 +368,13 @@ function ResumePreview() {
                             {item.name}
                           </h3>
 
-                          <p className="text-sm text-slate-600">
+                          <p className="text-sm text-[#14213D]/60">
                             {item.issuer}
                           </p>
                         </div>
 
                         {item.year && (
-                          <p className="text-sm text-slate-600">
+                          <p className="text-sm text-[#14213D]/60">
                             {item.year}
                           </p>
                         )}
@@ -398,7 +398,7 @@ function ResumeSection({ title, children }) {
   return (
     <section className="mt-7">
 
-      <h2 className="text-lg font-bold uppercase tracking-wide border-b border-slate-300 pb-2 mb-3">
+      <h2 className="text-lg font-bold uppercase tracking-wide border-b border-[#14213D]/20 pb-2 mb-3">
         {title}
       </h2>
 
