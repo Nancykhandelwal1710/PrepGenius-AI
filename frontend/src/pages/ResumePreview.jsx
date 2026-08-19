@@ -1,16 +1,50 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, Download, Check } from "lucide-react";
+
+import ATSClassic from "../components/resume-templates/ATSClassic";
+import ModernTech from "../components/resume-templates/ModernTech";
+import EngineeringPro from "../components/resume-templates/EngineeringPro";
+
+const templates = [
+  {
+    id: "ats-classic",
+    name: "ATS Classic",
+    description: "Clean, professional and optimized for traditional ATS screening.",
+    badge: "ATS Friendly",
+    component: ATSClassic,
+  },
+  {
+    id: "modern-tech",
+    name: "Modern Tech",
+    description: "A modern technical layout with stronger visual hierarchy.",
+    badge: "Modern",
+    component: ModernTech,
+  },
+  {
+    id: "engineering-pro",
+    name: "Engineering Pro",
+    description: "Compact and technical design for engineering-focused candidates.",
+    badge: "Technical",
+    component: EngineeringPro,
+  },
+];
 
 function ResumePreview() {
-  let savedResume = null;
+  const [savedResume] = useState(() => {
+    try {
+      return JSON.parse(
+        localStorage.getItem("tailoredResume") || "null"
+      );
+    } catch (error) {
+      console.error("Could not read saved resume:", error);
+      return null;
+    }
+  });
 
-  try {
-    savedResume = JSON.parse(
-      localStorage.getItem("tailoredResume") || "null"
-    );
-  } catch (error) {
-    console.error("Could not read saved resume:", error);
-  }
+  const [selectedTemplate, setSelectedTemplate] = useState(
+    "ats-classic"
+  );
 
   const downloadPDF = () => {
     window.print();
@@ -19,7 +53,7 @@ function ResumePreview() {
   if (!savedResume) {
     return (
       <div className="min-h-screen bg-[#FBFAF6] px-4 py-10">
-        <div className="max-w-3xl mx-auto bg-white  shadow p-8 text-center">
+        <div className="max-w-3xl mx-auto bg-white shadow p-8 text-center">
           <h1 className="text-3xl font-bold mb-3">
             No saved resume found
           </h1>
@@ -39,10 +73,15 @@ function ResumePreview() {
     );
   }
 
-  const personal = savedResume.personal || {};
+  const activeTemplate =
+    templates.find((template) => template.id === selectedTemplate) ||
+    templates[0];
+
+  const TemplateComponent = activeTemplate.component;
 
   return (
-    <div className="min-h-screen bg-[#FBFAF6] px-4 py-10">
+    <div className="min-h-screen bg-[#FBFAF6] px-4 py-8 md:py-10">
+
       <style>
         {`
           @media print {
@@ -65,34 +104,130 @@ function ResumePreview() {
 
             @page {
               size: A4;
-              margin: 14mm;
+              margin: 0;
             }
           }
         `}
       </style>
 
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
 
-        {/* HEADER */}
-        <div className="bg-[#14213D] text-white p-7 md:p-9 shadow-[7px_7px_0_#2457D6] gap-2 mb-4">
+        {/* PAGE HEADER */}
+        <div className="no-print bg-[#14213D] text-white p-7 md:p-9 shadow-[7px_7px_0_#2457D6] mb-8">
+
           <p className="text-[#B8E34B] font-serif italic text-xl">
-            Resume Preview
+            Resume Studio
           </p>
 
           <h1 className="mt-1 text-3xl md:text-4xl font-black tracking-[-0.04em]">
-            Give it one last look.
+            Choose your resume style.
           </h1>
 
-          <p className="text-white/70 mt-4 max-w-3xl leading-7">
-            Check the details, spacing and content below before downloading your final resume.
+          <p className="text-white/70 mt-3 max-w-3xl leading-7">
+            Your information stays the same. Choose the design that best
+            represents you, preview it, and download your final resume.
           </p>
+
+        </div>
+
+        {/* TEMPLATE SELECTOR */}
+        <div className="no-print mb-10">
+
+          <div className="flex items-center justify-between mb-5">
+
+            <div>
+              <h2 className="text-xl md:text-2xl font-bold text-[#14213D]">
+                Resume Templates
+              </h2>
+
+              <p className="text-sm text-[#14213D]/60 mt-1">
+                Select a template to preview your resume.
+              </p>
+            </div>
+
+            <div className="hidden md:flex items-center gap-2 text-sm text-[#14213D]/60">
+              <span className="w-2 h-2 rounded-full bg-[#B8E34B]" />
+              3 styles available
+            </div>
+
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+            {templates.map((template) => {
+              const isSelected =
+                selectedTemplate === template.id;
+
+              return (
+                <button
+                  key={template.id}
+                  type="button"
+                  onClick={() =>
+                    setSelectedTemplate(template.id)
+                  }
+                  className={`text-left bg-white rounded-2xl p-5 border-2 transition-all duration-200 ${
+                    isSelected
+                      ? "border-[#2457D6] shadow-[5px_5px_0_#DCE6FF] -translate-y-1"
+                      : "border-[#14213D]/10 hover:border-[#2457D6]/40 hover:-translate-y-0.5"
+                  }`}
+                >
+
+                  <div className="flex items-start justify-between gap-3">
+
+                    <div>
+                      <span
+                        className={`inline-block text-xs font-bold px-2.5 py-1 rounded-full ${
+                          isSelected
+                            ? "bg-[#2457D6] text-white"
+                            : "bg-[#DCE6FF] text-[#2457D6]"
+                        }`}
+                      >
+                        {template.badge}
+                      </span>
+
+                      <h3 className="text-lg font-bold text-[#14213D] mt-3">
+                        {template.name}
+                      </h3>
+                    </div>
+
+                    {isSelected && (
+                      <span className="w-8 h-8 rounded-full bg-[#2457D6] text-white flex items-center justify-center shrink-0">
+                        <Check size={17} />
+                      </span>
+                    )}
+
+                  </div>
+
+                  <p className="text-sm text-[#14213D]/60 leading-6 mt-2">
+                    {template.description}
+                  </p>
+
+                  <div
+                    className={`mt-4 text-sm font-semibold ${
+                      isSelected
+                        ? "text-[#2457D6]"
+                        : "text-[#14213D]"
+                    }`}
+                  >
+                    {isSelected
+                      ? "✓ Selected"
+                      : "Preview this template →"}
+                  </div>
+
+                </button>
+              );
+            })}
+
+          </div>
+
         </div>
 
         {/* ACTIONS */}
-        <div className="no-print flex flex-col sm:flex-row gap-4 mb-8">
+        <div className="no-print flex flex-col sm:flex-row gap-4 mb-7">
+
           <Link
             to="/resume-builder"
-            className="bg-white border border-[#14213D]/20 text-[#14213D] px-6 py-3 rounded-xl font-semibold inline-flex items-center justify-center gap-2"
+            className="bg-white border border-[#14213D]/20 text-[#14213D] px-6 py-3 rounded-xl font-semibold inline-flex items-center justify-center gap-2 hover:border-[#2457D6]"
           >
             <ArrowLeft size={18} />
             Back to Editor
@@ -101,310 +236,42 @@ function ResumePreview() {
           <button
             type="button"
             onClick={downloadPDF}
-            className="bg-[#2457D6] text-white px-6 py-3 rounded-xl font-semibold inline-flex items-center justify-center gap-2 hover:bg-[#14213D]"
+            className="bg-[#2457D6] text-white px-6 py-3 rounded-xl font-semibold inline-flex items-center justify-center gap-2 hover:bg-[#14213D] transition"
           >
             <Download size={18} />
             Download as PDF
           </button>
+
+        </div>
+
+        {/* SELECTED TEMPLATE LABEL */}
+        <div className="no-print flex items-center justify-between max-w-[850px] mx-auto mb-3">
+
+          <div>
+            <p className="text-xs uppercase tracking-wider font-bold text-[#14213D]/50">
+              Selected template
+            </p>
+
+            <h2 className="text-lg font-bold text-[#14213D]">
+              {activeTemplate.name}
+            </h2>
+          </div>
+
+          <span className="text-xs font-semibold bg-[#EAF4C7] text-[#14213D] px-3 py-1.5 rounded-full">
+            {activeTemplate.badge}
+          </span>
+
         </div>
 
         {/* RESUME */}
-        <article className="resume-sheet max-w-[850px] mx-auto bg-white border border-[#14213D]/10 shadow-[8px_8px_0_#DCE6FF] px-10 py-12 text-slate-900">
+        <article className="resume-sheet max-w-[850px] mx-auto bg-white border border-[#14213D]/10 shadow-[8px_8px_0_#DCE6FF] overflow-hidden">
 
-          {/* PERSONAL HEADER */}
-          <header className="border-b-2 border-slate-900 pb-6">
-
-            <h1 className="text-4xl font-bold">
-              {personal.name || "Your Name"}
-            </h1>
-
-            <div className="text-sm text-[#14213D]/60 mt-3 flex flex-wrap gap-x-4 gap-y-1">
-              {personal.email && (
-                <span>{personal.email}</span>
-              )}
-
-              {personal.phone && (
-                <span>{personal.phone}</span>
-              )}
-
-              {personal.location && (
-                <span>{personal.location}</span>
-              )}
-            </div>
-
-            <div className="text-sm text-blue-700 mt-2 flex flex-wrap gap-x-4 gap-y-1">
-              {personal.linkedin && (
-                <span>{personal.linkedin}</span>
-              )}
-
-              {personal.github && (
-                <span>{personal.github}</span>
-              )}
-            </div>
-
-          </header>
-
-          {/* SUMMARY */}
-          {savedResume.summary && (
-            <ResumeSection title="Professional Summary">
-              <p className="text-sm leading-7">
-                {savedResume.summary}
-              </p>
-            </ResumeSection>
-          )}
-
-          {/* SKILLS */}
-          {savedResume.skills?.length > 0 && (
-            <ResumeSection title="Skills">
-              <div className="flex flex-wrap gap-2">
-                {savedResume.skills.map((skill, index) => (
-                  <span
-                    key={index}
-                    className="text-sm"
-                  >
-                    {skill}
-                    {index < savedResume.skills.length - 1 && " • "}
-                  </span>
-                ))}
-              </div>
-            </ResumeSection>
-          )}
-
-          {/* EXPERIENCE */}
-          {savedResume.experience?.some(
-            (item) =>
-              item.jobTitle ||
-              item.company ||
-              item.description
-          ) && (
-            <ResumeSection title="Experience">
-              <div className="space-y-6">
-
-                {savedResume.experience.map((item, index) => {
-
-                  if (
-                    !item.jobTitle &&
-                    !item.company &&
-                    !item.description
-                  ) {
-                    return null;
-                  }
-
-                  return (
-                    <div key={index}>
-
-                      <div className="flex flex-col sm:flex-row sm:justify-between gap-1">
-
-                        <div>
-                          <h3 className="font-bold">
-                            {item.jobTitle}
-                          </h3>
-
-                          <p className="text-sm text-[#14213D]/60">
-                            {item.company}
-                            {item.location &&
-                              ` • ${item.location}`}
-                          </p>
-                        </div>
-
-                        <p className="text-sm text-[#14213D]/60">
-                          {item.startDate}
-                          {item.startDate &&
-                            item.endDate &&
-                            " – "}
-                          {item.endDate}
-                        </p>
-
-                      </div>
-
-                      {item.description && (
-                        <p className="text-sm leading-7 mt-2 whitespace-pre-line">
-                          {item.description}
-                        </p>
-                      )}
-
-                    </div>
-                  );
-                })}
-
-              </div>
-            </ResumeSection>
-          )}
-
-          {/* EDUCATION */}
-          {savedResume.education?.some(
-            (item) =>
-              item.degree ||
-              item.institution
-          ) && (
-            <ResumeSection title="Education">
-              <div className="space-y-5">
-
-                {savedResume.education.map((item, index) => {
-
-                  if (
-                    !item.degree &&
-                    !item.institution
-                  ) {
-                    return null;
-                  }
-
-                  return (
-                    <div key={index}>
-
-                      <div className="flex flex-col sm:flex-row sm:justify-between">
-
-                        <div>
-                          <h3 className="font-bold">
-                            {item.degree}
-                          </h3>
-
-                          <p className="text-sm text-[#14213D]/60">
-                            {item.institution}
-                            {item.location &&
-                              ` • ${item.location}`}
-                          </p>
-                        </div>
-
-                        {item.year && (
-                          <p className="text-sm text-[#14213D]/60">
-                            {item.year}
-                          </p>
-                        )}
-
-                      </div>
-
-                    </div>
-                  );
-                })}
-
-              </div>
-            </ResumeSection>
-          )}
-
-          {/* PROJECTS */}
-          {savedResume.projects?.some(
-            (item) =>
-              item.name ||
-              item.description
-          ) && (
-            <ResumeSection title="Projects">
-              <div className="space-y-6">
-
-                {savedResume.projects.map((project, index) => {
-
-                  if (
-                    !project.name &&
-                    !project.description
-                  ) {
-                    return null;
-                  }
-
-                  return (
-                    <div key={index}>
-
-                      <div className="flex flex-wrap items-center gap-2">
-
-                        <h3 className="font-bold">
-                          {project.name}
-                        </h3>
-
-                        {project.link && (
-                          <span className="text-sm text-blue-700">
-                            {project.link}
-                          </span>
-                        )}
-
-                      </div>
-
-                      {project.technologies && (
-                        <p className="text-sm text-[#14213D]/60 mt-1">
-                          <strong>Technologies:</strong>{" "}
-                          {project.technologies}
-                        </p>
-                      )}
-
-                      {project.description && (
-                        <p className="text-sm leading-7 mt-2 whitespace-pre-line">
-                          {project.description}
-                        </p>
-                      )}
-
-                    </div>
-                  );
-                })}
-
-              </div>
-            </ResumeSection>
-          )}
-
-          {/* CERTIFICATIONS */}
-          {savedResume.certifications?.some(
-            (item) =>
-              item.name ||
-              item.issuer
-          ) && (
-            <ResumeSection title="Certifications">
-              <div className="space-y-3">
-
-                {savedResume.certifications.map(
-                  (item, index) => {
-
-                    if (
-                      !item.name &&
-                      !item.issuer
-                    ) {
-                      return null;
-                    }
-
-                    return (
-                      <div
-                        key={index}
-                        className="flex flex-col sm:flex-row sm:justify-between"
-                      >
-
-                        <div>
-                          <h3 className="font-semibold">
-                            {item.name}
-                          </h3>
-
-                          <p className="text-sm text-[#14213D]/60">
-                            {item.issuer}
-                          </p>
-                        </div>
-
-                        {item.year && (
-                          <p className="text-sm text-[#14213D]/60">
-                            {item.year}
-                          </p>
-                        )}
-
-                      </div>
-                    );
-                  }
-                )}
-
-              </div>
-            </ResumeSection>
-          )}
+          <TemplateComponent resume={savedResume} />
 
         </article>
+
       </div>
     </div>
-  );
-}
-
-function ResumeSection({ title, children }) {
-  return (
-    <section className="mt-7">
-
-      <h2 className="text-lg font-bold uppercase tracking-wide border-b border-[#14213D]/20 pb-2 mb-3">
-        {title}
-      </h2>
-
-      {children}
-
-    </section>
   );
 }
 

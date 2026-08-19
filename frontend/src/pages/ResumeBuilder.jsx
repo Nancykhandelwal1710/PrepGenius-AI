@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getSectorConfig } from "../resume-config/sectorConfigs";
 
 
 function SectionHeader({ number, title, description }) {
@@ -24,6 +25,8 @@ const createEmptyResume = () => ({
     linkedin: "",
     github: "",
   },
+
+  sector: "technology",
 
   summary: "",
 
@@ -65,6 +68,8 @@ const createEmptyResume = () => ({
       year: "",
     },
   ],
+
+  
 });
 
 
@@ -369,6 +374,35 @@ function ResumeBuilder() {
                     className="w-full border-2 border-[#14213D]/10 bg-[#FBFAF6] px-4 py-3.5 outline-none focus:border-[#2457D6] transition-colors"
                   />
                 ))}
+              </div>
+              <div className="mt-6">
+                <label className="block text-sm font-black text-[#14213D] mb-2">
+                  Target Career
+                </label>
+                <p className="text-sm text-[#14213D]/50 mb-3">
+                  Choose the type of role you're targeting. PrepGenius will adapt
+                  your resume sections and terminology to your career field.
+                </p>
+                <select
+                  value={resume.sector || "technology"}
+                  onChange={(event) =>
+                    updateField("sector", event.target.value)
+                  }
+                  className="w-full border-2 border-[#14213D]/10 bg-[#FBFAF6] px-4 py-3.5 outline-none focus:border-[#2457D6] transition-colors"
+                >
+                  <option value="technology">Technology & Software</option>
+                  <option value="data">Data & Analytics</option>
+                  <option value="finance">Finance & Banking</option>
+                  <option value="marketing">Marketing</option>
+                  <option value="sales">Sales & Business Development</option>
+                  <option value="hr">Human Resources</option>
+                  <option value="engineering">Engineering</option>
+                  <option value="design">Design & Creative</option>
+                  <option value="consulting">Consulting</option>
+                  <option value="operations">Operations & Management</option>
+                  <option value="healthcare">Healthcare</option>
+                  <option value="general">General</option>
+                </select>
               </div>
             </section>
 
